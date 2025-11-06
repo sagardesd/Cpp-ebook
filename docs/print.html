@@ -3614,8 +3614,468 @@ delete ptr2;
 </ul>
 <hr />
 <p><strong>Remember: With great pointer power comes great responsibility. 🎯</strong></p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="c-constructors-and-destructors---complete-guide"><a class="header" href="#c-constructors-and-destructors---complete-guide">C++ Constructors and Destructors - Complete Guide</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="classes-and-objects-in-c"><a class="header" href="#classes-and-objects-in-c">Classes and Objects in C++</a></h1>
 <h2 id="table-of-contents-3"><a class="header" href="#table-of-contents-3">Table of Contents</a></h2>
+<ol>
+<li><a href="cpp_class_object_guide.html#1-what-is-a-class">What is a Class?</a></li>
+<li><a href="cpp_class_object_guide.html#2-what-is-an-object">What is an Object?</a></li>
+<li><a href="cpp_class_object_guide.html#3-class-members-attributes-and-member-functions">Class Members: Attributes and Member Functions</a>
+<ul>
+<li><a href="cpp_class_object_guide.html#31-attributes-data-members">Attributes (Data Members)</a></li>
+<li><a href="cpp_class_object_guide.html#32-member-functions-methods">Member Functions (Methods)</a></li>
+</ul>
+</li>
+<li><a href="cpp_class_object_guide.html#4-access-specifiers">Access Specifiers</a>
+<ul>
+<li><a href="cpp_class_object_guide.html#41-public">Public</a></li>
+<li><a href="cpp_class_object_guide.html#42-private">Private</a></li>
+<li><a href="cpp_class_object_guide.html#43-protected">Protected</a></li>
+<li><a href="cpp_class_object_guide.html#44-access-specifier-comparison">Access Specifier Comparison</a></li>
+<li><a href="cpp_class_object_guide.html#45-when-to-use-which-access-specifier">When to Use Which Access Specifier</a></li>
+</ul>
+</li>
+<li><a href="cpp_class_object_guide.html#5-creating-objects-of-a-class">Creating Objects of a Class</a>
+<ul>
+<li><a href="cpp_class_object_guide.html#51-static-allocation-stack">Static Allocation (Stack)</a></li>
+<li><a href="cpp_class_object_guide.html#52-dynamic-allocation-heap">Dynamic Allocation (Heap)</a></li>
+<li><a href="cpp_class_object_guide.html#53-array-of-objects">Array of Objects</a></li>
+<li><a href="cpp_class_object_guide.html#54-creating-objects-with-different-access">Creating Objects with Different Access</a></li>
+<li><a href="cpp_class_object_guide.html#55-comparison-stack-vs-heap-allocation">Comparison: Stack vs Heap Allocation</a></li>
+</ul>
+</li>
+<li><a href="cpp_class_object_guide.html#summary">Summary</a></li>
+</ol>
+<hr />
+<h2 id="1-what-is-a-class"><a class="header" href="#1-what-is-a-class">1. What is a Class?</a></h2>
+<p>A <strong>class</strong> is a user-defined blueprint or template for creating objects. It defines a data structure that bundles data (attributes) and functions (methods) that operate on that data together.</p>
+<h3 id="real-world-example-car"><a class="header" href="#real-world-example-car">Real-World Example: Car</a></h3>
+<p>Think of a class as a blueprint for a car. The blueprint defines:</p>
+<ul>
+<li><strong>Properties</strong>: color, brand, model, speed, fuel level</li>
+<li><strong>Behaviors</strong>: start engine, accelerate, brake, turn</li>
+</ul>
+<p>Just like a car blueprint isn't an actual car, a class itself isn't an object—it's just the design specification.</p>
+<pre><code class="language-cpp">class Car {
+    // Attributes (data members)
+    string brand;
+    string model;
+    int year;
+    double speed;
+    
+    // Member functions (methods)
+    void startEngine() {
+        cout &lt;&lt; "Engine started!" &lt;&lt; endl;
+    }
+    
+    void accelerate() {
+        speed += 10;
+        cout &lt;&lt; "Speed: " &lt;&lt; speed &lt;&lt; " km/h" &lt;&lt; endl;
+    }
+};
+</code></pre>
+<p><a href="cpp_class_object_guide.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="2-what-is-an-object"><a class="header" href="#2-what-is-an-object">2. What is an Object?</a></h2>
+<p>An <strong>object</strong> is an instance of a class. It's a concrete entity created from the class blueprint that occupies memory and has actual values.</p>
+<h3 id="relating-to-real-world-example"><a class="header" href="#relating-to-real-world-example">Relating to Real-World Example</a></h3>
+<p>Using our car analogy:</p>
+<ul>
+<li><strong>Class (Car)</strong>: The blueprint/design document</li>
+<li><strong>Objects</strong>: Actual cars manufactured from that blueprint
+<ul>
+<li>Object 1: A red Toyota Camry 2023</li>
+<li>Object 2: A blue Honda Accord 2024</li>
+<li>Object 3: A black Ford Mustang 2022</li>
+</ul>
+</li>
+</ul>
+<p>Each object has its own set of attribute values but shares the same structure and behaviors defined by the class.</p>
+<pre><code class="language-cpp">Car myCar;      // Object 1
+Car yourCar;    // Object 2
+Car rentalCar;  // Object 3
+</code></pre>
+<pre><code class="language-mermaid">graph TD
+    A[Class: Car Blueprint] --&gt; B[Object 1: Red Toyota]
+    A --&gt; C[Object 2: Blue Honda]
+    A --&gt; D[Object 3: Black Ford]
+    
+    B --&gt; B1[brand: Toyota&lt;br/&gt;model: Camry&lt;br/&gt;speed: 0]
+    C --&gt; C1[brand: Honda&lt;br/&gt;model: Accord&lt;br/&gt;speed: 0]
+    D --&gt; D1[brand: Ford&lt;br/&gt;model: Mustang&lt;br/&gt;speed: 0]
+</code></pre>
+<p><a href="cpp_class_object_guide.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="3-class-members-attributes-and-member-functions"><a class="header" href="#3-class-members-attributes-and-member-functions">3. Class Members: Attributes and Member Functions</a></h2>
+<h3 id="31-attributes-data-members"><a class="header" href="#31-attributes-data-members">3.1 Attributes (Data Members)</a></h3>
+<p>Attributes are variables that hold the state or properties of an object. They represent the characteristics of the object.</p>
+<p><strong>Examples:</strong></p>
+<ul>
+<li>For a <code>Car</code> class: <code>brand</code>, <code>model</code>, <code>year</code>, <code>speed</code>, <code>fuelLevel</code></li>
+<li>For a <code>Student</code> class: <code>name</code>, <code>rollNumber</code>, <code>grade</code>, <code>age</code></li>
+<li>For a <code>BankAccount</code> class: <code>accountNumber</code>, <code>balance</code>, <code>accountHolder</code></li>
+</ul>
+<h3 id="32-member-functions-methods"><a class="header" href="#32-member-functions-methods">3.2 Member Functions (Methods)</a></h3>
+<p>Member functions are functions defined inside a class that operate on the object's data. They represent the behaviors or actions an object can perform.</p>
+<p><strong>Types of Member Functions:</strong></p>
+<ol>
+<li>
+<p><strong>Functions that modify object state</strong></p>
+<pre><code class="language-cpp">void accelerate() {
+    speed += 10;
+}
+</code></pre>
+</li>
+<li>
+<p><strong>Functions that retrieve information</strong></p>
+<pre><code class="language-cpp">double getSpeed() {
+    return speed;
+}
+</code></pre>
+</li>
+<li>
+<p><strong>Functions that perform operations</strong></p>
+<pre><code class="language-cpp">void displayInfo() {
+    cout &lt;&lt; brand &lt;&lt; " " &lt;&lt; model &lt;&lt; endl;
+}
+</code></pre>
+</li>
+</ol>
+<h3 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h3>
+<pre><code class="language-cpp">class BankAccount {
+    // Attributes
+    string accountHolder;
+    long accountNumber;
+    double balance;
+    
+    // Member Functions
+    void deposit(double amount) {
+        balance += amount;
+        cout &lt;&lt; "Deposited: $" &lt;&lt; amount &lt;&lt; endl;
+    }
+    
+    void withdraw(double amount) {
+        if (balance &gt;= amount) {
+            balance -= amount;
+            cout &lt;&lt; "Withdrawn: $" &lt;&lt; amount &lt;&lt; endl;
+        }
+    }
+    
+    double getBalance() {
+        return balance;
+    }
+};
+</code></pre>
+<p><a href="cpp_class_object_guide.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="4-access-specifiers"><a class="header" href="#4-access-specifiers">4. Access Specifiers</a></h2>
+<p>Access specifiers control the accessibility of class members from outside the class. C++ provides three access specifiers:</p>
+<h3 id="41-public"><a class="header" href="#41-public">4.1 Public</a></h3>
+<p>Members declared as <code>public</code> are accessible from anywhere in the program.</p>
+<pre><code class="language-cpp">class Car {
+public:
+    string brand;  // Can be accessed from anywhere
+    
+    void startEngine() {  // Can be called from anywhere
+        cout &lt;&lt; "Engine started!" &lt;&lt; endl;
+    }
+};
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-cpp">Car myCar;
+myCar.brand = "Toyota";      // ✓ Allowed
+myCar.startEngine();         // ✓ Allowed
+</code></pre>
+<h3 id="42-private"><a class="header" href="#42-private">4.2 Private</a></h3>
+<p>Members declared as <code>private</code> are only accessible within the class itself. This is the <strong>default</strong> access level in C++.</p>
+<p><strong>Key Points:</strong></p>
+<ul>
+<li>Private data members <strong>cannot</strong> be accessed directly from outside the class</li>
+<li>Private data members <strong>can</strong> be accessed by member functions within the same class</li>
+<li>Member functions can read, modify, and manipulate private data members</li>
+</ul>
+<pre><code class="language-cpp">class BankAccount {
+private:
+    double balance;  // Cannot be accessed directly from outside
+    
+    void updateLog() {  // Cannot be called from outside
+        // Internal logging function
+    }
+    
+public:
+    void deposit(double amount) {
+        balance += amount;  // ✓ Member function CAN access private data
+        updateLog();        // ✓ Member function CAN call private function
+    }
+    
+    double getBalance() {
+        return balance;     // ✓ Member function CAN access private data
+    }
+    
+    void showDetails() {
+        cout &lt;&lt; "Balance: $" &lt;&lt; balance &lt;&lt; endl;  // ✓ Accessing private member
+        updateLog();                               // ✓ Calling private function
+    }
+};
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-cpp">BankAccount account;
+account.balance = 1000;      // ✗ Error: balance is private, cannot access from outside
+account.updateLog();         // ✗ Error: updateLog is private, cannot call from outside
+account.deposit(1000);       // ✓ Allowed: deposit is public
+account.getBalance();        // ✓ Allowed: getBalance is public (internally accesses private balance)
+</code></pre>
+<p><strong>Summary:</strong></p>
+<ul>
+<li>Private members are <strong>hidden from outside</strong> the class</li>
+<li>Private members are <strong>accessible to all member functions</strong> inside the class</li>
+<li>This provides <strong>data encapsulation</strong> and <strong>security</strong></li>
+</ul>
+<h3 id="43-protected"><a class="header" href="#43-protected">4.3 Protected</a></h3>
+<p>Members declared as <code>protected</code> are accessible within the class and by derived (child) classes.</p>
+<pre><code class="language-cpp">class Vehicle {
+protected:
+    int speed;  // Accessible in Vehicle and its derived classes
+    
+public:
+    void setSpeed(int s) {
+        speed = s;
+    }
+};
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Protected access specifier is primarily used in inheritance and will be discussed in detail in the <strong>Inheritance</strong> section.</p>
+</blockquote>
+<h3 id="44-access-specifier-comparison"><a class="header" href="#44-access-specifier-comparison">4.4 Access Specifier Comparison</a></h3>
+<pre><code class="language-mermaid">graph LR
+    A[Access Specifiers] --&gt; B[Public]
+    A --&gt; C[Private]
+    A --&gt; D[Protected]
+    
+    B --&gt; B1[Accessible everywhere]
+    C --&gt; C1[Accessible only within class&lt;br/&gt;by member functions]
+    D --&gt; D1[Accessible in class&lt;br/&gt;and derived classes]
+</code></pre>
+<h3 id="45-when-to-use-which-access-specifier"><a class="header" href="#45-when-to-use-which-access-specifier">4.5 When to Use Which Access Specifier</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Access Specifier</th><th>When to Use</th><th>Example Use Cases</th><th>Benefits</th></tr></thead><tbody>
+<tr><td><strong>Public</strong></td><td>For interfaces that need to be accessed from anywhere</td><td>• Getter/Setter methods<br>• Public utility functions<br>• Methods that define class behavior</td><td>• Easy access<br>• Clear interface<br>• User-friendly</td></tr>
+<tr><td><strong>Private</strong></td><td>For internal implementation details that should be hidden</td><td>• Data members (variables)<br>• Helper/utility functions<br>• Internal calculations<br>• Sensitive data</td><td>• Data protection<br>• Encapsulation<br>• Security<br>• Prevents accidental modification</td></tr>
+<tr><td><strong>Protected</strong></td><td>For members that should be accessible to derived classes</td><td>• Attributes shared with child classes<br>• Functions used by inheritance hierarchy</td><td>• Supports inheritance<br>• Controlled access in hierarchy<br>• Flexibility for derived classes</td></tr>
+</tbody></table>
+</div>
+<p><strong>Best Practice Example:</strong></p>
+<pre><code class="language-cpp">class Student {
+private:
+    // Private: Internal data that should be protected
+    string name;
+    int rollNumber;
+    float marks;
+    int age;
+    
+    // Private: Internal helper function
+    bool validateMarks(float m) {
+        return (m &gt;= 0 &amp;&amp; m &lt;= 100);
+    }
+    
+protected:
+    // Protected: For use in derived classes (e.g., GraduateStudent)
+    string department;
+    
+public:
+    // Public: Interface for outside world to interact with the class
+    void setName(string n) {
+        name = n;
+    }
+    
+    string getName() {
+        return name;
+    }
+    
+    void setMarks(float m) {
+        if (validateMarks(m)) {  // Using private helper function
+            marks = m;
+        }
+    }
+    
+    float getMarks() {
+        return marks;
+    }
+    
+    void displayInfo() {
+        cout &lt;&lt; "Name: " &lt;&lt; name &lt;&lt; ", Roll: " &lt;&lt; rollNumber 
+             &lt;&lt; ", Marks: " &lt;&lt; marks &lt;&lt; endl;
+    }
+};
+</code></pre>
+<p><strong>Decision Guide:</strong></p>
+<ol>
+<li><strong>Start with private</strong> - Make everything private by default</li>
+<li><strong>Expose what's needed</strong> - Make only necessary methods public</li>
+<li><strong>Use protected for inheritance</strong> - When planning class hierarchies</li>
+<li><strong>Never expose data directly</strong> - Use getter/setter methods instead</li>
+</ol>
+<p><a href="cpp_class_object_guide.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="5-creating-objects-of-a-class"><a class="header" href="#5-creating-objects-of-a-class">5. Creating Objects of a Class</a></h2>
+<p>There are multiple ways to create objects in C++. Here are the various approaches:</p>
+<h3 id="51-static-allocation-stack"><a class="header" href="#51-static-allocation-stack">5.1 Static Allocation (Stack)</a></h3>
+<p>Objects are created on the stack and automatically destroyed when they go out of scope.</p>
+<pre><code class="language-cpp">// Syntax: ClassName objectName;
+Car myCar;              // Object created on stack
+Student student1;       // Another object
+BankAccount account;    // One more object
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Memory allocated on the stack</li>
+<li>Automatic destruction when scope ends</li>
+<li>Faster allocation</li>
+<li>Limited by stack size</li>
+</ul>
+<h3 id="52-dynamic-allocation-heap"><a class="header" href="#52-dynamic-allocation-heap">5.2 Dynamic Allocation (Heap)</a></h3>
+<p>Objects are created on the heap using the <code>new</code> keyword and must be manually deleted.</p>
+<pre><code class="language-cpp">// Syntax: ClassName* objectName = new ClassName;
+Car* carPtr = new Car;           // Object created on heap
+Student* studentPtr = new Student;
+
+// Using the object
+carPtr-&gt;startEngine();
+
+// Must manually delete to free memory
+delete carPtr;
+delete studentPtr;
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Memory allocated on the heap</li>
+<li>Manual memory management required</li>
+<li>Slower allocation than stack</li>
+<li>Can allocate larger objects</li>
+<li>Persists until explicitly deleted</li>
+</ul>
+<h3 id="53-array-of-objects"><a class="header" href="#53-array-of-objects">5.3 Array of Objects</a></h3>
+<p>You can create multiple objects using arrays.</p>
+<p><strong>Static Array:</strong></p>
+<pre><code class="language-cpp">// Array of objects on stack
+Car cars[5];            // Creates 5 Car objects
+cars[0].startEngine();
+cars[1].accelerate();
+</code></pre>
+<p><strong>Dynamic Array:</strong></p>
+<pre><code class="language-cpp">// Array of objects on heap
+Car* carArray = new Car[10];  // Creates 10 Car objects
+carArray[0].startEngine();
+
+// Must delete the array
+delete[] carArray;
+</code></pre>
+<h3 id="54-creating-objects-with-different-access"><a class="header" href="#54-creating-objects-with-different-access">5.4 Creating Objects with Different Access</a></h3>
+<pre><code class="language-cpp">class Example {
+private:
+    int privateData;
+    
+public:
+    int publicData;
+    
+    void display() {
+        cout &lt;&lt; "Example object created!" &lt;&lt; endl;
+    }
+};
+
+// Creating and using objects
+Example obj1;                    // Stack allocation
+obj1.publicData = 100;           // Accessing public member
+obj1.display();                  // Calling public method
+// obj1.privateData = 50;        // ✗ Error: Cannot access private member
+
+Example* obj2 = new Example;     // Heap allocation
+obj2-&gt;publicData = 200;
+obj2-&gt;display();
+delete obj2;
+</code></pre>
+<h3 id="55-comparison-stack-vs-heap-allocation"><a class="header" href="#55-comparison-stack-vs-heap-allocation">5.5 Comparison: Stack vs Heap Allocation</a></h3>
+<pre><code class="language-mermaid">graph TD
+    A[Object Creation] --&gt; B[Stack Allocation]
+    A --&gt; C[Heap Allocation]
+    
+    B --&gt; B1[Syntax: Car myCar;]
+    B --&gt; B2[Automatic destruction]
+    B --&gt; B3[Faster]
+    B --&gt; B4[Limited size]
+    
+    C --&gt; C1[Syntax: Car* ptr = new Car;]
+    C --&gt; C2[Manual deletion required]
+    C --&gt; C3[Slower]
+    C --&gt; C4[Larger objects possible]
+    
+    style B fill:#90EE90
+    style C fill:#FFB6C6
+</code></pre>
+<h3 id="complete-example-different-ways-to-create-objects"><a class="header" href="#complete-example-different-ways-to-create-objects">Complete Example: Different Ways to Create Objects</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+class Rectangle {
+private:
+    double length;
+    double width;
+    
+public:
+    void setDimensions(double l, double w) {
+        length = l;
+        width = w;
+    }
+    
+    double getArea() {
+        return length * width;
+    }
+    
+    void display() {
+        cout &lt;&lt; "Rectangle: " &lt;&lt; length &lt;&lt; " x " &lt;&lt; width 
+             &lt;&lt; " = " &lt;&lt; getArea() &lt;&lt; " sq units" &lt;&lt; endl;
+    }
+};
+
+int main() {
+    // Method 1: Stack allocation
+    Rectangle rect1;
+    rect1.setDimensions(5.0, 3.0);
+    rect1.display();
+    
+    // Method 2: Heap allocation
+    Rectangle* rect2 = new Rectangle;
+    rect2-&gt;setDimensions(4.0, 6.0);
+    rect2-&gt;display();
+    delete rect2;  // Don't forget to delete!
+    
+    // Method 3: Array of objects
+    Rectangle rooms[3];
+    rooms[0].setDimensions(10.0, 12.0);
+    rooms[1].setDimensions(8.0, 10.0);
+    rooms[2].setDimensions(6.0, 8.0);
+    
+    for (int i = 0; i &lt; 3; i++) {
+        cout &lt;&lt; "Room " &lt;&lt; i + 1 &lt;&lt; ": ";
+        rooms[i].display();
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><a href="cpp_class_object_guide.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="summary-3"><a class="header" href="#summary-3">Summary</a></h2>
+<ul>
+<li><strong>Class</strong>: A blueprint that defines structure and behavior</li>
+<li><strong>Object</strong>: An instance of a class with actual data</li>
+<li><strong>Attributes</strong>: Variables that store object properties</li>
+<li><strong>Member Functions</strong>: Functions that define object behaviors (can access private members)</li>
+<li><strong>Access Specifiers</strong>: Control visibility (public, private, protected)</li>
+<li><strong>Object Creation</strong>: Can be done on stack or heap, as single objects or arrays</li>
+</ul>
+<p>This foundation prepares you for more advanced topics like constructors, destructors, and inheritance!</p>
+<p><a href="cpp_class_object_guide.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="c-constructors-and-destructors---complete-guide"><a class="header" href="#c-constructors-and-destructors---complete-guide">C++ Constructors and Destructors - Complete Guide</a></h1>
+<h2 id="table-of-contents-4"><a class="header" href="#table-of-contents-4">Table of Contents</a></h2>
 <ol>
 <li><a href="constrctor.html#constructors">Constructors</a></li>
 <li><a href="constrctor.html#destructors">Destructors</a></li>
@@ -4961,7 +5421,7 @@ so you might see fewer constructor calls.</p>
 <p>Next step 👉 <strong>Move Constructor</strong><br />
 (to optimize performance and avoid unnecessary deep copies for temporaries).</p>
 <h2 id="-back-to-table-of-contents-1"><a class="header" href="#-back-to-table-of-contents-1"><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></a></h2>
-<h2 id="summary-3"><a class="header" href="#summary-3">Summary</a></h2>
+<h2 id="summary-4"><a class="header" href="#summary-4">Summary</a></h2>
 <p><strong>Constructors</strong> initialize objects after memory allocation, while <strong>destructors</strong> clean up resources before memory deallocation. Using the <code>explicit</code> keyword on constructors is a best practice that prevents implicit type conversions, making your code safer, clearer, and more maintainable.</p>
 <p><strong>Member initializer lists</strong> allow you to initialize member variables at the moment of their construction, which is essential for <code>const</code> and reference members, and more efficient for all member variables.</p>
 <p><strong>The <code>this</code> pointer</strong> is a hidden pointer passed to every member function that points to the calling object. When working with <code>const</code> objects, member functions must be marked as <code>const</code> to accept a <code>const Foo* const</code> instead of <code>Foo* const</code>, ensuring const-correctness and type safety.</p>
@@ -4969,7 +5429,7 @@ so you might see fewer constructor calls.</p>
 <p><strong>Bottom Line:</strong> Use <code>mutable</code> judiciously for implementation details that don't affect the logical const-ness of your objects. It's a powerful tool for optimization and internal bookkeeping, but shouldn't be used to bypass const-correctness for core object state!</p>
 <p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="constructor-execution-in-inheritance---c"><a class="header" href="#constructor-execution-in-inheritance---c">Constructor Execution in Inheritance - C++</a></h1>
-<h2 id="table-of-contents-4"><a class="header" href="#table-of-contents-4">Table of Contents</a></h2>
+<h2 id="table-of-contents-5"><a class="header" href="#table-of-contents-5">Table of Contents</a></h2>
 <ol>
 <li><a href="constructor_and_inheritance.html#understanding-constructor-execution-order">Understanding Constructor Execution Order</a></li>
 <li><a href="constructor_and_inheritance.html#default-constructor-behavior">Default Constructor Behavior</a></li>
@@ -5434,7 +5894,7 @@ Case 4: C obj4{10, 20, 30}
 <li>Forget that base constructors run first</li>
 </ul>
 <hr />
-<h2 id="summary-4"><a class="header" href="#summary-4">Summary</a></h2>
+<h2 id="summary-5"><a class="header" href="#summary-5">Summary</a></h2>
 <p><strong>Constructor execution in inheritance</strong> follows a strict order:</p>
 <ol>
 <li>Base class constructor (outermost first)</li>
@@ -5539,7 +5999,7 @@ public:
 <li>✓ <strong>Fewer errors</strong> - No chance of forgetting to forward a constructor</li>
 <li>✓ <strong>Cleaner code</strong> - Intent is clear and concise</li>
 </ul>
-<h3 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h3>
+<h3 id="complete-example-1"><a class="header" href="#complete-example-1">Complete Example</a></h3>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 #include &lt;string&gt;
 
