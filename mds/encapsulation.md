@@ -34,21 +34,7 @@ Think of it as putting data in a **protective capsule** where:
 - Access is controlled through specific methods
 - Data integrity is maintained through validation
 
-```mermaid
-graph TD
-    A[Encapsulation] --> B[Data Hiding]
-    A --> C[Bundling Data + Methods]
-    A --> D[Controlled Access]
-    
-    B --> B1[Private data members<br/>Hidden from outside]
-    C --> C1[Class wraps everything<br/>together in one unit]
-    D --> D1[Public methods provide<br/>controlled access]
-    
-    style A fill:#87CEEB
-    style B fill:#FFB6C6
-    style C fill:#90EE90
-    style D fill:#FFD700
-```
+![Encapsulation](image/encap.png)
 
 ### Simple Analogy
 
