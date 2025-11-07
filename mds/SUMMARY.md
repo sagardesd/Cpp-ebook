@@ -8,4 +8,4 @@
 - [Encapsulation](./encapsulation.md)
 - [Inheritance](./inheritance.md)
 - [Constuctors and Destructors](./constrctor.md)
-- [Inheritance, Construtors and Destructors](./constructor_and_inheritance.md)
+- [Construtors and Destructors in Inheritance](./constructor_and_inheritance.md)
