@@ -5534,13 +5534,13 @@ Derived* d = dynamic_cast&lt;Derived*&gt;(b);  // Compile error! Need virtual fu
 <div style="break-before: page; page-break-before: always;"></div><h1 id="c-constructors-and-destructors---complete-guide"><a class="header" href="#c-constructors-and-destructors---complete-guide">C++ Constructors and Destructors - Complete Guide</a></h1>
 <h2 id="table-of-contents-5"><a class="header" href="#table-of-contents-5">Table of Contents</a></h2>
 <ol>
-<li><a href="constrctor.html#constructors">Constructors</a></li>
-<li><a href="constrctor.html#destructors">Destructors</a></li>
-<li><a href="constrctor.html#the-explicit-keyword">The <code>explicit</code> Keyword</a></li>
-<li><a href="constrctor.html#constructor-initializer-lists">Constructor Initializer Lists</a></li>
-<li><a href="constrctor.html#the-this-pointer-and-const-member-functions">The <code>this</code> Pointer and Const Member Functions</a></li>
-<li><a href="constrctor.html#the-mutable-keyword">The <code>mutable</code> Keyword</a></li>
-<li><a href="constrctor.html#copy-constructor">Copy constructor</a></li>
+<li><a href="constructor.html#constructors">Constructors</a></li>
+<li><a href="constructor.html#destructors">Destructors</a></li>
+<li><a href="constructor.html#the-explicit-keyword">The <code>explicit</code> Keyword</a></li>
+<li><a href="constructor.html#constructor-initializer-lists">Constructor Initializer Lists</a></li>
+<li><a href="constructor.html#the-this-pointer-and-const-member-functions">The <code>this</code> Pointer and Const Member Functions</a></li>
+<li><a href="constructor.html#the-mutable-keyword">The <code>mutable</code> Keyword</a></li>
+<li><a href="constructor.html#copy-constructor">Copy constructor</a></li>
 </ol>
 <hr />
 <p><a id="constructors"></a></p>
@@ -5629,7 +5629,7 @@ Object Add: 0x16f647034: member : 10
 <li><strong><code>Foo obj3 = 10;</code></strong> - Calls the parameterized constructor through implicit conversion from <code>int</code> to <code>Foo</code></li>
 </ol>
 <p>All three objects are destroyed at the end of <code>main()</code> when they go out of scope, invoking their destructors <strong>in reverse order of creation</strong> (obj3 → obj2 → obj1). This ensures that dependencies between objects are properly handled during cleanup.</p>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr />
 <p><a id="destructors"></a></p>
 <h2 id="2-destructors"><a class="header" href="#2-destructors">2. Destructors</a></h2>
@@ -5646,8 +5646,8 @@ Object Add: 0x16f647034: member : 10
 <li>Destructors are called in <strong>reverse order</strong> of object creation</li>
 </ul>
 <h3 id="example-1"><a class="header" href="#example-1">Example</a></h3>
-<p>See the code example in the <a href="constrctor.html#constructors">Constructors</a> section above, which demonstrates both constructors and destructors working together.</p>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p>See the code example in the <a href="constructor.html#constructors">Constructors</a> section above, which demonstrates both constructors and destructors working together.</p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr />
 <p><a id="the-explicit-keyword"></a></p>
 <h2 id="3-the-explicit-keyword"><a class="header" href="#3-the-explicit-keyword">3. The <code>explicit</code> Keyword</a></h2>
@@ -5762,7 +5762,7 @@ public:
 <tr><td>Less clear intent</td><td>Crystal clear intent</td></tr>
 </tbody></table>
 </div>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr />
 <p><a id="constructor-initializer-lists"></a></p>
 <h2 id="4-constructor-initializer-lists"><a class="header" href="#4-constructor-initializer-lists">4. Constructor Initializer Lists</a></h2>
@@ -5996,7 +5996,7 @@ Foo(int a) {
 // Good - Efficient
 Foo(int a) : member(a) { }  // Direct initialization
 </code></pre>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr />
 <p><a id="the-this-pointer-and-const-member-functions"></a></p>
 <h2 id="5-the-this-pointer-and-const-member-functions"><a class="header" href="#5-the-this-pointer-and-const-member-functions">5. The <code>this</code> Pointer and Const Member Functions</a></h2>
@@ -6334,7 +6334,7 @@ void useIt(const Bad&amp; b) {
     // int val = b.getValue();  // ❌ Won't compile!
 }
 </code></pre>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr />
 <p><a id="the-mutable-keyword"></a></p>
 <h2 id="6-the-mutable-keyword"><a class="header" href="#6-the-mutable-keyword">6. The <code>mutable</code> Keyword</a></h2>
@@ -6627,7 +6627,7 @@ public:
 };
 </code></pre>
 <p>✗ <strong>Why it's bad:</strong> The count is the object's primary state. If you're modifying it, the object IS changing, so the function shouldn't be <code>const</code>.</p>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <p><a id="copy-constructor"></a></p>
 <h1 id="-understanding-copy-constructors-in-c"><a class="header" href="#-understanding-copy-constructors-in-c">📘 Understanding Copy Constructors in C++</a></h1>
 <p>Let’s explore <strong>what a copy constructor is</strong>, <strong>when it’s invoked</strong>, and understand <strong>deep vs shallow copies</strong> and <strong>temporary objects</strong> through examples.</p>
@@ -6877,14 +6877,14 @@ so you might see fewer constructor calls.</p>
 <hr />
 <p>Next step 👉 <strong>Move Constructor</strong><br />
 (to optimize performance and avoid unnecessary deep copies for temporaries).</p>
-<h2 id="-back-to-table-of-contents-1"><a class="header" href="#-back-to-table-of-contents-1"><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></a></h2>
+<h2 id="-back-to-table-of-contents-1"><a class="header" href="#-back-to-table-of-contents-1"><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></a></h2>
 <h2 id="summary-5"><a class="header" href="#summary-5">Summary</a></h2>
 <p><strong>Constructors</strong> initialize objects after memory allocation, while <strong>destructors</strong> clean up resources before memory deallocation. Using the <code>explicit</code> keyword on constructors is a best practice that prevents implicit type conversions, making your code safer, clearer, and more maintainable.</p>
 <p><strong>Member initializer lists</strong> allow you to initialize member variables at the moment of their construction, which is essential for <code>const</code> and reference members, and more efficient for all member variables.</p>
 <p><strong>The <code>this</code> pointer</strong> is a hidden pointer passed to every member function that points to the calling object. When working with <code>const</code> objects, member functions must be marked as <code>const</code> to accept a <code>const Foo* const</code> instead of <code>Foo* const</code>, ensuring const-correctness and type safety.</p>
 <p><strong>The <code>mutable</code> keyword</strong> allows specific member variables to be modified even in <code>const</code> member functions and <code>const</code> objects. Use it for implementation details like caching, debug counters, and lazy initialization—but not for core object state.</p>
 <p><strong>Bottom Line:</strong> Use <code>mutable</code> judiciously for implementation details that don't affect the logical const-ness of your objects. It's a powerful tool for optimization and internal bookkeeping, but shouldn't be used to bypass const-correctness for core object state!</p>
-<p><a href="constrctor.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<p><a href="constructor.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="constructor-execution-in-inheritance---c"><a class="header" href="#constructor-execution-in-inheritance---c">Constructor Execution in Inheritance - C++</a></h1>
 <h2 id="table-of-contents-6"><a class="header" href="#table-of-contents-6">Table of Contents</a></h2>
 <ol>
