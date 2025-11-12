@@ -16,9 +16,10 @@
 7. [Dynamic Polymorphism (Runtime Polymorphism)](#dynamic-polymorphism-runtime-polymorphism)
    - [Function Overriding](#function-overriding)
    - [Virtual Functions](#virtual-functions)
-   - [The `override` Keyword (C++11)](#the-override-keyword-c11)
    - [How Virtual Functions Work: The Mechanism](#how-virtual-functions-work-the-mechanism)
    - [How a Virtual Function Call Gets Resolved](#how-a-virtual-function-call-gets-resolved)
+   - [The `override` Keyword (C++11)](#the-override-keyword-c11)
+   - [The `final` Keyword (C++11)](#the-final-keyword-c11)
 
 ---
 
@@ -493,156 +494,6 @@ Drawing a Circle
 
 ---
 
-### The `override` Keyword (C++11)
-
-C++11 introduced the `override` keyword to make your code safer and more explicit when overriding virtual functions. It's not required, but it's highly recommended!
-
-#### What Does `override` Do?
-
-The `override` keyword tells the compiler: **"I intend to override a virtual function from the base class."**
-
-If you make a mistake (wrong parameter types, misspelled name, forgot `const`, etc.), the compiler will give you an error instead of silently creating a new function.
-
-#### Problem Without `override`
-
-```cpp
-class Base {
-public:
-    virtual void setValue(int val) {
-        cout << "Base::setValue\n";
-    }
-};
-
-class Derived : public Base {
-public:
-    // Oops! Typo: "vlaue" instead of "value"
-    // Also wrong parameter type: double instead of int
-    virtual void setValue(double val) {  // ❌ NOT overriding!
-        cout << "Derived::setValue\n";
-    }
-};
-
-int main() {
-    Base* ptr = new Derived();
-    ptr->setValue(10);  // Calls Base::setValue (unexpected!)
-    delete ptr;
-    return 0;
-}
-```
-
-**Output:**
-```
-Base::setValue
-```
-
-**Problem:** The compiler doesn't warn you! It thinks you're creating a new overloaded function, not overriding the base class function.
-
-#### Solution With `override`
-
-```cpp
-class Base {
-public:
-    virtual void setValue(int val) {
-        cout << "Base::setValue\n";
-    }
-};
-
-class Derived : public Base {
-public:
-    void setValue(double val) override {  // ✓ Compiler error!
-        cout << "Derived::setValue\n";
-    }
-};
-```
-
-**Compiler Error:**
-```
-error: 'void Derived::setValue(double)' marked 'override', but does not override
-```
-
-**The compiler catches your mistake immediately!**
-
-#### Correct Usage
-
-```cpp
-class Base {
-public:
-    virtual void setValue(int val) {
-        cout << "Base::setValue\n";
-    }
-};
-
-class Derived : public Base {
-public:
-    void setValue(int val) override {  // ✓ Correct override
-        cout << "Derived::setValue\n";
-    }
-};
-
-int main() {
-    Base* ptr = new Derived();
-    ptr->setValue(10);  // Calls Derived::setValue (as expected!)
-    delete ptr;
-    return 0;
-}
-```
-
-**Output:**
-```
-Derived::setValue
-```
-
-#### Benefits of Using `override`
-
-1. **Catches typos** - Misspelled function names
-2. **Catches signature mismatches** - Wrong parameter types or count
-3. **Catches const mismatches** - Forgot `const` qualifier
-4. **Self-documenting** - Makes it clear you're overriding, not creating a new function
-5. **Refactoring safety** - If the base class function signature changes, you'll get compilation errors
-
-#### Complete Example
-
-```cpp
-#include <iostream>
-using namespace std;
-
-class Animal {
-public:
-    virtual void makeSound() const {
-        cout << "Animal sound\n";
-    }
-    
-    virtual ~Animal() {}
-};
-
-class Dog : public Animal {
-public:
-    void makeSound() const override {  // ✓ Correct
-        cout << "Woof!\n";
-    }
-};
-
-class Cat : public Animal {
-public:
-    void makeSound() override {  // ❌ Compiler error: missing 'const'
-        cout << "Meow!\n";
-    }
-};
-
-int main() {
-    Animal* animal = new Dog();
-    animal->makeSound();
-    delete animal;
-    return 0;
-}
-```
-
-**Best Practice:** Always use `override` when overriding virtual functions in modern C++ (C++11 and later)!
-
-[↑ Back to Table of Contents](#table-of-contents)
-
----
-
 ### How Virtual Functions Work: The Mechanism
 
 Virtual functions work through a mechanism involving two key components:
@@ -983,6 +834,246 @@ Base Destructor
 **Rule of Thumb:** If a class has any virtual functions, its destructor should be virtual too!
 
 [↑ Back to Table of Contents](#table-of-contents)
+
+---
+
+
+### The `override` Keyword (C++11)
+
+
+C++11 introduced the `override` keyword to make your code safer and more explicit when overriding virtual functions. It's not required, but it's highly recommended!
+
+#### What Does `override` Do?
+
+The `override` keyword tells the compiler: **"I intend to override a virtual function from the base class."**
+
+If you make a mistake (wrong parameter types, misspelled name, forgot `const`, etc.), the compiler will give you an error instead of silently creating a new function.
+
+#### Problem Without `override`
+
+```cpp
+class Base {
+public:
+    virtual void setValue(int val) {
+        cout << "Base::setValue\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    // Oops! Typo: "vlaue" instead of "value"
+    // Also wrong parameter type: double instead of int
+    virtual void setValue(double val) {  // ❌ NOT overriding!
+        cout << "Derived::setValue\n";
+    }
+};
+
+int main() {
+    Base* ptr = new Derived();
+    ptr->setValue(10);  // Calls Base::setValue (unexpected!)
+    delete ptr;
+    return 0;
+}
+```
+
+**Output:**
+```
+Base::setValue
+```
+
+**Problem:** The compiler doesn't warn you! It thinks you're creating a new overloaded function, not overriding the base class function.
+
+#### Solution With `override`
+
+```cpp
+class Base {
+public:
+    virtual void setValue(int val) {
+        cout << "Base::setValue\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    void setValue(double val) override {  // ✓ Compiler error!
+        cout << "Derived::setValue\n";
+    }
+};
+```
+
+**Compiler Error:**
+```
+error: 'void Derived::setValue(double)' marked 'override', but does not override
+```
+
+**The compiler catches your mistake immediately!**
+
+#### Correct Usage
+
+```cpp
+class Base {
+public:
+    virtual void setValue(int val) {
+        cout << "Base::setValue\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    void setValue(int val) override {  // ✓ Correct override
+        cout << "Derived::setValue\n";
+    }
+};
+
+int main() {
+    Base* ptr = new Derived();
+    ptr->setValue(10);  // Calls Derived::setValue (as expected!)
+    delete ptr;
+    return 0;
+}
+```
+
+**Output:**
+```
+Derived::setValue
+```
+
+#### Benefits of Using `override`
+
+1. **Catches typos** - Misspelled function names
+2. **Catches signature mismatches** - Wrong parameter types or count
+3. **Catches const mismatches** - Forgot `const` qualifier
+4. **Self-documenting** - Makes it clear you're overriding, not creating a new function
+5. **Refactoring safety** - If the base class function signature changes, you'll get compilation errors
+
+#### Complete Example
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void makeSound() const {
+        cout << "Animal sound\n";
+    }
+    
+    virtual ~Animal() {}
+};
+
+class Dog : public Animal {
+public:
+    void makeSound() const override {  // ✓ Correct
+        cout << "Woof!\n";
+    }
+};
+
+class Cat : public Animal {
+public:
+    void makeSound() override {  // ❌ Compiler error: missing 'const'
+        cout << "Meow!\n";
+    }
+};
+
+int main() {
+    Animal* animal = new Dog();
+    animal->makeSound();
+    delete animal;
+    return 0;
+}
+```
+
+**Best Practice:** Always use `override` when overriding virtual functions in modern C++ (C++11 and later)!
+
+[↑ Back to Table of Contents](#table-of-contents)
+
+---
+
+
+### The final Keyword (C++11)
+
+
+The `final` keyword, introduced in C++11, is used to restrict inheritance and method overriding. It can be applied in two ways:
+
+1. **Final Class** - Prevents a class from being inherited
+2. **Final Method** - Prevents a virtual method from being overridden in derived classes
+
+#### Example: Using final
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Base class with a final method
+class Base {
+public:
+    virtual void canOverride() {
+        cout << "Base: This can be overridden" << endl;
+    }
+    
+    // This method cannot be overridden
+    virtual void cannotOverride() final {
+        cout << "Base: This is final - cannot be overridden" << endl;
+    }
+};
+
+// This class cannot be inherited from
+class FinalClass final {
+public:
+    void display() {
+        cout << "This is a final class" << endl;
+    }
+};
+
+// Derived class from Base
+class Derived : public Base {
+public:
+    // Allowed - overriding non-final method
+    void canOverride() override {
+        cout << "Derived: Overridden successfully" << endl;
+    }
+    
+    // ERROR: Cannot override final method
+    // void cannotOverride() override {
+    //     cout << "This will cause compilation error" << endl;
+    // }
+};
+
+// ERROR: Cannot inherit from final class
+// class AnotherClass : public FinalClass {
+//     // Compilation error
+// };
+
+int main() {
+    Derived d;
+    d.canOverride();      // Calls overridden version
+    d.cannotOverride();   // Calls Base's final version
+    
+    FinalClass fc;
+    fc.display();
+    
+    return 0;
+}
+```
+
+**Output:**
+```
+Derived: Overridden successfully
+Base: This is final - cannot be overridden
+This is a final class
+```
+
+**Key Points:**
+- Use `final` on a class to prevent any inheritance from it
+- Use `final` on a virtual method to prevent derived classes from overriding it
+- Attempting to violate `final` restrictions results in a compile-time error
+- The `final` keyword provides clear intent and compiler-enforced restrictions
+
+*For in-depth details about the `final` keyword, refer to the [C++11 final Keyword](#) section.*
+
+[↑ Back to Table of Contents](#table-of-contents)
+
+---
 
 ## Overloading vs Overriding: Quick Comparison
 
