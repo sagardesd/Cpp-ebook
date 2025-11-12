@@ -9408,9 +9408,10 @@ When to Use Static:</code></pre>
 <ul>
 <li><a href="polymorphism.html#function-overriding">Function Overriding</a></li>
 <li><a href="polymorphism.html#virtual-functions">Virtual Functions</a></li>
-<li><a href="polymorphism.html#the-override-keyword-c11">The <code>override</code> Keyword (C++11)</a></li>
 <li><a href="polymorphism.html#how-virtual-functions-work-the-mechanism">How Virtual Functions Work: The Mechanism</a></li>
 <li><a href="polymorphism.html#how-a-virtual-function-call-gets-resolved">How a Virtual Function Call Gets Resolved</a></li>
+<li><a href="polymorphism.html#the-override-keyword-c11">The <code>override</code> Keyword (C++11)</a></li>
+<li><a href="polymorphism.html#the-final-keyword-c11">The <code>final</code> Keyword (C++11)</a></li>
 </ul>
 </li>
 </ol>
@@ -9812,128 +9813,6 @@ Drawing a Circle
 </ul>
 <p><a href="polymorphism.html#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr />
-<h3 id="the-override-keyword-c11"><a class="header" href="#the-override-keyword-c11">The <code>override</code> Keyword (C++11)</a></h3>
-<p>C++11 introduced the <code>override</code> keyword to make your code safer and more explicit when overriding virtual functions. It's not required, but it's highly recommended!</p>
-<h4 id="what-does-override-do"><a class="header" href="#what-does-override-do">What Does <code>override</code> Do?</a></h4>
-<p>The <code>override</code> keyword tells the compiler: <strong>"I intend to override a virtual function from the base class."</strong></p>
-<p>If you make a mistake (wrong parameter types, misspelled name, forgot <code>const</code>, etc.), the compiler will give you an error instead of silently creating a new function.</p>
-<h4 id="problem-without-override"><a class="header" href="#problem-without-override">Problem Without <code>override</code></a></h4>
-<pre><code class="language-cpp">class Base {
-public:
-    virtual void setValue(int val) {
-        cout &lt;&lt; "Base::setValue\n";
-    }
-};
-
-class Derived : public Base {
-public:
-    // Oops! Typo: "vlaue" instead of "value"
-    // Also wrong parameter type: double instead of int
-    virtual void setValue(double val) {  // ❌ NOT overriding!
-        cout &lt;&lt; "Derived::setValue\n";
-    }
-};
-
-int main() {
-    Base* ptr = new Derived();
-    ptr-&gt;setValue(10);  // Calls Base::setValue (unexpected!)
-    delete ptr;
-    return 0;
-}
-</code></pre>
-<p><strong>Output:</strong></p>
-<pre><code>Base::setValue
-</code></pre>
-<p><strong>Problem:</strong> The compiler doesn't warn you! It thinks you're creating a new overloaded function, not overriding the base class function.</p>
-<h4 id="solution-with-override"><a class="header" href="#solution-with-override">Solution With <code>override</code></a></h4>
-<pre><code class="language-cpp">class Base {
-public:
-    virtual void setValue(int val) {
-        cout &lt;&lt; "Base::setValue\n";
-    }
-};
-
-class Derived : public Base {
-public:
-    void setValue(double val) override {  // ✓ Compiler error!
-        cout &lt;&lt; "Derived::setValue\n";
-    }
-};
-</code></pre>
-<p><strong>Compiler Error:</strong></p>
-<pre><code>error: 'void Derived::setValue(double)' marked 'override', but does not override
-</code></pre>
-<p><strong>The compiler catches your mistake immediately!</strong></p>
-<h4 id="correct-usage"><a class="header" href="#correct-usage">Correct Usage</a></h4>
-<pre><code class="language-cpp">class Base {
-public:
-    virtual void setValue(int val) {
-        cout &lt;&lt; "Base::setValue\n";
-    }
-};
-
-class Derived : public Base {
-public:
-    void setValue(int val) override {  // ✓ Correct override
-        cout &lt;&lt; "Derived::setValue\n";
-    }
-};
-
-int main() {
-    Base* ptr = new Derived();
-    ptr-&gt;setValue(10);  // Calls Derived::setValue (as expected!)
-    delete ptr;
-    return 0;
-}
-</code></pre>
-<p><strong>Output:</strong></p>
-<pre><code>Derived::setValue
-</code></pre>
-<h4 id="benefits-of-using-override"><a class="header" href="#benefits-of-using-override">Benefits of Using <code>override</code></a></h4>
-<ol>
-<li><strong>Catches typos</strong> - Misspelled function names</li>
-<li><strong>Catches signature mismatches</strong> - Wrong parameter types or count</li>
-<li><strong>Catches const mismatches</strong> - Forgot <code>const</code> qualifier</li>
-<li><strong>Self-documenting</strong> - Makes it clear you're overriding, not creating a new function</li>
-<li><strong>Refactoring safety</strong> - If the base class function signature changes, you'll get compilation errors</li>
-</ol>
-<h4 id="complete-example-2"><a class="header" href="#complete-example-2">Complete Example</a></h4>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-
-class Animal {
-public:
-    virtual void makeSound() const {
-        cout &lt;&lt; "Animal sound\n";
-    }
-    
-    virtual ~Animal() {}
-};
-
-class Dog : public Animal {
-public:
-    void makeSound() const override {  // ✓ Correct
-        cout &lt;&lt; "Woof!\n";
-    }
-};
-
-class Cat : public Animal {
-public:
-    void makeSound() override {  // ❌ Compiler error: missing 'const'
-        cout &lt;&lt; "Meow!\n";
-    }
-};
-
-int main() {
-    Animal* animal = new Dog();
-    animal-&gt;makeSound();
-    delete animal;
-    return 0;
-}
-</code></pre>
-<p><strong>Best Practice:</strong> Always use <code>override</code> when overriding virtual functions in modern C++ (C++11 and later)!</p>
-<p><a href="polymorphism.html#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr />
 <h3 id="how-virtual-functions-work-the-mechanism"><a class="header" href="#how-virtual-functions-work-the-mechanism">How Virtual Functions Work: The Mechanism</a></h3>
 <p>Virtual functions work through a mechanism involving two key components:</p>
 <ol>
@@ -10241,6 +10120,205 @@ Base Destructor
 </code></pre>
 <p><strong>Rule of Thumb:</strong> If a class has any virtual functions, its destructor should be virtual too!</p>
 <p><a href="polymorphism.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h3 id="the-override-keyword-c11"><a class="header" href="#the-override-keyword-c11">The <code>override</code> Keyword (C++11)</a></h3>
+<p>C++11 introduced the <code>override</code> keyword to make your code safer and more explicit when overriding virtual functions. It's not required, but it's highly recommended!</p>
+<h4 id="what-does-override-do"><a class="header" href="#what-does-override-do">What Does <code>override</code> Do?</a></h4>
+<p>The <code>override</code> keyword tells the compiler: <strong>"I intend to override a virtual function from the base class."</strong></p>
+<p>If you make a mistake (wrong parameter types, misspelled name, forgot <code>const</code>, etc.), the compiler will give you an error instead of silently creating a new function.</p>
+<h4 id="problem-without-override"><a class="header" href="#problem-without-override">Problem Without <code>override</code></a></h4>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void setValue(int val) {
+        cout &lt;&lt; "Base::setValue\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    // Oops! Typo: "vlaue" instead of "value"
+    // Also wrong parameter type: double instead of int
+    virtual void setValue(double val) {  // ❌ NOT overriding!
+        cout &lt;&lt; "Derived::setValue\n";
+    }
+};
+
+int main() {
+    Base* ptr = new Derived();
+    ptr-&gt;setValue(10);  // Calls Base::setValue (unexpected!)
+    delete ptr;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Base::setValue
+</code></pre>
+<p><strong>Problem:</strong> The compiler doesn't warn you! It thinks you're creating a new overloaded function, not overriding the base class function.</p>
+<h4 id="solution-with-override"><a class="header" href="#solution-with-override">Solution With <code>override</code></a></h4>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void setValue(int val) {
+        cout &lt;&lt; "Base::setValue\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    void setValue(double val) override {  // ✓ Compiler error!
+        cout &lt;&lt; "Derived::setValue\n";
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Derived::setValue(double)' marked 'override', but does not override
+</code></pre>
+<p><strong>The compiler catches your mistake immediately!</strong></p>
+<h4 id="correct-usage"><a class="header" href="#correct-usage">Correct Usage</a></h4>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void setValue(int val) {
+        cout &lt;&lt; "Base::setValue\n";
+    }
+};
+
+class Derived : public Base {
+public:
+    void setValue(int val) override {  // ✓ Correct override
+        cout &lt;&lt; "Derived::setValue\n";
+    }
+};
+
+int main() {
+    Base* ptr = new Derived();
+    ptr-&gt;setValue(10);  // Calls Derived::setValue (as expected!)
+    delete ptr;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Derived::setValue
+</code></pre>
+<h4 id="benefits-of-using-override"><a class="header" href="#benefits-of-using-override">Benefits of Using <code>override</code></a></h4>
+<ol>
+<li><strong>Catches typos</strong> - Misspelled function names</li>
+<li><strong>Catches signature mismatches</strong> - Wrong parameter types or count</li>
+<li><strong>Catches const mismatches</strong> - Forgot <code>const</code> qualifier</li>
+<li><strong>Self-documenting</strong> - Makes it clear you're overriding, not creating a new function</li>
+<li><strong>Refactoring safety</strong> - If the base class function signature changes, you'll get compilation errors</li>
+</ol>
+<h4 id="complete-example-2"><a class="header" href="#complete-example-2">Complete Example</a></h4>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+class Animal {
+public:
+    virtual void makeSound() const {
+        cout &lt;&lt; "Animal sound\n";
+    }
+    
+    virtual ~Animal() {}
+};
+
+class Dog : public Animal {
+public:
+    void makeSound() const override {  // ✓ Correct
+        cout &lt;&lt; "Woof!\n";
+    }
+};
+
+class Cat : public Animal {
+public:
+    void makeSound() override {  // ❌ Compiler error: missing 'const'
+        cout &lt;&lt; "Meow!\n";
+    }
+};
+
+int main() {
+    Animal* animal = new Dog();
+    animal-&gt;makeSound();
+    delete animal;
+    return 0;
+}
+</code></pre>
+<p><strong>Best Practice:</strong> Always use <code>override</code> when overriding virtual functions in modern C++ (C++11 and later)!</p>
+<p><a href="polymorphism.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h3 id="the-final-keyword-c11"><a class="header" href="#the-final-keyword-c11">The final Keyword (C++11)</a></h3>
+<p>The <code>final</code> keyword, introduced in C++11, is used to restrict inheritance and method overriding. It can be applied in two ways:</p>
+<ol>
+<li><strong>Final Class</strong> - Prevents a class from being inherited</li>
+<li><strong>Final Method</strong> - Prevents a virtual method from being overridden in derived classes</li>
+</ol>
+<h4 id="example-using-final"><a class="header" href="#example-using-final">Example: Using final</a></h4>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Base class with a final method
+class Base {
+public:
+    virtual void canOverride() {
+        cout &lt;&lt; "Base: This can be overridden" &lt;&lt; endl;
+    }
+    
+    // This method cannot be overridden
+    virtual void cannotOverride() final {
+        cout &lt;&lt; "Base: This is final - cannot be overridden" &lt;&lt; endl;
+    }
+};
+
+// This class cannot be inherited from
+class FinalClass final {
+public:
+    void display() {
+        cout &lt;&lt; "This is a final class" &lt;&lt; endl;
+    }
+};
+
+// Derived class from Base
+class Derived : public Base {
+public:
+    // Allowed - overriding non-final method
+    void canOverride() override {
+        cout &lt;&lt; "Derived: Overridden successfully" &lt;&lt; endl;
+    }
+    
+    // ERROR: Cannot override final method
+    // void cannotOverride() override {
+    //     cout &lt;&lt; "This will cause compilation error" &lt;&lt; endl;
+    // }
+};
+
+// ERROR: Cannot inherit from final class
+// class AnotherClass : public FinalClass {
+//     // Compilation error
+// };
+
+int main() {
+    Derived d;
+    d.canOverride();      // Calls overridden version
+    d.cannotOverride();   // Calls Base's final version
+    
+    FinalClass fc;
+    fc.display();
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Derived: Overridden successfully
+Base: This is final - cannot be overridden
+This is a final class
+</code></pre>
+<p><strong>Key Points:</strong></p>
+<ul>
+<li>Use <code>final</code> on a class to prevent any inheritance from it</li>
+<li>Use <code>final</code> on a virtual method to prevent derived classes from overriding it</li>
+<li>Attempting to violate <code>final</code> restrictions results in a compile-time error</li>
+<li>The <code>final</code> keyword provides clear intent and compiler-enforced restrictions</li>
+</ul>
+<p><em>For in-depth details about the <code>final</code> keyword, refer to the <a href="polymorphism.html#">C++11 final Keyword</a> section.</em></p>
+<p><a href="polymorphism.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
 <h2 id="overloading-vs-overriding-quick-comparison"><a class="header" href="#overloading-vs-overriding-quick-comparison">Overloading vs Overriding: Quick Comparison</a></h2>
 <p>Here's a side-by-side comparison to help you understand the key differences:</p>
 <div class="table-wrapper"><table><thead><tr><th><strong>Aspect</strong></th><th><strong>Function Overloading</strong></th><th><strong>Function Overriding</strong></th></tr></thead><tbody>
