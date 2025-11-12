@@ -21,7 +21,7 @@ Unlike many C++ tutorials, this ebook:
 - Is **100% open-source** — free for anyone to learn and contribute!
 
 ## 🌐 Read Online
-👉 [**Read the ebook here**](https://sagardesd.github.io/Cpp_Learn_The_Right_Way/)  
+👉 [**Read the ebook here**](https://sagardesd.github.io/Cpp-ebook/)
 (*auto-updated whenever new content is added!*)
 
 ## Note:
