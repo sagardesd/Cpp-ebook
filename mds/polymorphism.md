@@ -425,7 +425,6 @@ public:
 
 ```cpp
 #include <iostream>
-#include <vector>
 using namespace std;
 
 class Shape {
@@ -434,51 +433,46 @@ public:
         cout << "Drawing a generic Shape\n";
     }
     
-    virtual ~Shape() {}  // Virtual destructor (important!)
+    virtual ~Shape() {}  // Virtual destructor
 };
 
 class Circle : public Shape {
 public:
-    void draw() {  // Overriding the virtual function
+    void draw() override {  // Overriding the virtual function
         cout << "Drawing a Circle\n";
     }
 };
 
 class Rectangle : public Shape {
 public:
-    void draw() {
+    void draw() override {
         cout << "Drawing a Rectangle\n";
     }
 };
 
 class Triangle : public Shape {
 public:
-    void draw() {
+    void draw() override {
         cout << "Drawing a Triangle\n";
     }
 };
 
 int main() {
-    // Store different shape types using base class pointers
-    vector<Shape*> shapes;
-    
-    shapes.push_back(new Circle());
-    shapes.push_back(new Rectangle());
-    shapes.push_back(new Triangle());
-    shapes.push_back(new Circle());
-    
-    // Call draw() on each shape - the correct version is called!
-    for (Shape* shape : shapes) {
-        shape->draw();  // Runtime polymorphism in action
-    }
-    
-    // Clean up
-    for (Shape* shape : shapes) {
-        delete shape;
-    }
-    
+    Shape* s1 = new Circle();
+    Shape* s2 = new Rectangle();
+    Shape* s3 = new Triangle();
+
+    s1->draw();  // Calls Circle::draw()
+    s2->draw();  // Calls Rectangle::draw()
+    s3->draw();  // Calls Triangle::draw()
+
+    delete s1;
+    delete s2;
+    delete s3;
+
     return 0;
 }
+
 ```
 
 **Output:**
