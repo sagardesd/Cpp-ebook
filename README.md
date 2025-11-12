@@ -1,6 +1,6 @@
 # 📘 C++ Journey: Core Principles to Modern Features
 
-**“C++ Learn The Right Way”** is an open-source ebook designed to help students and developers master C++ — from fundamentals to modern features — through concise explanations and practical examples.
+**“C++ Journey: Core Principles to Modern Features”** is an open-source ebook designed to help students and developers master C++ — from fundamentals to modern features — through concise explanations and practical examples.
 
 This book focuses on **clarity, concept depth, and real-world understanding**, making it ideal for:
 - 🎓 **Computer Science & IT students**
