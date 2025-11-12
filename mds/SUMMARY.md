@@ -1,5 +1,6 @@
 # Summary
 
+- [Title Page](./title.md)
 - [Data Types, Variables, and Input/Output](./datatypes.md)
 - [Control Flow](./control_flow.md)
 - [Storage Classes](./storage_classes.md)
