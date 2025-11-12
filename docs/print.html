@@ -10323,6 +10323,557 @@ Dog barks
 <li><strong>Overriding</strong> = Same name, same signature, inheritance → Runtime decision</li>
 </ul>
 <p><a href="polymorphism.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="abstract-classes-and-pure-virtual-functions"><a class="header" href="#abstract-classes-and-pure-virtual-functions">Abstract Classes and Pure Virtual Functions</a></h1>
+<h2 id="table-of-contents-10"><a class="header" href="#table-of-contents-10">Table of Contents</a></h2>
+<ul>
+<li><a href="abstract_class.html#what-is-an-abstract-class">What is an Abstract Class?</a>
+<ul>
+<li><a href="abstract_class.html#pure-virtual-function">Pure Virtual Function</a></li>
+<li><a href="abstract_class.html#example-basic-abstract-class">Example: Basic Abstract Class</a></li>
+</ul>
+</li>
+<li><a href="abstract_class.html#benefits-and-use-cases">Benefits and Use Cases</a>
+<ul>
+<li><a href="abstract_class.html#1-enforcing-a-contract-interface">1. Enforcing a Contract (Interface)</a></li>
+<li><a href="abstract_class.html#2-code-reusability-with-polymorphism">2. Code Reusability with Polymorphism</a></li>
+<li><a href="abstract_class.html#3-framework-design">3. Framework Design</a></li>
+</ul>
+</li>
+<li><a href="abstract_class.html#oop-concept-abstraction">OOP Concept: Abstraction</a>
+<ul>
+<li><a href="abstract_class.html#what-is-abstraction">What is Abstraction?</a></li>
+<li><a href="abstract_class.html#how-abstract-classes-achieve-abstraction">How Abstract Classes Achieve Abstraction</a></li>
+</ul>
+</li>
+<li><a href="abstract_class.html#special-notes-non-pure-virtual-functions-in-abstract-classes">Special Notes: Non-Pure Virtual Functions in Abstract Classes</a>
+<ul>
+<li><a href="abstract_class.html#example-mixed-functions">Example: Mixed Functions</a></li>
+<li><a href="abstract_class.html#how-to-invoke-non-pure-virtual-functions">How to Invoke Non-Pure Virtual Functions?</a></li>
+<li><a href="abstract_class.html#why-use-non-pure-virtual-functions-in-abstract-classes">Why Use Non-Pure Virtual Functions in Abstract Classes?</a></li>
+</ul>
+</li>
+<li><a href="abstract_class.html#key-takeaways">Key Takeaways</a></li>
+</ul>
+<hr />
+<h2 id="what-is-an-abstract-class"><a class="header" href="#what-is-an-abstract-class">What is an Abstract Class?</a></h2>
+<p>An <strong>abstract class</strong> is a class that cannot be instantiated directly and is designed to serve as a base class for other classes. It acts as a blueprint that defines the interface (contract) that derived classes must implement.</p>
+<p>A class becomes abstract when it contains at least one <strong>pure virtual function</strong>.</p>
+<h3 id="pure-virtual-function"><a class="header" href="#pure-virtual-function">Pure Virtual Function</a></h3>
+<p>A <strong>pure virtual function</strong> is a virtual function that has no implementation in the base class and must be overridden by derived classes. It is declared by assigning <code>= 0</code> to the function declaration.</p>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-cpp">virtual return_type function_name(parameters) = 0;
+</code></pre>
+<h3 id="example-basic-abstract-class"><a class="header" href="#example-basic-abstract-class">Example: Basic Abstract Class</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+// Abstract class - cannot be instantiated
+class Shape {
+protected:
+    string color;
+    
+public:
+    Shape(string c) : color(c) {}
+    
+    // Pure virtual function - makes Shape abstract
+    virtual double calculateArea() = 0;
+    
+    // Pure virtual function
+    virtual void draw() = 0;
+    
+    // Regular member function
+    void setColor(string c) {
+        color = c;
+    }
+    
+    string getColor() {
+        return color;
+    }
+};
+
+// Concrete class - must implement all pure virtual functions
+class Circle : public Shape {
+private:
+    double radius;
+    
+public:
+    Circle(string c, double r) : Shape(c), radius(r) {}
+    
+    // Must override pure virtual function
+    double calculateArea() override {
+        return 3.14159 * radius * radius;
+    }
+    
+    void draw() override {
+        cout &lt;&lt; "Drawing a " &lt;&lt; color &lt;&lt; " circle" &lt;&lt; endl;
+    }
+};
+
+class Rectangle : public Shape {
+private:
+    double width, height;
+    
+public:
+    Rectangle(string c, double w, double h) : Shape(c), width(w), height(h) {}
+    
+    double calculateArea() override {
+        return width * height;
+    }
+    
+    void draw() override {
+        cout &lt;&lt; "Drawing a " &lt;&lt; color &lt;&lt; " rectangle" &lt;&lt; endl;
+    }
+};
+
+int main() {
+    // Shape s("red");  // ERROR! Cannot instantiate abstract class
+    
+    Circle c("blue", 5.0);
+    Rectangle r("green", 4.0, 6.0);
+    
+    cout &lt;&lt; "Circle area: " &lt;&lt; c.calculateArea() &lt;&lt; endl;
+    c.draw();
+    
+    cout &lt;&lt; "Rectangle area: " &lt;&lt; r.calculateArea() &lt;&lt; endl;
+    r.draw();
+    
+    // Polymorphism with abstract class pointers
+    Shape* shapes[2];
+    shapes[0] = &amp;c;
+    shapes[1] = &amp;r;
+    
+    cout &lt;&lt; "\nUsing polymorphism:" &lt;&lt; endl;
+    for(int i = 0; i &lt; 2; i++) {
+        cout &lt;&lt; "Area: " &lt;&lt; shapes[i]-&gt;calculateArea() &lt;&lt; endl;
+        shapes[i]-&gt;draw();
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Circle area: 78.5397
+Drawing a blue circle
+Rectangle area: 24
+Drawing a green rectangle
+
+Using polymorphism:
+Area: 78.5397
+Drawing a blue circle
+Area: 24
+Drawing a green rectangle
+</code></pre>
+<p><a href="abstract_class.html#table-of-contents">⬆ Back to Table of Contents</a></p>
+<hr />
+<h2 id="benefits-and-use-cases"><a class="header" href="#benefits-and-use-cases">Benefits and Use Cases</a></h2>
+<h3 id="1-enforcing-a-contract-interface"><a class="header" href="#1-enforcing-a-contract-interface">1. Enforcing a Contract (Interface)</a></h3>
+<p>Abstract classes ensure that all derived classes implement specific methods, creating a consistent interface.</p>
+<pre><code class="language-cpp">class Database {
+public:
+    // All database implementations must provide these operations
+    virtual void connect(string connectionString) = 0;
+    virtual void disconnect() = 0;
+    virtual void executeQuery(string query) = 0;
+    virtual ~Database() {}
+};
+
+class MySQLDatabase : public Database {
+public:
+    void connect(string connectionString) override {
+        cout &lt;&lt; "Connecting to MySQL: " &lt;&lt; connectionString &lt;&lt; endl;
+    }
+    
+    void disconnect() override {
+        cout &lt;&lt; "Disconnecting from MySQL" &lt;&lt; endl;
+    }
+    
+    void executeQuery(string query) override {
+        cout &lt;&lt; "Executing MySQL query: " &lt;&lt; query &lt;&lt; endl;
+    }
+};
+
+class PostgreSQLDatabase : public Database {
+public:
+    void connect(string connectionString) override {
+        cout &lt;&lt; "Connecting to PostgreSQL: " &lt;&lt; connectionString &lt;&lt; endl;
+    }
+    
+    void disconnect() override {
+        cout &lt;&lt; "Disconnecting from PostgreSQL" &lt;&lt; endl;
+    }
+    
+    void executeQuery(string query) override {
+        cout &lt;&lt; "Executing PostgreSQL query: " &lt;&lt; query &lt;&lt; endl;
+    }
+};
+</code></pre>
+<h3 id="2-code-reusability-with-polymorphism"><a class="header" href="#2-code-reusability-with-polymorphism">2. Code Reusability with Polymorphism</a></h3>
+<p>Abstract classes allow you to write generic code that works with any derived class.</p>
+<pre><code class="language-cpp">void performDatabaseOperations(Database* db) {
+    db-&gt;connect("server=localhost");
+    db-&gt;executeQuery("SELECT * FROM users");
+    db-&gt;disconnect();
+}
+
+int main() {
+    MySQLDatabase mysql;
+    PostgreSQLDatabase postgres;
+    
+    performDatabaseOperations(&amp;mysql);      // Works with MySQL
+    performDatabaseOperations(&amp;postgres);   // Works with PostgreSQL
+    
+    return 0;
+}
+</code></pre>
+<h3 id="3-framework-design"><a class="header" href="#3-framework-design">3. Framework Design</a></h3>
+<p>Abstract classes are perfect for creating frameworks where the core structure is defined but implementation details are left to users.</p>
+<pre><code class="language-cpp">class GameCharacter {
+protected:
+    string name;
+    int health;
+    
+public:
+    GameCharacter(string n, int h) : name(n), health(h) {}
+    
+    // Framework defines the game loop
+    void takeTurn() {
+        cout &lt;&lt; name &lt;&lt; "'s turn:" &lt;&lt; endl;
+        performAction();  // Specific to each character type
+        if(canUseSpecialAbility()) {
+            useSpecialAbility();
+        }
+    }
+    
+    // Must be implemented by each character type
+    virtual void performAction() = 0;
+    virtual void useSpecialAbility() = 0;
+    virtual bool canUseSpecialAbility() = 0;
+    virtual ~GameCharacter() {}
+};
+
+class Warrior : public GameCharacter {
+public:
+    Warrior(string n) : GameCharacter(n, 150) {}
+    
+    void performAction() override {
+        cout &lt;&lt; "Warrior attacks with sword!" &lt;&lt; endl;
+    }
+    
+    void useSpecialAbility() override {
+        cout &lt;&lt; "Warrior uses RAGE mode!" &lt;&lt; endl;
+    }
+    
+    bool canUseSpecialAbility() override {
+        return health &lt; 50;  // Can rage when low health
+    }
+};
+
+class Mage : public GameCharacter {
+private:
+    int mana = 100;
+    
+public:
+    Mage(string n) : GameCharacter(n, 80) {}
+    
+    void performAction() override {
+        cout &lt;&lt; "Mage casts fireball!" &lt;&lt; endl;
+    }
+    
+    void useSpecialAbility() override {
+        cout &lt;&lt; "Mage teleports!" &lt;&lt; endl;
+        mana -= 30;
+    }
+    
+    bool canUseSpecialAbility() override {
+        return mana &gt;= 30;
+    }
+};
+</code></pre>
+<h2 id="oop-concept-abstraction"><a class="header" href="#oop-concept-abstraction">OOP Concept: Abstraction</a></h2>
+<p><strong>Abstraction</strong> is one of the four pillars of Object-Oriented Programming (encapsulation, inheritance, polymorphism, and abstraction).</p>
+<h3 id="real-world-example-driving-a-car"><a class="header" href="#real-world-example-driving-a-car">Real-World Example: Driving a Car</a></h3>
+<p>Think about driving a car. When you drive, you interact with simple controls:</p>
+<ul>
+<li><strong>Steering wheel</strong> - turn it to change direction</li>
+<li><strong>Accelerator pedal</strong> - press it to go faster</li>
+<li><strong>Brake pedal</strong> - press it to slow down</li>
+<li><strong>Gear shift</strong> - move it to change gears</li>
+</ul>
+<p>As a driver, you don't need to know:</p>
+<ul>
+<li>How the engine combusts fuel</li>
+<li>How the transmission system works</li>
+<li>How the braking system applies friction to the wheels</li>
+<li>How the power steering mechanism functions</li>
+</ul>
+<p>The car's interface (steering wheel, pedals) <strong>abstracts away</strong> all the complex mechanical and electronic systems underneath. You focus on <strong>what</strong> you want to do (turn, accelerate, stop) rather than <strong>how</strong> the car makes it happen.</p>
+<p>This is exactly what abstraction does in programming - it hides the complex implementation details and provides a simple interface to interact with.</p>
+<h3 id="what-is-abstraction"><a class="header" href="#what-is-abstraction">What is Abstraction?</a></h3>
+<p>Abstraction means hiding complex implementation details and showing only the essential features of an object. It allows you to focus on <strong>what</strong> an object does rather than <strong>how</strong> it does it.</p>
+<h3 id="how-abstract-classes-achieve-abstraction"><a class="header" href="#how-abstract-classes-achieve-abstraction">How Abstract Classes Achieve Abstraction</a></h3>
+<p>Abstract classes are the primary mechanism for achieving abstraction in C++:</p>
+<ol>
+<li><strong>Hide Implementation Details</strong>: Users of the abstract class don't need to know how each operation is implemented.</li>
+<li><strong>Define Clear Interfaces</strong>: The pure virtual functions define what operations are available.</li>
+<li><strong>Allow Multiple Implementations</strong>: Different derived classes can implement the same interface in different ways.</li>
+</ol>
+<pre><code class="language-cpp">// User only sees this interface - internal details are hidden
+class PaymentProcessor {
+public:
+    virtual bool processPayment(double amount) = 0;
+    virtual string getTransactionId() = 0;
+    virtual void refund(string transactionId) = 0;
+    virtual ~PaymentProcessor() {}
+};
+
+// Implementation details are hidden in derived classes
+class CreditCardProcessor : public PaymentProcessor {
+private:
+    // Complex credit card processing logic hidden from users
+    string encryptCardData(string cardNumber) {
+        // Encryption implementation
+        return "encrypted_data";
+    }
+    
+    bool validateCard(string cardNumber) {
+        // Validation logic
+        return true;
+    }
+    
+public:
+    bool processPayment(double amount) override {
+        // User doesn't need to know about encryption or validation
+        cout &lt;&lt; "Processing credit card payment: $" &lt;&lt; amount &lt;&lt; endl;
+        return true;
+    }
+    
+    string getTransactionId() override {
+        return "CC-12345";
+    }
+    
+    void refund(string transactionId) override {
+        cout &lt;&lt; "Refunding transaction: " &lt;&lt; transactionId &lt;&lt; endl;
+    }
+};
+
+class PayPalProcessor : public PaymentProcessor {
+private:
+    // Different implementation with different internal details
+    void connectToPayPalAPI() {
+        // API connection logic
+    }
+    
+public:
+    bool processPayment(double amount) override {
+        cout &lt;&lt; "Processing PayPal payment: $" &lt;&lt; amount &lt;&lt; endl;
+        return true;
+    }
+    
+    string getTransactionId() override {
+        return "PP-67890";
+    }
+    
+    void refund(string transactionId) override {
+        cout &lt;&lt; "Refunding via PayPal: " &lt;&lt; transactionId &lt;&lt; endl;
+    }
+};
+
+// Client code uses abstraction - doesn't care about implementation
+void checkout(PaymentProcessor* processor, double amount) {
+    if(processor-&gt;processPayment(amount)) {
+        cout &lt;&lt; "Transaction ID: " &lt;&lt; processor-&gt;getTransactionId() &lt;&lt; endl;
+    }
+}
+</code></pre>
+<p>The client code using <code>checkout()</code> doesn't need to know whether it's processing a credit card or PayPal payment - it just knows it can process payments. This is abstraction in action.</p>
+<p><a href="abstract_class.html#table-of-contents">⬆ Back to Table of Contents</a></p>
+<hr />
+<h2 id="special-notes-non-pure-virtual-functions-in-abstract-classes"><a class="header" href="#special-notes-non-pure-virtual-functions-in-abstract-classes">Special Notes: Non-Pure Virtual Functions in Abstract Classes</a></h2>
+<p>An abstract class can have a mix of pure virtual functions and regular (non-pure) virtual or non-virtual functions. This is useful for providing default behavior while still enforcing implementation of critical methods.</p>
+<h3 id="example-mixed-functions"><a class="header" href="#example-mixed-functions">Example: Mixed Functions</a></h3>
+<pre><code class="language-cpp">class Document {
+protected:
+    string title;
+    string content;
+    
+public:
+    Document(string t) : title(t) {}
+    
+    // Pure virtual - MUST be implemented
+    virtual void save() = 0;
+    
+    // Non-pure virtual - CAN be overridden, has default implementation
+    virtual void print() {
+        cout &lt;&lt; "Title: " &lt;&lt; title &lt;&lt; endl;
+        cout &lt;&lt; "Content: " &lt;&lt; content &lt;&lt; endl;
+    }
+    
+    // Regular function - shared by all derived classes
+    void setContent(string c) {
+        content = c;
+    }
+    
+    virtual ~Document() {}
+};
+
+class PDFDocument : public Document {
+public:
+    PDFDocument(string t) : Document(t) {}
+    
+    // Must implement pure virtual function
+    void save() override {
+        cout &lt;&lt; "Saving as PDF file: " &lt;&lt; title &lt;&lt; ".pdf" &lt;&lt; endl;
+    }
+    
+    // Can optionally override non-pure virtual function
+    void print() override {
+        cout &lt;&lt; "=== PDF Document ===" &lt;&lt; endl;
+        Document::print();  // Call base class implementation
+        cout &lt;&lt; "===================" &lt;&lt; endl;
+    }
+};
+
+class WordDocument : public Document {
+public:
+    WordDocument(string t) : Document(t) {}
+    
+    void save() override {
+        cout &lt;&lt; "Saving as Word file: " &lt;&lt; title &lt;&lt; ".docx" &lt;&lt; endl;
+    }
+    
+    // Uses default print() from Document class
+};
+</code></pre>
+<h3 id="how-to-invoke-non-pure-virtual-functions"><a class="header" href="#how-to-invoke-non-pure-virtual-functions">How to Invoke Non-Pure Virtual Functions?</a></h3>
+<p>Since you cannot instantiate an abstract class, you access non-pure virtual functions through:</p>
+<h4 id="1-derived-class-objects"><a class="header" href="#1-derived-class-objects">1. Derived Class Objects</a></h4>
+<pre><code class="language-cpp">int main() {
+    PDFDocument pdf("Report");
+    pdf.setContent("This is the report content");
+    pdf.print();  // Calls PDFDocument's overridden version
+    pdf.save();
+    
+    WordDocument word("Letter");
+    word.setContent("This is a letter");
+    word.print();  // Calls Document's default implementation
+    word.save();
+    
+    return 0;
+}
+</code></pre>
+<h4 id="2-calling-base-class-implementation-from-derived-class"><a class="header" href="#2-calling-base-class-implementation-from-derived-class">2. Calling Base Class Implementation from Derived Class</a></h4>
+<pre><code class="language-cpp">class AdvancedPDFDocument : public Document {
+public:
+    AdvancedPDFDocument(string t) : Document(t) {}
+    
+    void save() override {
+        cout &lt;&lt; "Saving with advanced compression..." &lt;&lt; endl;
+    }
+    
+    void print() override {
+        // Call the base class non-pure virtual function
+        Document::print();
+        cout &lt;&lt; "Additional PDF metadata..." &lt;&lt; endl;
+    }
+};
+</code></pre>
+<h4 id="3-through-polymorphic-pointersreferences"><a class="header" href="#3-through-polymorphic-pointersreferences">3. Through Polymorphic Pointers/References</a></h4>
+<pre><code class="language-cpp">void processDocument(Document* doc) {
+    doc-&gt;setContent("Sample content");  // Regular function
+    doc-&gt;print();                       // Non-pure virtual (uses derived or base)
+    doc-&gt;save();                        // Pure virtual (must be derived)
+}
+
+int main() {
+    PDFDocument pdf("Test");
+    WordDocument word("Test");
+    
+    processDocument(&amp;pdf);
+    processDocument(&amp;word);
+    
+    return 0;
+}
+</code></pre>
+<h3 id="why-use-non-pure-virtual-functions-in-abstract-classes"><a class="header" href="#why-use-non-pure-virtual-functions-in-abstract-classes">Why Use Non-Pure Virtual Functions in Abstract Classes?</a></h3>
+<h4 id="1-provide-default-behavior"><a class="header" href="#1-provide-default-behavior">1. Provide Default Behavior</a></h4>
+<p>Not every derived class needs custom implementation of every method.</p>
+<pre><code class="language-cpp">class Vehicle {
+public:
+    virtual void start() = 0;  // Every vehicle starts differently
+    
+    virtual void honk() {       // Most vehicles honk the same way
+        cout &lt;&lt; "Beep beep!" &lt;&lt; endl;
+    }
+};
+
+class Car : public Vehicle {
+public:
+    void start() override {
+        cout &lt;&lt; "Turning key..." &lt;&lt; endl;
+    }
+    // Uses default honk()
+};
+
+class Bicycle : public Vehicle {
+public:
+    void start() override {
+        cout &lt;&lt; "Start pedaling..." &lt;&lt; endl;
+    }
+    
+    void honk() override {
+        cout &lt;&lt; "Ring ring!" &lt;&lt; endl;  // Bicycles need different honk
+    }
+};
+</code></pre>
+<h4 id="2-code-reuse"><a class="header" href="#2-code-reuse">2. Code Reuse</a></h4>
+<p>Common logic can be shared while critical parts are enforced.</p>
+<pre><code class="language-cpp">class Logger {
+protected:
+    string timestamp() {
+        return "[2025-11-12 10:30:00]";
+    }
+    
+public:
+    // Must implement - each logger writes differently
+    virtual void write(string message) = 0;
+    
+    // Shared logic - adds timestamp automatically
+    virtual void log(string message) {
+        write(timestamp() + " " + message);
+    }
+};
+
+class FileLogger : public Logger {
+public:
+    void write(string message) override {
+        cout &lt;&lt; "Writing to file: " &lt;&lt; message &lt;&lt; endl;
+    }
+};
+
+class ConsoleLogger : public Logger {
+public:
+    void write(string message) override {
+        cout &lt;&lt; "Console: " &lt;&lt; message &lt;&lt; endl;
+    }
+    
+    // Can override log() if needed for different behavior
+};
+</code></pre>
+<h4 id="3-template-method-pattern"><a class="header" href="#3-template-method-pattern">3. Template Method Pattern</a></h4>
+<p><em>This design pattern will be covered in a separate section.</em></p>
+<h2 id="key-takeaways-3"><a class="header" href="#key-takeaways-3">Key Takeaways</a></h2>
+<ol>
+<li><strong>Abstract classes</strong> cannot be instantiated and must have at least one pure virtual function</li>
+<li><strong>Pure virtual functions</strong> are declared with <code>= 0</code> and must be implemented by derived classes</li>
+<li>Abstract classes enforce a <strong>contract</strong> that derived classes must follow</li>
+<li>They are essential for achieving <strong>abstraction</strong> in OOP</li>
+<li>Abstract classes can have <strong>non-pure virtual functions</strong> for default behavior</li>
+<li>Non-pure virtual functions are accessed through derived class objects or polymorphic pointers</li>
+<li>Mixing pure and non-pure virtual functions provides flexibility: enforce critical implementations while sharing common code</li>
+</ol>
+<p>Abstract classes are powerful tools for designing extensible, maintainable systems where you want to define clear interfaces while allowing flexibility in implementation.</p>
+<p><a href="abstract_class.html#table-of-contents">⬆ Back to Table of Contents</a></p>
 
                     </main>
 
