@@ -12,21 +12,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon.svg">
-        <link rel="shortcut icon" href="favicon.png">
-        <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
-        <link rel="stylesheet" href="css/print.css" media="print">
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-9dfbd86b.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="fonts/fonts.css">
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="highlight-css" href="highlight.css">
-        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
-        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -36,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex.js";
+            window.path_to_searchindex_js = "searchindex-c2b3a40c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc.js"></script>
+        <script src="toc-27f637f3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -53,7 +52,7 @@
             </div>
         </div>
     </div>
-    <div id="body-container">
+    <div id="mdbook-body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -82,12 +81,12 @@
             html.classList.add("js");
         </script>
 
-        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
             let sidebar = null;
-            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
@@ -102,39 +101,39 @@
             }
         </script>
 
-        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
                 <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
             </noscript>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <div id="page-wrapper" class="page-wrapper">
+        <div id="mdbook-page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
-                            <i class="fa fa-bars"></i>
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
                         </label>
-                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
-                            <i class="fa fa-paint-brush"></i>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
                         </button>
-                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
-                            <i class="fa fa-search"></i>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
                         </button>
                     </div>
 
@@ -142,41 +141,41 @@
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
-                            <i id="print-button" class="fa fa-print"></i>
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://github.com/sagardesd/Cpp-ebook" title="Git repository" aria-label="Git repository">
-                            <i id="git-repository-button" class="fa fa-github"></i>
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
 
                     </div>
                 </div>
 
-                <div id="search-wrapper" class="hidden">
-                    <form id="searchbar-outer" class="searchbar-outer">
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
                         <div class="search-wrapper">
-                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
                             <div class="spinner-wrapper">
-                                <i class="fa fa-spinner fa-spin"></i>
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
                             </div>
                         </div>
                     </form>
-                    <div id="searchresults-outer" class="searchresults-outer hidden">
-                        <div id="searchresults-header" class="searchresults-header"></div>
-                        <ul id="searchresults">
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
                         </ul>
                     </div>
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script>
-                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
-                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
-                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
                         link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
                     });
                 </script>
 
-                <div id="content" class="content">
+                <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="c-constructors-and-destructors---complete-guide"><a class="header" href="#c-constructors-and-destructors---complete-guide">C++ Constructors and Destructors - Complete Guide</a></h1>
 <h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
@@ -189,20 +188,20 @@
 <li><a href="#the-mutable-keyword">The <code>mutable</code> Keyword</a></li>
 <li><a href="#copy-constructor">Copy constructor</a></li>
 </ol>
-<hr />
+<hr>
 <p><a id="constructors"></a></p>
 <h2 id="1-constructors"><a class="header" href="#1-constructors">1. Constructors</a></h2>
 <p>Constructors are special member functions that share the same name as their class.</p>
 <h3 id="common-misconception"><a class="header" href="#common-misconception">Common Misconception</a></h3>
-<p>Many people believe constructors create objects, but this isn't accurate.</p>
+<p>Many people believe constructors create objects, but this isn’t accurate.</p>
 <h3 id="what-constructors-actually-do"><a class="header" href="#what-constructors-actually-do">What Constructors Actually Do</a></h3>
-<p>Constructors are special functions designed to <strong>initialize</strong> an object immediately after it has been created. When an object is instantiated, memory is first allocated for it, and then the constructor is automatically invoked to set up the object's initial state—assigning values to member variables, allocating resources, or performing any other setup operations needed before the object is ready to use.</p>
+<p>Constructors are special functions designed to <strong>initialize</strong> an object immediately after it has been created. When an object is instantiated, memory is first allocated for it, and then the constructor is automatically invoked to set up the object’s initial state—assigning values to member variables, allocating resources, or performing any other setup operations needed before the object is ready to use.</p>
 <h3 id="key-points"><a class="header" href="#key-points">Key Points:</a></h3>
 <ul>
 <li><strong>Object creation</strong> (memory allocation) happens first</li>
 <li><strong>Constructor invocation</strong> (initialization) happens immediately after</li>
 <li>Constructors ensure objects start in a valid, well-defined state</li>
-<li>They are called automatically—you don't invoke them manually</li>
+<li>They are called automatically—you don’t invoke them manually</li>
 </ul>
 <h3 id="object-lifetime-flow"><a class="header" href="#object-lifetime-flow">Object Lifetime Flow</a></h3>
 <pre><code>1. Memory Allocation
@@ -277,12 +276,12 @@ Object Add: 0x16f647034: member : 10
 </ol>
 <p>All three objects are destroyed at the end of <code>main()</code> when they go out of scope, invoking their destructors <strong>in reverse order of creation</strong> (obj3 → obj2 → obj1). This ensures that dependencies between objects are properly handled during cleanup.</p>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr />
+<hr>
 <p><a id="destructors"></a></p>
 <h2 id="2-destructors"><a class="header" href="#2-destructors">2. Destructors</a></h2>
 <p>Destructors are special member functions that have the same name as the class, but prefixed with a tilde (<code>~</code>).</p>
 <h3 id="what-destructors-actually-do"><a class="header" href="#what-destructors-actually-do">What Destructors Actually Do</a></h3>
-<p>Destructors are special functions designed to <strong>clean up</strong> an object just before it is destroyed. When an object goes out of scope or is explicitly deleted, the destructor is automatically invoked to perform cleanup operations—releasing dynamically allocated memory, closing file handles, releasing locks, or performing any other necessary cleanup before the object's memory is deallocated.</p>
+<p>Destructors are special functions designed to <strong>clean up</strong> an object just before it is destroyed. When an object goes out of scope or is explicitly deleted, the destructor is automatically invoked to perform cleanup operations—releasing dynamically allocated memory, closing file handles, releasing locks, or performing any other necessary cleanup before the object’s memory is deallocated.</p>
 <h3 id="key-points-1"><a class="header" href="#key-points-1">Key Points:</a></h3>
 <ul>
 <li><strong>Destructor invocation</strong> (cleanup) happens first</li>
@@ -295,14 +294,14 @@ Object Add: 0x16f647034: member : 10
 <h3 id="example"><a class="header" href="#example">Example</a></h3>
 <p>See the code example in the <a href="#constructors">Constructors</a> section above, which demonstrates both constructors and destructors working together.</p>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr />
+<hr>
 <p><a id="the-explicit-keyword"></a></p>
 <h2 id="3-the-explicit-keyword"><a class="header" href="#3-the-explicit-keyword">3. The <code>explicit</code> Keyword</a></h2>
 <h3 id="why-implicit-conversions-are-problematic"><a class="header" href="#why-implicit-conversions-are-problematic">Why Implicit Conversions Are Problematic</a></h3>
 <p>Implicit conversions can lead to several issues:</p>
 <ol>
 <li><strong>Unintended Behavior</strong> - The compiler silently converts types, which may not be what you intended</li>
-<li><strong>Harder to Debug</strong> - When something goes wrong, it's difficult to trace back to an implicit conversion</li>
+<li><strong>Harder to Debug</strong> - When something goes wrong, it’s difficult to trace back to an implicit conversion</li>
 <li><strong>Reduces Code Clarity</strong> - Other developers reading your code may not realize a conversion is happening</li>
 <li><strong>Potential Performance Issues</strong> - Unnecessary temporary objects may be created</li>
 <li><strong>Type Safety Loss</strong> - You lose the strict type checking that helps catch errors at compile time</li>
@@ -323,7 +322,7 @@ int main() {
                   // 42 is implicitly converted to Foo object
 }
 </code></pre>
-<p>In the above code, you probably meant to pass a <code>Foo</code> object, but accidentally passed an <code>int</code>. The compiler doesn't complain—it just silently converts <code>42</code> to a <code>Foo</code> object. This can hide bugs!</p>
+<p>In the above code, you probably meant to pass a <code>Foo</code> object, but accidentally passed an <code>int</code>. The compiler doesn’t complain—it just silently converts <code>42</code> to a <code>Foo</code> object. This can hide bugs!</p>
 <h3 id="solution-the-explicit-keyword"><a class="header" href="#solution-the-explicit-keyword">Solution: The <code>explicit</code> Keyword</a></h3>
 <p>The <code>explicit</code> keyword <strong>prevents implicit conversions</strong> by forcing the programmer to explicitly construct objects.</p>
 <p>When you mark a constructor as <code>explicit</code>, the compiler will <strong>only allow explicit construction</strong> and will <strong>reject implicit conversions</strong>.</p>
@@ -382,9 +381,9 @@ doSomething(42);        // ✗ Compilation error - catches the mistake!
 doSomething(Foo(42));   // ✓ OK - you clearly meant to create a Foo
 </code></pre>
 <h4 id="2-makes-code-more-readable"><a class="header" href="#2-makes-code-more-readable">2. <strong>Makes Code More Readable</strong></a></h4>
-<p>When someone reads <code>Foo obj(10)</code>, it's crystal clear that a <code>Foo</code> object is being created. With <code>Foo obj = 10</code>, it's less obvious what's happening.</p>
+<p>When someone reads <code>Foo obj(10)</code>, it’s crystal clear that a <code>Foo</code> object is being created. With <code>Foo obj = 10</code>, it’s less obvious what’s happening.</p>
 <h4 id="3-enforces-type-safety"><a class="header" href="#3-enforces-type-safety">3. <strong>Enforces Type Safety</strong></a></h4>
-<p>You maintain C++'s strong typing system. If you want a <code>Foo</code> object, you must explicitly create one—no shortcuts.</p>
+<p>You maintain C++’s strong typing system. If you want a <code>Foo</code> object, you must explicitly create one—no shortcuts.</p>
 <h4 id="4-reduces-unexpected-behavior"><a class="header" href="#4-reduces-unexpected-behavior">4. <strong>Reduces Unexpected Behavior</strong></a></h4>
 <p>No surprise conversions means no surprise bugs. What you write is what you get.</p>
 <h3 id="best-practice-rules"><a class="header" href="#best-practice-rules">Best Practice Rules</a></h3>
@@ -394,23 +393,29 @@ public:
     explicit String(int size);  // Good!
 };
 </code></pre>
-<p>✗ <strong>DON'T:</strong> Allow implicit conversions unless you have a very good reason</p>
+<p>✗ <strong>DON’T:</strong> Allow implicit conversions unless you have a very good reason</p>
 <pre><code class="language-cpp">class String {
 public:
     String(int size);  // Dangerous! int could be silently converted to String
 };
 </code></pre>
 <h3 id="comparison-with-vs-without-explicit"><a class="header" href="#comparison-with-vs-without-explicit">Comparison: With vs Without <code>explicit</code></a></h3>
-<div class="table-wrapper"><table><thead><tr><th>Without <code>explicit</code></th><th>With <code>explicit</code></th></tr></thead><tbody>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Without <code>explicit</code></th><th>With <code>explicit</code></th></tr>
+</thead>
+<tbody>
 <tr><td><code>Foo obj = 10;</code> ✓ compiles</td><td><code>Foo obj = 10;</code> ✗ error</td></tr>
 <tr><td><code>Foo obj(10);</code> ✓ compiles</td><td><code>Foo obj(10);</code> ✓ compiles</td></tr>
 <tr><td>Implicit conversions allowed</td><td>Only explicit conversions allowed</td></tr>
 <tr><td>Can hide bugs</td><td>Catches bugs at compile time</td></tr>
 <tr><td>Less clear intent</td><td>Crystal clear intent</td></tr>
-</tbody></table>
+</tbody>
+</table>
 </div>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr />
+<hr>
 <p><a id="constructor-initializer-lists"></a></p>
 <h2 id="4-constructor-initializer-lists"><a class="header" href="#4-constructor-initializer-lists">4. Constructor Initializer Lists</a></h2>
 <h3 id="the-problem-with-const-member-variables"><a class="header" href="#the-problem-with-const-member-variables">The Problem with Const Member Variables</a></h3>
@@ -447,7 +452,7 @@ class Foo {
 <pre><code>error: assignment of read-only member 'Foo::member'
 </code></pre>
 <p><strong>The Problem:</strong> You cannot <strong>assign</strong> a value to a <code>const</code> member variable. Once a <code>const</code> variable is created, it cannot be changed.</p>
-<p>When you write <code>this-&gt;member = a;</code> inside the constructor body, you're trying to <strong>assign</strong> to <code>member</code> after it has already been created. But <code>member</code> is <code>const</code>, so assignment is forbidden!</p>
+<p>When you write <code>this-&gt;member = a;</code> inside the constructor body, you’re trying to <strong>assign</strong> to <code>member</code> after it has already been created. But <code>member</code> is <code>const</code>, so assignment is forbidden!</p>
 <h3 id="understanding-object-creation-flow"><a class="header" href="#understanding-object-creation-flow">Understanding Object Creation Flow</a></h3>
 <p>To understand the solution, we need to understand what happens when an object is created:</p>
 <h4 id="step-by-step-object-creation"><a class="header" href="#step-by-step-object-creation">Step-by-Step Object Creation:</a></h4>
@@ -466,7 +471,7 @@ class Foo {
 
 4. Object is Ready to Use
 </code></pre>
-<p><strong>Key Insight:</strong> By the time the constructor body <code>{ }</code> executes, all member variables have already been constructed. For <code>const</code> members, it's too late to initialize them—you can only initialize them <strong>during step 2</strong>, not during step 3.</p>
+<p><strong>Key Insight:</strong> By the time the constructor body <code>{ }</code> executes, all member variables have already been constructed. For <code>const</code> members, it’s too late to initialize them—you can only initialize them <strong>during step 2</strong>, not during step 3.</p>
 <h3 id="the-solution-member-initializer-list"><a class="header" href="#the-solution-member-initializer-list">The Solution: Member Initializer List</a></h3>
 <p>The <strong>member initializer list</strong> allows you to initialize member variables <strong>before</strong> the constructor body executes—exactly when they are being constructed.</p>
 <h4 id="syntax"><a class="header" href="#syntax">Syntax</a></h4>
@@ -532,7 +537,7 @@ Object Add: 0x16fdff048: member : 42
 <ul>
 <li>This happens via the initializer list <code>: member(a)</code></li>
 <li>The <code>const int member</code> is created and given its value in one step</li>
-<li>Since it's initialization (not assignment), it works with <code>const</code>!</li>
+<li>Since it’s initialization (not assignment), it works with <code>const</code>!</li>
 </ul>
 </li>
 <li><strong>Constructor Body</strong> - The code inside <code>{ }</code> executes</li>
@@ -549,24 +554,30 @@ Object Add: 0x16fdff048: member : 42
 <li><strong>Member Default Construction</strong> - <code>member</code> is created but uninitialized (or default-initialized)
 <ul>
 <li>For <code>const</code> members, this is where they need their value!</li>
-<li>But we didn't provide one via initializer list</li>
+<li>But we didn’t provide one via initializer list</li>
 </ul>
 </li>
 <li><strong>Constructor Body</strong> - Try to execute <code>this-&gt;member = a;</code>
 <ul>
 <li>❌ <strong>ERROR!</strong> This is <strong>assignment</strong>, not initialization</li>
-<li>Can't assign to a <code>const</code> variable!</li>
+<li>Can’t assign to a <code>const</code> variable!</li>
 </ul>
 </li>
 </ol>
 <h3 id="key-differences-initialization-vs-assignment"><a class="header" href="#key-differences-initialization-vs-assignment">Key Differences: Initialization vs Assignment</a></h3>
-<div class="table-wrapper"><table><thead><tr><th>Initialization</th><th>Assignment</th></tr></thead><tbody>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Initialization</th><th>Assignment</th></tr>
+</thead>
+<tbody>
 <tr><td>Happens when variable is <strong>created</strong></td><td>Happens <strong>after</strong> variable exists</td></tr>
 <tr><td>Uses initializer list <code>: member(value)</code></td><td>Uses <code>=</code> operator in constructor body</td></tr>
 <tr><td>Works with <code>const</code> members</td><td>❌ Does NOT work with <code>const</code> members</td></tr>
 <tr><td>Works with reference members</td><td>❌ Does NOT work with reference members</td></tr>
 <tr><td>More efficient (direct construction)</td><td>Less efficient (construct then modify)</td></tr>
-</tbody></table>
+</tbody>
+</table>
 </div>
 <h3 id="when-you-must-use-initializer-lists"><a class="header" href="#when-you-must-use-initializer-lists">When You MUST Use Initializer Lists</a></h3>
 <p>You <strong>must</strong> use initializer lists for:</p>
@@ -634,7 +645,7 @@ public:
     Foo(int a, int b) : x(a), y(b) { }  // Initialize in same order
 };
 </code></pre>
-<p>✗ <strong>DON'T:</strong> Mix initialization and assignment unnecessarily</p>
+<p>✗ <strong>DON’T:</strong> Mix initialization and assignment unnecessarily</p>
 <pre><code class="language-cpp">// Bad - Inefficient
 Foo(int a) {
     member = a;  // Default construct, then assign
@@ -644,7 +655,7 @@ Foo(int a) {
 Foo(int a) : member(a) { }  // Direct initialization
 </code></pre>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr />
+<hr>
 <p><a id="the-this-pointer-and-const-member-functions"></a></p>
 <h2 id="5-the-this-pointer-and-const-member-functions"><a class="header" href="#5-the-this-pointer-and-const-member-functions">5. The <code>this</code> Pointer and Const Member Functions</a></h2>
 <h3 id="understanding-the-this-pointer"><a class="header" href="#understanding-the-this-pointer">Understanding the <code>this</code> Pointer</a></h3>
@@ -660,7 +671,7 @@ Foo(int a) : member(a) { }  // Direct initialization
 <h4 id="the-this-pointer-explained"><a class="header" href="#the-this-pointer-explained">The <code>this</code> Pointer Explained</a></h4>
 <ul>
 <li><strong><code>this</code></strong> is a pointer to the object that called the member function</li>
-<li>It's automatically passed to every non-static member function</li>
+<li>It’s automatically passed to every non-static member function</li>
 <li>Type: <strong><code>ClassName* const</code></strong> (constant pointer to the class type)</li>
 <li>You can use it explicitly (<code>this-&gt;member</code>) or implicitly (<code>member</code>)</li>
 </ul>
@@ -730,7 +741,7 @@ int main() {
 <pre><code>error: passing 'const Foo' as 'this' argument discards qualifiers
 </code></pre>
 <h4 id="why-does-this-fail"><a class="header" href="#why-does-this-fail">Why Does This Fail?</a></h4>
-<p>Let's understand what's happening behind the scenes:</p>
+<p>Let’s understand what’s happening behind the scenes:</p>
 <ol>
 <li>
 <p><strong>When you call <code>obj3.print_obj()</code></strong> on a <code>const</code> object:</p>
@@ -750,7 +761,7 @@ int main() {
 <li>
 <p><strong>Type Mismatch:</strong></p>
 <ul>
-<li>You're trying to pass: <code>const Foo*</code></li>
+<li>You’re trying to pass: <code>const Foo*</code></li>
 <li>Function expects: <code>Foo* const</code></li>
 <li>This is <strong>not allowed</strong> because it would discard the <code>const</code> qualifier!</li>
 </ul>
@@ -775,7 +786,7 @@ obj3.print_obj();
 </code></pre>
 <p><strong>Why is this dangerous?</strong> If allowed, you could modify a <code>const</code> object through the non-const <code>this</code> pointer, violating const-correctness!</p>
 <h3 id="the-solution-const-member-functions"><a class="header" href="#the-solution-const-member-functions">The Solution: Const Member Functions</a></h3>
-<p>Mark the member function as <code>const</code> to tell the compiler: "This function will not modify the object."</p>
+<p>Mark the member function as <code>const</code> to tell the compiler: “This function will not modify the object.”</p>
 <h4 id="corrected-code"><a class="header" href="#corrected-code">Corrected Code</a></h4>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
@@ -863,8 +874,8 @@ File const.cpp:
 <li><code>_Z</code> = Start of mangled name</li>
 <li><code>N</code> = Nested name</li>
 <li><strong><code>K</code></strong> = <strong>const member function</strong> (this is the key!)</li>
-<li><code>3Foo</code> = Class name "Foo" (3 characters)</li>
-<li><code>9print_obj</code> = Function name "print_obj" (9 characters)</li>
+<li><code>3Foo</code> = Class name “Foo” (3 characters)</li>
+<li><code>9print_obj</code> = Function name “print_obj” (9 characters)</li>
 <li><code>Ev</code> = Return type void, no parameters (except hidden <code>this</code>)</li>
 </ul>
 <p>The signature shows: <code>void _ZNK3Foo9print_objEv(const Foo * const);</code></p>
@@ -937,15 +948,21 @@ public:
 };
 </code></pre>
 <h3 id="rules-for-const-objects-and-functions"><a class="header" href="#rules-for-const-objects-and-functions">Rules for Const Objects and Functions</a></h3>
-<div class="table-wrapper"><table><thead><tr><th>Scenario</th><th>Allowed?</th><th>Explanation</th></tr></thead><tbody>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Scenario</th><th>Allowed?</th><th>Explanation</th></tr>
+</thead>
+<tbody>
 <tr><td>Non-const object calling non-const function</td><td>✓ Yes</td><td>Normal case</td></tr>
-<tr><td>Non-const object calling const function</td><td>✓ Yes</td><td>Safe: const function won't modify</td></tr>
+<tr><td>Non-const object calling const function</td><td>✓ Yes</td><td>Safe: const function won’t modify</td></tr>
 <tr><td>Const object calling const function</td><td>✓ Yes</td><td>Perfect match: both are const</td></tr>
 <tr><td>Const object calling non-const function</td><td>❌ No</td><td>Unsafe: function might modify const object</td></tr>
-</tbody></table>
+</tbody>
+</table>
 </div>
 <h3 id="best-practices-1"><a class="header" href="#best-practices-1">Best Practices</a></h3>
-<p>✓ <strong>DO:</strong> Mark member functions as <code>const</code> if they don't modify the object</p>
+<p>✓ <strong>DO:</strong> Mark member functions as <code>const</code> if they don’t modify the object</p>
 <pre><code class="language-cpp">class Person {
     std::string name;
     int age;
@@ -970,7 +987,7 @@ public:
     // p.setAge(30); // ❌ ERROR: setAge() is not const
 }
 </code></pre>
-<p>✗ <strong>DON'T:</strong> Forget to mark read-only functions as const</p>
+<p>✗ <strong>DON’T:</strong> Forget to mark read-only functions as const</p>
 <pre><code class="language-cpp">class Bad {
     int x;
 public:
@@ -982,7 +999,7 @@ void useIt(const Bad&amp; b) {
 }
 </code></pre>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr />
+<hr>
 <p><a id="the-mutable-keyword"></a></p>
 <h2 id="6-the-mutable-keyword"><a class="header" href="#6-the-mutable-keyword">6. The <code>mutable</code> Keyword</a></h2>
 <h3 id="the-problem-wanting-to-modify-some-members-of-const-objects"><a class="header" href="#the-problem-wanting-to-modify-some-members-of-const-objects">The Problem: Wanting to Modify Some Members of Const Objects</a></h3>
@@ -1108,7 +1125,7 @@ public:
     }
 };
 </code></pre>
-<p><strong>Key Point:</strong> The <code>mutable</code> keyword essentially tells the compiler: "Don't apply const restrictions to this particular member, even when the object is const."</p>
+<p><strong>Key Point:</strong> The <code>mutable</code> keyword essentially tells the compiler: “Don’t apply const restrictions to this particular member, even when the object is const.”</p>
 <h3 id="real-world-use-cases"><a class="header" href="#real-world-use-cases">Real-World Use Cases</a></h3>
 <h4 id="1-caching-expensive-computations"><a class="header" href="#1-caching-expensive-computations">1. <strong>Caching Expensive Computations</strong></a></h4>
 <pre><code class="language-cpp">class DataProcessor {
@@ -1235,11 +1252,11 @@ int main() {
 <li>Debug/logging counters</li>
 <li>Lazy initialization</li>
 <li>Synchronization primitives (mutexes)</li>
-<li>Implementation details that don't affect logical const-ness</li>
+<li>Implementation details that don’t affect logical const-ness</li>
 </ul>
-<p>✗ <strong>DON'T use <code>mutable</code> for:</strong></p>
+<p>✗ <strong>DON’T use <code>mutable</code> for:</strong></p>
 <ul>
-<li>Core data that defines the object's state</li>
+<li>Core data that defines the object’s state</li>
 <li>When it breaks the logical const-ness of the object</li>
 <li>As a workaround for poor design</li>
 <li>When a better design would avoid the need for it</li>
@@ -1262,7 +1279,7 @@ public:
     }
 };
 </code></pre>
-<p>✓ <strong>Why it's good:</strong> The cache is an implementation detail. Logically, <code>getSum()</code> doesn't modify the object—it just returns a value.</p>
+<p>✓ <strong>Why it’s good:</strong> The cache is an implementation detail. Logically, <code>getSum()</code> doesn’t modify the object—it just returns a value.</p>
 <h4 id="bad-use-breaking-logical-const-ness"><a class="header" href="#bad-use-breaking-logical-const-ness">Bad Use: Breaking Logical Const-ness</a></h4>
 <pre><code class="language-cpp">class Counter {
     mutable int count;  // ❌ Bad: count is the object's main state!
@@ -1273,12 +1290,12 @@ public:
     }
 };
 </code></pre>
-<p>✗ <strong>Why it's bad:</strong> The count is the object's primary state. If you're modifying it, the object IS changing, so the function shouldn't be <code>const</code>.</p>
+<p>✗ <strong>Why it’s bad:</strong> The count is the object’s primary state. If you’re modifying it, the object IS changing, so the function shouldn’t be <code>const</code>.</p>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 <p><a id="copy-constructor"></a></p>
 <h1 id="-understanding-copy-constructors-in-c"><a class="header" href="#-understanding-copy-constructors-in-c">📘 Understanding Copy Constructors in C++</a></h1>
 <p>Let’s explore <strong>what a copy constructor is</strong>, <strong>when it’s invoked</strong>, and understand <strong>deep vs shallow copies</strong> and <strong>temporary objects</strong> through examples.</p>
-<hr />
+<hr>
 <h2 id="-what-is-a-copy-constructor"><a class="header" href="#-what-is-a-copy-constructor">🧠 What is a Copy Constructor?</a></h2>
 <p>A <strong>copy constructor</strong> in C++ is a special constructor used to <strong>create a new object as a copy of an existing object</strong>.</p>
 <h3 id="-syntax"><a class="header" href="#-syntax">📜 Syntax</a></h3>
@@ -1318,7 +1335,7 @@ public:
 </li>
 </ol>
 <p>If you do not define a copy constructor, the compiler provides a <strong>default shallow copy constructor</strong>, which may not be safe for classes managing dynamic memory.</p>
-<hr />
+<hr>
 <h2 id="-step-1-basic-class-without-copy-constructor"><a class="header" href="#-step-1-basic-class-without-copy-constructor">🧩 Step 1: Basic Class Without Copy Constructor</a></h2>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
@@ -1345,8 +1362,7 @@ int main() {
 }
 </code></pre>
 <h3 id="-problem-shallow-copy"><a class="header" href="#-problem-shallow-copy">🧨 Problem: Shallow Copy</a></h3>
-<p>The compiler automatically generates a <strong>default copy constructor</strong> that performs a <strong>member-wise (shallow) copy</strong>.<br />
-That means both <code>obj1</code> and <code>obj2</code> will have their <code>ptr</code> pointing to the same memory location.
+<p>The compiler automatically generates a <strong>default copy constructor</strong> that performs a <strong>member-wise (shallow) copy</strong>.<br>That means both <code>obj1</code> and <code>obj2</code> will have their <code>ptr</code> pointing to the same memory location.
 When both destructors run:</p>
 <ul>
 <li><code>obj1</code> deletes <code>ptr</code></li>
@@ -1361,7 +1377,7 @@ a.out(53252,0x1f91d60c0) malloc: *** set a breakpoint in malloc_error_break to d
 [1]    53252 abort      ./a.out
 </code></pre>
 <p>💥 <strong>Result:</strong> <em>Double free or corruption</em> runtime error.</p>
-<hr />
+<hr>
 <h2 id="-step-2-what-valgrindlinuxleaksmac-shows"><a class="header" href="#-step-2-what-valgrindlinuxleaksmac-shows">🧪 Step 2: What Valgrind(linux)/leaks(mac) Shows</a></h2>
 <p>If you run this under Valgrind, you’ll see:</p>
 <pre><code>==1234== Invalid free() / delete / delete[]
@@ -1380,7 +1396,7 @@ a.out(56120,0x1f91d60c0) malloc: *** error for object 0x133804080: pointer being
 a.out(56120,0x1f91d60c0) malloc: *** set a breakpoint in malloc_error_break to debug
 </code></pre>
 <p>This happens because <strong>two destructors delete the same pointer</strong>.</p>
-<hr />
+<hr>
 <h2 id="-step-3-add-a-custom-copy-constructor-deep-copy"><a class="header" href="#-step-3-add-a-custom-copy-constructor-deep-copy">✅ Step 3: Add a Custom Copy Constructor (Deep Copy)</a></h2>
 <p>We fix this by allocating <strong>new memory</strong> for each object, and <strong>copying the value</strong> instead of the pointer.</p>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
@@ -1414,7 +1430,7 @@ int main() {
 }
 </code></pre>
 <p>Now each object has its own <code>ptr</code>, and deletion is safe.</p>
-<hr />
+<hr>
 <h2 id="-step-4-problem-with-temporaries-rvalues-or-prvalues-in-c11"><a class="header" href="#-step-4-problem-with-temporaries-rvalues-or-prvalues-in-c11">🔍 Step 4: Problem with Temporaries (rvalues or prvalues in c++11)</a></h2>
 <p>Let’s add a function that <strong>returns a temporary object</strong>:</p>
 <pre><code class="language-cpp">Foo get_obj() {
@@ -1436,7 +1452,7 @@ note: candidate constructor not viable: expects an lvalue for 1st argument
 <li>The parameter type <code>Foo&amp;</code> <strong>cannot bind</strong> to a temporary object.</li>
 <li>In C++, <strong>non-const lvalue references</strong> cannot bind to temporaries.</li>
 </ul>
-<hr />
+<hr>
 <h2 id="-step-5-fix-by-adding-const-to-copy-constructor"><a class="header" href="#-step-5-fix-by-adding-const-to-copy-constructor">🧱 Step 5: Fix by Adding <code>const</code> to Copy Constructor</a></h2>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
@@ -1478,7 +1494,7 @@ int main() {
 <li><strong>lvalues</strong> (<code>obj1</code>)</li>
 <li><strong>temporaries (prvalues)</strong> returned from functions</li>
 </ul>
-<hr />
+<hr>
 <h2 id="-step-6-understanding-temporary-objects"><a class="header" href="#-step-6-understanding-temporary-objects">🧠 Step 6: Understanding Temporary Objects</a></h2>
 <h3 id="-what-is-a-temporary-prvalue"><a class="header" href="#-what-is-a-temporary-prvalue">💡 What is a Temporary (prvalue)?</a></h3>
 <ul>
@@ -1490,10 +1506,9 @@ int main() {
 <pre><code class="language-cpp">Foo(const Foo&amp; obj);
 </code></pre>
 <p>so that <strong>temporaries</strong> can be used to create new objects safely.</p>
-<hr />
+<hr>
 <h2 id="-step-7-unoptimized-invocations"><a class="header" href="#-step-7-unoptimized-invocations">🕵️‍♂️ Step 7: Unoptimized Invocations</a></h2>
-<p>Before compiler optimizations (like <strong>Return Value Optimization</strong>, RVO),<br />
-the following may happen when you call <code>get_obj()</code>:</p>
+<p>Before compiler optimizations (like <strong>Return Value Optimization</strong>, RVO),<br>the following may happen when you call <code>get_obj()</code>:</p>
 <ol>
 <li><code>Foo(30)</code> temporary created (constructor invoked)</li>
 <li>Temporary copied into <code>obj3</code> (copy constructor invoked)</li>
@@ -1507,30 +1522,34 @@ Foo(const Foo&amp;) invoked (deep copy), *ptr = 30
 ~Foo() invoked, deleting ptr
 </code></pre>
 <blockquote>
-<p>In optimized builds, modern compilers often <strong>elide</strong> these copies (RVO),<br />
-so you might see fewer constructor calls.</p>
+<p>In optimized builds, modern compilers often <strong>elide</strong> these copies (RVO),<br>so you might see fewer constructor calls.</p>
 </blockquote>
-<hr />
+<hr>
 <h2 id="-summary"><a class="header" href="#-summary">🧾 Summary</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Concept</th><th>Description</th></tr></thead><tbody>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>Description</th></tr>
+</thead>
+<tbody>
 <tr><td><strong>Copy Constructor</strong></td><td>Special constructor used to create an object as a copy of another object</td></tr>
 <tr><td><strong>Shallow Copy</strong></td><td>Copies pointer value → both objects share same memory → leads to double free</td></tr>
 <tr><td><strong>Deep Copy</strong></td><td>Allocates new memory and copies data → each object owns its own copy</td></tr>
 <tr><td><strong>Why <code>const</code>?</strong></td><td>Allows binding to temporaries (prvalues)</td></tr>
 <tr><td><strong>Without <code>const</code></strong></td><td>Fails when copying from a temporary</td></tr>
 <tr><td><strong>Temporary (prvalue)</strong></td><td>A short-lived unnamed object like <code>Foo(10)</code> or <code>return Foo()</code></td></tr>
-</tbody></table>
+</tbody>
+</table>
 </div>
-<hr />
-<p>Next step 👉 <strong>Move Constructor</strong><br />
-(to optimize performance and avoid unnecessary deep copies for temporaries).</p>
+<hr>
+<p>Next step 👉 <strong>Move Constructor</strong><br>(to optimize performance and avoid unnecessary deep copies for temporaries).</p>
 <h2 id="-back-to-table-of-contents"><a class="header" href="#-back-to-table-of-contents"><a href="#table-of-contents">↑ Back to Table of Contents</a></a></h2>
 <h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
 <p><strong>Constructors</strong> initialize objects after memory allocation, while <strong>destructors</strong> clean up resources before memory deallocation. Using the <code>explicit</code> keyword on constructors is a best practice that prevents implicit type conversions, making your code safer, clearer, and more maintainable.</p>
 <p><strong>Member initializer lists</strong> allow you to initialize member variables at the moment of their construction, which is essential for <code>const</code> and reference members, and more efficient for all member variables.</p>
 <p><strong>The <code>this</code> pointer</strong> is a hidden pointer passed to every member function that points to the calling object. When working with <code>const</code> objects, member functions must be marked as <code>const</code> to accept a <code>const Foo* const</code> instead of <code>Foo* const</code>, ensuring const-correctness and type safety.</p>
 <p><strong>The <code>mutable</code> keyword</strong> allows specific member variables to be modified even in <code>const</code> member functions and <code>const</code> objects. Use it for implementation details like caching, debug counters, and lazy initialization—but not for core object state.</p>
-<p><strong>Bottom Line:</strong> Use <code>mutable</code> judiciously for implementation details that don't affect the logical const-ness of your objects. It's a powerful tool for optimization and internal bookkeeping, but shouldn't be used to bypass const-correctness for core object state!</p>
+<p><strong>Bottom Line:</strong> Use <code>mutable</code> judiciously for implementation details that don’t affect the logical const-ness of your objects. It’s a powerful tool for optimization and internal bookkeeping, but shouldn’t be used to bypass const-correctness for core object state!</p>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 
                     </main>
@@ -1538,11 +1557,11 @@ so you might see fewer constructor calls.</p>
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                             <a rel="prev" href="inheritance.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                                <i class="fa fa-angle-left"></i>
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
                             <a rel="next prefetch" href="constructor_and_inheritance.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
                         <div style="clear: both"></div>
@@ -1552,16 +1571,21 @@ so you might see fewer constructor calls.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                     <a rel="prev" href="inheritance.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
                     <a rel="next prefetch" href="constructor_and_inheritance.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
 
         </div>
 
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
 
 
@@ -1570,13 +1594,13 @@ so you might see fewer constructor calls.</p>
         </script>
 
 
-        <script src="elasticlunr.min.js"></script>
-        <script src="mark.min.js"></script>
-        <script src="searcher.js"></script>
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
 
-        <script src="clipboard.min.js"></script>
-        <script src="highlight.js"></script>
-        <script src="book.js"></script>
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
 
