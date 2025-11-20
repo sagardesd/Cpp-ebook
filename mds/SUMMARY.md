@@ -19,4 +19,4 @@
 - [Operator Overloading](./operator_overload.md)
 - [Templates](./templates.md)
   - [Template Functions](./template_function.md)
-  - [Class Templates](./template_function.md)
+  - [Class Templates](./class_templates.md)
