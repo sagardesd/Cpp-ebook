@@ -17,6 +17,6 @@
 - [Abstract class and Abstraction](./abstract_class.md)
 - [Friend function and Class](./friend.md)
 - [Operator Overloading](./operator_overload.md)
-- [Templates]
+- [Templates](./template.md)
   - [Template Functions](./template_function.md)
   - [Class Templates](./template_function.md)
