@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Template Functions</title>
+        <title>Templates</title>
 
 
         <!-- Custom HTML head -->
@@ -177,185 +177,17 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="c-templates-tutorial"><a class="header" href="#c-templates-tutorial">C++ Templates Tutorial</a></h1>
-<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
-<ol>
-<li><a href="#what-are-templates">What Are Templates?</a></li>
-<li><a href="#visualize-the-problem">Visualize the Problem</a></li>
-<li><a href="#function-templates">Function Templates</a></li>
-<li><a href="#how-function-templates-work">How Function Templates Work</a></li>
-<li><a href="#how-to-call-template-functions">How to Call Template Functions</a>
-<ul>
-<li><a href="#option-1-implicit-instantiation">Option 1: Implicit Instantiation</a></li>
-<li><a href="#option-2-explicit-instantiation">Option 2: Explicit Instantiation</a></li>
-</ul>
-</li>
-<li><a href="#templates-vs-functions">Templates vs Functions</a></li>
-<li><a href="#key-takeaways-and-summary">Key Takeaways and Summary</a></li>
-</ol>
-<hr>
-<h2 id="what-are-templates"><a class="header" href="#what-are-templates">What Are Templates?</a></h2>
-<p><strong>Templates are C++’s way of writing generic code that can work on any data type (built-in and user-defined).</strong></p>
-<p>In essence, templates automate code generation. You write the function logic once, and the compiler generates the necessary versions for each data type you use.</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h2 id="visualize-the-problem"><a class="header" href="#visualize-the-problem">Visualize the Problem</a></h2>
-<p>Consider a function that returns the smallest of two values, let’s say two integers:</p>
-<pre><code class="language-cpp">int min(int a, int b) { 
-    return a &lt; b ? a : b; 
-}
-</code></pre>
-<p>The <code>min</code> function makes sense for more than just integers. What if we want to find the smallest of two doubles, or two strings?</p>
-<pre><code class="language-cpp">min(106, 107);           // int, returns 106
-min(1.2, 3.4);           // double, returns 1.2
-min("Thomas", "Rachel"); // string, returns "Rachel" (alphabetically first)
-</code></pre>
-<h3 id="attempted-solution-function-overloading"><a class="header" href="#attempted-solution-function-overloading">Attempted Solution: Function Overloading</a></h3>
-<pre><code class="language-cpp">int min(int a, int b) { 
-    return a &lt; b ? a : b; 
-}
-
-double min(double a, double b) { 
-    return a &lt; b ? a : b; 
-}
-
-std::string min(std::string a, std::string b) { 
-    return a &lt; b ? a : b; 
-}
-</code></pre>
-<p><strong>Problem:</strong> The function logic doesn’t change, but we keep duplicating code. What if we need to support more types in the future, including custom classes? We can’t keep adding functions manually.</p>
-<p><strong>This problem can be solved using function templates.</strong></p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h2 id="function-templates"><a class="header" href="#function-templates">Function Templates</a></h2>
-<p>Templates let us write the function once and let the compiler generate the necessary versions automatically:</p>
-<pre><code class="language-cpp">template &lt;typename T&gt;
-T min(T a, T b) { 
-    return a &lt; b ? a : b; 
-}
-</code></pre>
-<h3 id="syntax"><a class="header" href="#syntax">Syntax</a></h3>
-<pre><code class="language-cpp">template &lt;typename T&gt;  // or template &lt;class T&gt;
-return-type functionName(T parameter1, T parameter2, ...) {
-    // Function logic
-}
-</code></pre>
-<p><strong>Note:</strong> <code>typename</code> and <code>class</code> are interchangeable in template declarations. Using <code>typename</code> is generally preferred and will make more sense when exploring advanced C++20 features.</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h2 id="how-function-templates-work"><a class="header" href="#how-function-templates-work">How Function Templates Work</a></h2>
-<p>When you call a template function, the compiler generates the specific version of the code for the type you’re using:</p>
-<pre><code class="language-cpp">min(106, 107);   // Compiler generates: int min(int a, int b)
-min(1.2, 3.4);   // Compiler generates: double min(double a, double b)
-</code></pre>
-<p>Behind the scenes, the compiler generates:</p>
-<pre><code class="language-cpp">// Compiler-generated code
-int min(int a, int b) { 
-    return a &lt; b ? a : b; 
-}
-
-double min(double a, double b) { 
-    return a &lt; b ? a : b; 
-}
-</code></pre>
-<p>This happens at <strong>compile-time</strong>, so there’s no runtime overhead.</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h2 id="how-to-call-template-functions"><a class="header" href="#how-to-call-template-functions">How to Call Template Functions</a></h2>
-<h3 id="option-1-implicit-instantiation"><a class="header" href="#option-1-implicit-instantiation">Option 1: Implicit Instantiation</a></h3>
-<p>Let the compiler infer the types automatically:</p>
-<pre><code class="language-cpp">min(106, 107);   // int, returns 106
-min(1.2, 3.4);   // double, returns 1.2
-</code></pre>
-<p><strong>Advantage:</strong> Clean, concise syntax.</p>
-<p><strong>Disadvantage:</strong> Can lead to unexpected behavior in ambiguous cases.</p>
-<h4 id="problem-1-string-literals"><a class="header" href="#problem-1-string-literals">Problem 1: String Literals</a></h4>
-<pre><code class="language-cpp">template &lt;typename T&gt;
-T min(T a, T b) { 
-    return a &lt; b ? a : b; 
-}
-
-min("Thomas", "Rachel");  // Dangerous!
-</code></pre>
-<p>String literals (<code>"Thomas"</code>, <code>"Rachel"</code>) are passed as <code>const char*</code>, so the compiler generates:</p>
-<pre><code class="language-cpp">const char* min(const char* a, const char* b) { 
-    return a &lt; b ? a : b; 
-}
-</code></pre>
-<p><strong>Problem:</strong> This performs pointer comparison, not string comparison! ❌</p>
-<h4 id="problem-2-mismatched-parameter-types"><a class="header" href="#problem-2-mismatched-parameter-types">Problem 2: Mismatched Parameter Types</a></h4>
-<pre><code class="language-cpp">min(106, 3.14);  // int and double - doesn't compile!
-</code></pre>
-<p>Since the parameters are different types (<code>int</code> and <code>double</code>), the compiler cannot deduce a single type <code>T</code>. Implicit instantiation fails.</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h3 id="option-2-explicit-instantiation"><a class="header" href="#option-2-explicit-instantiation">Option 2: Explicit Instantiation</a></h3>
-<p>Explicitly specify the type to avoid ambiguity:</p>
-<pre><code class="language-cpp">min&lt;std::string&gt;("Thomas", "Rachel");  // Specify type explicitly
-min&lt;double&gt;(106, 3.14);                // Specify type explicitly
-</code></pre>
-<h4 id="solution-to-problem-1-string-comparison"><a class="header" href="#solution-to-problem-1-string-comparison">Solution to Problem 1: String Comparison</a></h4>
-<pre><code class="language-cpp">template &lt;typename T&gt;
-T min(const T&amp; a, const T&amp; b) { 
-    return a &lt; b ? a : b; 
-}
-
-min&lt;std::string&gt;("Thomas", "Rachel");  // ✅ Correct!
-</code></pre>
-<p>Here, <code>const char*</code> is converted to <code>std::string</code>, giving us proper string comparison.</p>
-<h4 id="solution-to-problem-2-mismatched-types"><a class="header" href="#solution-to-problem-2-mismatched-types">Solution to Problem 2: Mismatched Types</a></h4>
-<p>When parameters have different types, use explicit instantiation to specify which type to use:</p>
-<pre><code class="language-cpp">min&lt;double&gt;(106, 3.14);  // ✅ Converts 106 to double, returns 3.14
-min&lt;int&gt;(106, 3.14);     // ✅ Converts 3.14 to int, returns 3
-</code></pre>
-<p>The compiler will perform necessary type conversions based on your explicit type specification.</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h2 id="templates-vs-functions"><a class="header" href="#templates-vs-functions">Templates vs Functions</a></h2>
-<p>It’s important to understand the distinction:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Concept</th><th>What It Is</th></tr>
-</thead>
-<tbody>
-<tr><td><code>template&lt;typename T&gt; T min(T a, T b)</code></td><td><strong>This is a TEMPLATE</strong> - Not a function, but a blueprint for generating functions</td></tr>
-<tr><td><code>min&lt;int&gt;</code></td><td><strong>This is a FUNCTION</strong> - Also known as a template instantiation</td></tr>
-</tbody>
-</table>
-</div>
-<p><strong>Key Point:</strong> When you write a template, you’re creating a pattern. When the compiler instantiates it with a specific type (like <code>min&lt;int&gt;</code>), that’s when an actual function is generated.</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
-<hr>
-<h2 id="key-takeaways-and-summary"><a class="header" href="#key-takeaways-and-summary">Key Takeaways and Summary</a></h2>
-<h3 id="key-takeaways"><a class="header" href="#key-takeaways">Key Takeaways</a></h3>
-<ul>
-<li><strong>Templates automate code generation</strong> - write once, use for any type</li>
-<li><strong>Implicit instantiation</strong> is convenient but can be ambiguous</li>
-<li><strong>Explicit instantiation</strong> gives you control when types don’t match exactly</li>
-<li>Templates are resolved at <strong>compile-time</strong> with no runtime overhead</li>
-<li>Works with both built-in types and user-defined classes</li>
-</ul>
-<h3 id="summary"><a class="header" href="#summary">Summary</a></h3>
-<p>Templates allow you to:</p>
-<ol>
-<li><strong>Define behavior once</strong> - Write the logic a single time</li>
-<li><strong>Let the compiler generate type-specific implementations</strong> - Automatic code generation</li>
-<li><strong>Write generic, reusable code</strong> - Works with any type</li>
-<li><strong>Maintain type safety without code duplication</strong> - No manual overloading needed</li>
-</ol>
-<p><strong>Think of it as:</strong> You provide the blueprint (template), the compiler builds the specific versions you need!</p>
-<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+                        <p>Templates are C++’s way of writing generic code that can work on any data type (built-in and user-defined).</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="templates.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="operator_overload.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="class_templates.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="template_function.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -365,11 +197,11 @@ min&lt;int&gt;(106, 3.14);     // ✅ Converts 3.14 to int, returns 3
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="templates.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="operator_overload.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="class_templates.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="template_function.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1c183108.js";
+            window.path_to_searchindex_js = "searchindex-df3757d9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-fea1aba2.js"></script>
+        <script src="toc-938efc6f.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -12995,6 +12995,9 @@ MyString c = a.charsInCommon(b);  // Much better!
 </ul>
 <p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="templates"><a href="#templates" class="header">Templates</a></h1>
+<p>Templates are C++’s way of writing generic code that can work on any data type (built-in and user-defined).</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c-templates-tutorial"><a class="header" href="#c-templates-tutorial">C++ Templates Tutorial</a></h1>
 <h2 id="table-of-contents-14"><a class="header" href="#table-of-contents-14">Table of Contents</a></h2>
 <ol>
@@ -13164,6 +13167,476 @@ min&lt;int&gt;(106, 3.14);     // ✅ Converts 3.14 to int, returns 3
 </ol>
 <p><strong>Think of it as:</strong> You provide the blueprint (template), the compiler builds the specific versions you need!</p>
 <p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="class-templates"><a class="header" href="#class-templates">Class Templates</a></h1>
+<h2 id="table-of-contents-15"><a class="header" href="#table-of-contents-15">Table of Contents</a></h2>
+<ol>
+<li><a href="#1-what-is-a-class-template">What is a Class Template?</a></li>
+<li><a href="#2-syntax-for-class-templates">Syntax for Class Templates</a></li>
+<li><a href="#3-a-simple-class-template-example">A Simple Class Template Example</a></li>
+<li><a href="#4-defining-member-functions-outside-the-class">Defining Member Functions Outside the Class</a></li>
+<li><a href="#5-instantiating-class-templates">Instantiating Class Templates</a></li>
+<li><a href="#6-understanding-template-vs-type">Understanding Template vs Type</a></li>
+</ol>
+<hr>
+<h2 id="1-what-is-a-class-template"><a class="header" href="#1-what-is-a-class-template">1. What is a Class Template?</a></h2>
+<p>A <strong>class template</strong> is a blueprint for creating classes that work with <strong>generic types</strong>. Instead of writing separate classes for <code>int</code>, <code>double</code>, <code>string</code>, etc., you write one template that works with any type.</p>
+<h3 id="definition"><a class="header" href="#definition">Definition</a></h3>
+<blockquote>
+<p>A class template is a class that is <strong>parameterized</strong> over one or more types. It contains member variables and functions that use these generic types.</p>
+</blockquote>
+<h3 id="why-use-class-templates"><a class="header" href="#why-use-class-templates">Why Use Class Templates?</a></h3>
+<p><strong>Without templates:</strong></p>
+<pre><code class="language-cpp">class IntBox {
+    int value;
+};
+
+class DoubleBox {
+    double value;
+};
+
+class StringBox {
+    string value;
+};
+// ... and so on for every type!
+</code></pre>
+<p><strong>With templates:</strong></p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Box {
+    T value;  // Works with ANY type!
+};
+</code></pre>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="2-syntax-for-class-templates"><a class="header" href="#2-syntax-for-class-templates">2. Syntax for Class Templates</a></h2>
+<h3 id="basic-syntax-4"><a class="header" href="#basic-syntax-4">Basic Syntax</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class ClassName {
+    // Member variables using type T
+    T member;
+    
+    // Member functions using type T
+    void setMember(T value);
+    T getMember();
+};
+</code></pre>
+<h3 id="syntax-breakdown"><a class="header" href="#syntax-breakdown">Syntax Breakdown</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+│         │        │
+│         │        └─→ Template parameter name (can be any identifier)
+│         └─────────→ Keyword (can also use 'class' instead)
+└──────────────────→ Keyword introducing template
+</code></pre>
+<h3 id="multiple-template-parameters"><a class="header" href="#multiple-template-parameters">Multiple Template Parameters</a></h3>
+<pre><code class="language-cpp">template&lt;typename T, typename U&gt;
+class Pair {
+    T first;
+    U second;
+};
+
+template&lt;typename T, int SIZE&gt;
+class Array {
+    T data[SIZE];  // SIZE is a non-type parameter
+};
+</code></pre>
+<h3 id="common-conventions"><a class="header" href="#common-conventions">Common Conventions</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Convention</th><th>Example</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Single letter</td><td><code>template&lt;typename T&gt;</code></td><td>Most common for simple cases</td></tr>
+<tr><td>Descriptive name</td><td><code>template&lt;typename ValueType&gt;</code></td><td>Better for complex templates</td></tr>
+<tr><td>Multiple params</td><td><code>template&lt;typename K, typename V&gt;</code></td><td>Key-Value pairs</td></tr>
+</tbody>
+</table>
+</div>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="3-a-simple-class-template-example"><a class="header" href="#3-a-simple-class-template-example">3. A Simple Class Template Example</a></h2>
+<p>Let’s create a <code>Box</code> class that can hold any type of value.</p>
+<h3 id="simple-box-template"><a class="header" href="#simple-box-template">Simple Box Template</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Box {
+private:
+    T value;  // Generic type member variable
+    
+public:
+    // Constructor
+    Box(T val) : value(val) {}
+    
+    // Getter
+    T getValue() const {
+        return value;
+    }
+    
+    // Setter
+    void setValue(T val) {
+        value = val;
+    }
+};
+</code></pre>
+<h3 id="understanding-the-example"><a class="header" href="#understanding-the-example">Understanding the Example</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;  // ← Declares this is a template
+class Box {
+private:
+    T value;          // ← T can be int, double, string, etc.
+    
+public:
+    Box(T val) : value(val) {}  // ← Constructor takes type T
+    
+    T getValue() const {         // ← Returns type T
+        return value;
+    }
+    
+    void setValue(T val) {       // ← Parameter is type T
+        value = val;
+    }
+};
+</code></pre>
+<h3 id="usage-example"><a class="header" href="#usage-example">Usage Example</a></h3>
+<pre><code class="language-cpp">// Create a Box for integers
+Box&lt;int&gt; intBox(42);
+cout &lt;&lt; intBox.getValue();  // Output: 42
+
+// Create a Box for doubles
+Box&lt;double&gt; doubleBox(3.14);
+cout &lt;&lt; doubleBox.getValue();  // Output: 3.14
+
+// Create a Box for strings
+Box&lt;string&gt; stringBox("Hello");
+cout &lt;&lt; stringBox.getValue();  // Output: Hello
+</code></pre>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="4-defining-member-functions-outside-the-class"><a class="header" href="#4-defining-member-functions-outside-the-class">4. Defining Member Functions Outside the Class</a></h2>
+<p>For better code organization, you can define member functions outside the class body.</p>
+<h3 id="syntax-for-external-definition"><a class="header" href="#syntax-for-external-definition">Syntax for External Definition</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+ReturnType ClassName&lt;T&gt;::functionName(parameters) {
+    // Function body
+}
+</code></pre>
+<h3 id="complete-example-box-with-external-definitions"><a class="header" href="#complete-example-box-with-external-definitions">Complete Example: Box with External Definitions</a></h3>
+<pre><code class="language-cpp">// ============================================
+// Class Declaration
+// ============================================
+template&lt;typename T&gt;
+class Box {
+private:
+    T value;
+    bool isEmpty;
+    
+public:
+    // Constructor declarations
+    Box();
+    Box(T val);
+    
+    // Member function declarations
+    void store(T val);
+    T retrieve() const;
+    bool empty() const;
+    void clear();
+    void display() const;
+};
+
+// ============================================
+// Member Function Definitions (Outside Class)
+// ============================================
+
+// Default constructor
+template&lt;typename T&gt;
+Box&lt;T&gt;::Box() : isEmpty(true) {
+    // Empty constructor body
+}
+
+// Parameterized constructor
+template&lt;typename T&gt;
+Box&lt;T&gt;::Box(T val) : value(val), isEmpty(false) {
+    // Initialize with a value
+}
+
+// Store function
+template&lt;typename T&gt;
+void Box&lt;T&gt;::store(T val) {
+    value = val;
+    isEmpty = false;
+}
+
+// Retrieve function
+template&lt;typename T&gt;
+T Box&lt;T&gt;::retrieve() const {
+    if (isEmpty) {
+        throw runtime_error("Box is empty!");
+    }
+    return value;
+}
+
+// Empty check function
+template&lt;typename T&gt;
+bool Box&lt;T&gt;::empty() const {
+    return isEmpty;
+}
+
+// Clear function
+template&lt;typename T&gt;
+void Box&lt;T&gt;::clear() {
+    isEmpty = true;
+}
+
+// Display function
+template&lt;typename T&gt;
+void Box&lt;T&gt;::display() const {
+    if (isEmpty) {
+        cout &lt;&lt; "Box is empty" &lt;&lt; endl;
+    } else {
+        cout &lt;&lt; "Box contains: " &lt;&lt; value &lt;&lt; endl;
+    }
+}
+</code></pre>
+<h3 id="anatomy-of-external-definition"><a class="header" href="#anatomy-of-external-definition">Anatomy of External Definition</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;        // ← Template declaration (required!)
+│
+└─→ T Box&lt;T&gt;::retrieve() const {
+      │   │  │
+      │   │  └─→ Scope resolution with template parameter
+      │   └────→ Class name
+      └────────→ Return type using template parameter
+</code></pre>
+<h3 id="key-points-for-external-definitions"><a class="header" href="#key-points-for-external-definitions">Key Points for External Definitions</a></h3>
+<p>✅ <strong>Must include:</strong></p>
+<ul>
+<li><code>template&lt;typename T&gt;</code> before each function</li>
+<li>Class name with template parameter: <code>Box&lt;T&gt;::</code></li>
+<li>Same signature as declaration</li>
+</ul>
+<p>❌ <strong>Common mistakes:</strong></p>
+<pre><code class="language-cpp">// ❌ WRONG: Missing template declaration
+T Box&lt;T&gt;::retrieve() const { }
+
+// ❌ WRONG: Missing template parameter on class name
+template&lt;typename T&gt;
+T Box::retrieve() const { }
+
+// ✅ CORRECT
+template&lt;typename T&gt;
+T Box&lt;T&gt;::retrieve() const { }
+</code></pre>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="5-instantiating-class-templates"><a class="header" href="#5-instantiating-class-templates">5. Instantiating Class Templates</a></h2>
+<h3 id="basic-instantiation"><a class="header" href="#basic-instantiation">Basic Instantiation</a></h3>
+<pre><code class="language-cpp">// Syntax: ClassName&lt;Type&gt; objectName;
+Box&lt;int&gt; integerBox;           // Box that holds int
+Box&lt;double&gt; doubleBox;         // Box that holds double
+Box&lt;string&gt; stringBox;         // Box that holds string
+</code></pre>
+<h3 id="instantiation-with-initialization"><a class="header" href="#instantiation-with-initialization">Instantiation with Initialization</a></h3>
+<pre><code class="language-cpp">// Using parameterized constructor
+Box&lt;int&gt; box1(42);
+Box&lt;double&gt; box2(3.14159);
+Box&lt;string&gt; box3("Hello, Templates!");
+
+// Using default constructor then storing
+Box&lt;char&gt; box4;
+box4.store('A');
+</code></pre>
+<h3 id="complete-usage-example"><a class="header" href="#complete-usage-example">Complete Usage Example</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+// ... (Box class template definition here) ...
+
+int main() {
+    // ========================================
+    // Example 1: Integer Box
+    // ========================================
+    cout &lt;&lt; "=== Integer Box ===" &lt;&lt; endl;
+    Box&lt;int&gt; intBox(100);
+    intBox.display();                    // Box contains: 100
+    
+    int value = intBox.retrieve();
+    cout &lt;&lt; "Value: " &lt;&lt; value &lt;&lt; endl;  // Value: 100
+    
+    intBox.clear();
+    intBox.display();                    // Box is empty
+    
+    // ========================================
+    // Example 2: Double Box
+    // ========================================
+    cout &lt;&lt; "\n=== Double Box ===" &lt;&lt; endl;
+    Box&lt;double&gt; doubleBox;
+    cout &lt;&lt; "Empty? " &lt;&lt; doubleBox.empty() &lt;&lt; endl;  // Empty? 1
+    
+    doubleBox.store(2.71828);
+    doubleBox.display();                 // Box contains: 2.71828
+    
+    // ========================================
+    // Example 3: String Box
+    // ========================================
+    cout &lt;&lt; "\n=== String Box ===" &lt;&lt; endl;
+    Box&lt;string&gt; stringBox("C++ Templates");
+    stringBox.display();                 // Box contains: C++ Templates
+    
+    string text = stringBox.retrieve();
+    cout &lt;&lt; "Retrieved: " &lt;&lt; text &lt;&lt; endl;  // Retrieved: C++ Templates
+    
+    // ========================================
+    // Example 4: Custom Type
+    // ========================================
+    struct Point {
+        int x, y;
+        friend ostream&amp; operator&lt;&lt;(ostream&amp; os, const Point&amp; p) {
+            return os &lt;&lt; "(" &lt;&lt; p.x &lt;&lt; ", " &lt;&lt; p.y &lt;&lt; ")";
+        }
+    };
+    
+    cout &lt;&lt; "\n=== Point Box ===" &lt;&lt; endl;
+    Box&lt;Point&gt; pointBox({10, 20});
+    pointBox.display();                  // Box contains: (10, 20)
+    
+    return 0;
+}
+</code></pre>
+<h3 id="output-7"><a class="header" href="#output-7">Output</a></h3>
+<pre><code>=== Integer Box ===
+Box contains: 100
+Value: 100
+Box is empty
+
+=== Double Box ===
+Empty? 1
+Box contains: 2.71828
+
+=== String Box ===
+Box contains: C++ Templates
+Retrieved: C++ Templates
+
+=== Point Box ===
+Box contains: (10, 20)
+</code></pre>
+<h3 id="multiple-objects-of-same-type"><a class="header" href="#multiple-objects-of-same-type">Multiple Objects of Same Type</a></h3>
+<pre><code class="language-cpp">// You can create multiple objects with the same template type
+Box&lt;int&gt; scores[3];
+scores[0].store(85);
+scores[1].store(92);
+scores[2].store(78);
+
+for (int i = 0; i &lt; 3; i++) {
+    cout &lt;&lt; "Score " &lt;&lt; i &lt;&lt; ": " &lt;&lt; scores[i].retrieve() &lt;&lt; endl;
+}
+</code></pre>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="6-understanding-template-vs-type"><a class="header" href="#6-understanding-template-vs-type">6. Understanding Template vs Type</a></h2>
+<p>Now that you’ve seen how to create and use class templates, it’s important to understand the distinction between a <strong>template</strong> and a <strong>type</strong>.</p>
+<h3 id="template-vs-type-table"><a class="header" href="#template-vs-type-table">Template vs Type Table</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>Code Example</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Template</strong></td><td><code>template&lt;typename T&gt; class Box</code></td><td>The generic blueprint/pattern with parameter <code>T</code></td></tr>
+<tr><td><strong>Type</strong></td><td><code>Box&lt;int&gt;</code></td><td>A specific instantiation of the template with <code>T = int</code></td></tr>
+<tr><td><strong>Type</strong></td><td><code>Box&lt;double&gt;</code></td><td>A specific instantiation of the template with <code>T = double</code></td></tr>
+<tr><td><strong>Type</strong></td><td><code>Box&lt;string&gt;</code></td><td>A specific instantiation of the template with <code>T = string</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="key-point"><a class="header" href="#key-point">Key Point</a></h3>
+<ul>
+<li><code>Box</code> (with template parameter) is <strong>not a type</strong> — it’s a template</li>
+<li><code>Box&lt;int&gt;</code>, <code>Box&lt;double&gt;</code>, etc. <strong>are types</strong> — they are instantiated from the template</li>
+</ul>
+<pre><code class="language-cpp">// This is the TEMPLATE (not a type)
+template&lt;typename T&gt;
+class Box { /* ... */ };
+
+// These are TYPES (instantiated from the template)
+Box&lt;int&gt; myIntBox;        // Box&lt;int&gt; is a type
+Box&lt;double&gt; myDoubleBox;  // Box&lt;double&gt; is a type
+Box&lt;string&gt; myStringBox;  // Box&lt;string&gt; is a type
+
+// Each type is distinct and independent
+</code></pre>
+<h3 id="visual-representation-3"><a class="header" href="#visual-representation-3">Visual Representation</a></h3>
+<pre><code>                Template
+                   │
+        template&lt;typename T&gt;
+             class Box
+                   │
+         ┌─────────┼─────────┐
+         │         │         │
+         ▼         ▼         ▼
+    Box&lt;int&gt;  Box&lt;double&gt; Box&lt;string&gt;
+      Type      Type        Type
+</code></pre>
+<h3 id="why-this-matters"><a class="header" href="#why-this-matters">Why This Matters</a></h3>
+<p>Understanding this distinction is crucial because:</p>
+<ol>
+<li>
+<p><strong>You cannot declare a variable of type <code>Box</code></strong> — you must specify the type parameter</p>
+<pre><code class="language-cpp">Box myBox;        // ❌ ERROR: Template parameter missing
+Box&lt;int&gt; myBox;   // ✅ CORRECT: Specific type
+</code></pre>
+</li>
+<li>
+<p><strong>Each instantiated type is independent</strong></p>
+<pre><code class="language-cpp">Box&lt;int&gt; intBox;
+Box&lt;double&gt; doubleBox;
+// These are completely different types!
+// You cannot assign one to the other
+</code></pre>
+</li>
+<li>
+<p><strong>The compiler generates separate code for each type</strong></p>
+<pre><code class="language-cpp">Box&lt;int&gt; b1;      // Generates Box code for int
+Box&lt;double&gt; b2;   // Generates Box code for double
+// Two separate classes in the compiled code
+</code></pre>
+</li>
+</ol>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="summary-10"><a class="header" href="#summary-10">Summary</a></h2>
+<h3 id="what-youve-learned"><a class="header" href="#what-youve-learned">What You’ve Learned</a></h3>
+<ol>
+<li><strong>Class templates</strong> are blueprints for creating generic classes</li>
+<li><strong>Syntax</strong>: <code>template&lt;typename T&gt;</code> before the class declaration</li>
+<li><strong>Member functions</strong> can use the template parameter <code>T</code></li>
+<li><strong>External definitions</strong> require <code>template&lt;typename T&gt;</code> and <code>ClassName&lt;T&gt;::</code></li>
+<li><strong>Instantiation</strong>: <code>ClassName&lt;Type&gt; object;</code></li>
+<li>The <strong>template</strong> (<code>Box</code>) is different from instantiated <strong>types</strong> (<code>Box&lt;int&gt;</code>, <code>Box&lt;double&gt;</code>)</li>
+</ol>
+<h3 id="quick-reference-2"><a class="header" href="#quick-reference-2">Quick Reference</a></h3>
+<pre><code class="language-cpp">// Declaration
+template&lt;typename T&gt;
+class Container {
+    T data;
+public:
+    Container(T val);
+    void set(T val);
+    T get() const;
+};
+
+// External definition
+template&lt;typename T&gt;
+Container&lt;T&gt;::Container(T val) : data(val) {}
+
+template&lt;typename T&gt;
+void Container&lt;T&gt;::set(T val) { data = val; }
+
+template&lt;typename T&gt;
+T Container&lt;T&gt;::get() const { return data; }
+
+// Usage
+Container&lt;int&gt; c1(42);
+Container&lt;string&gt; c2("Hello");
+</code></pre>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 
                     </main>
 
