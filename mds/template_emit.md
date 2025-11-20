@@ -1,4 +1,4 @@
-# Why C++ Templates Must Be in Headers: A Practical Guide
+# Why C++ Templates Must Be in Headers
 
 ## Table of Contents
 
