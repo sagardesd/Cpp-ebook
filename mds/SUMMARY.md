@@ -20,3 +20,4 @@
 - [Templates](./templates.md)
   - [Template Functions](./template_function.md)
   - [Class Templates](./class_templates.md)
+  - [Templates Belong in Headers](./template_emit.md)
