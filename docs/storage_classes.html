@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1a9297dc.js";
+            window.path_to_searchindex_js = "searchindex-697386a7.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-1f29a5bd.js"></script>
@@ -179,7 +179,7 @@
 <strong>segments</strong>. Understanding these helps us know where variables are
 stored, how they persist, and their lifetimes.</p>
 <hr>
-<h2 id="-sections-of-a-c-program-in-memory"><a class="header" href="#-sections-of-a-c-program-in-memory">🧩 Sections of a C++ Program in Memory</a></h2>
+<h2 id="sections-of-a-c-program-in-memory"><a class="header" href="#sections-of-a-c-program-in-memory">Sections of a C++ Program in Memory</a></h2>
 <p>A typical C++ program’s memory layout looks like this:</p>
 <pre><code>+---------------------------+
 |        Stack              |
@@ -243,7 +243,7 @@ or <strong>not initialized</strong>.</li>
 }
 </code></pre>
 <hr>
-<h2 id="-storage-classes-in-c"><a class="header" href="#-storage-classes-in-c">⚙️ Storage Classes in C++</a></h2>
+<h2 id="storage-classes-in-c"><a class="header" href="#storage-classes-in-c">Storage Classes in C++</a></h2>
 <p>Storage classes define the <strong>scope</strong>, <strong>lifetime</strong>, and <strong>visibility</strong>
 of variables.</p>
 <div class="table-wrapper">
@@ -262,7 +262,7 @@ of variables.</p>
 </table>
 </div>
 <hr>
-<h2 id="-mapping-storage-classes-to-memory-sections"><a class="header" href="#-mapping-storage-classes-to-memory-sections">🧠 Mapping Storage Classes to Memory Sections</a></h2>
+<h2 id="mapping-storage-classes-to-memory-sections"><a class="header" href="#mapping-storage-classes-to-memory-sections">Mapping Storage Classes to Memory Sections</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -277,7 +277,7 @@ of variables.</p>
 </tbody>
 </table>
 </div>
-<h2 id="-example-program"><a class="header" href="#-example-program">🔍 Example Program</a></h2>
+<h2 id="example-program"><a class="header" href="#example-program">Example Program</a></h2>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 using namespace std;
 
@@ -298,7 +298,7 @@ int main() {
 }
 </code></pre>
 <hr>
-<h2 id="-diagram-complete-memory-layout"><a class="header" href="#-diagram-complete-memory-layout">🧭 Diagram: Complete Memory Layout</a></h2>
+<h2 id="diagram-complete-memory-layout"><a class="header" href="#diagram-complete-memory-layout">Diagram: Complete Memory Layout</a></h2>
 <pre><code>        +----------------------------------+
         |           Stack                  |
         |   - Function call frames         |
@@ -320,7 +320,7 @@ int main() {
         +----------------------------------+
 </code></pre>
 <hr>
-<h2 id="-summary"><a class="header" href="#-summary">🧩 Summary</a></h2>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
 <ul>
 <li><strong>Stack:</strong> Local and temporary data.</li>
 <li><strong>Heap:</strong> Dynamic runtime allocations.</li>
@@ -329,7 +329,7 @@ int main() {
 <li><strong>.text:</strong> Program instructions.</li>
 </ul>
 <hr>
-<h2 id="-understanding-static-variables-in-depth"><a class="header" href="#-understanding-static-variables-in-depth">🧱 Understanding Static Variables in Depth</a></h2>
+<h2 id="understanding-static-variables-in-depth"><a class="header" href="#understanding-static-variables-in-depth">Understanding Static Variables in Depth</a></h2>
 <h3 id="what-makes-static-special"><a class="header" href="#what-makes-static-special">What Makes <code>static</code> Special?</a></h3>
 <ul>
 <li>A <strong>static variable</strong> inside a function is <strong>initialized only
