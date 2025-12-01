@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-d3bdf357.js";
+            window.path_to_searchindex_js = "searchindex-455fac7d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a19c9774.js"></script>
+        <script src="toc-1258bbed.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -14720,6 +14720,670 @@ void MyClass&lt;T*&gt;::method() { } // OK - still a template
 <li><strong>ODR is the reason</strong>: Full specializations create regular code that must follow ODR, while templates are ODR-exempt</li>
 </ol>
 <p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="c-function-template-specialization-guide"><a class="header" href="#c-function-template-specialization-guide">C++ Function Template Specialization Guide</a></h1>
+<h2 id="table-of-contents-18"><a class="header" href="#table-of-contents-18">Table of Contents</a></h2>
+<ol>
+<li><a href="#what-is-function-template-specialization">What is Function Template Specialization?</a></li>
+<li><a href="#full-function-template-specialization">Full Function Template Specialization</a></li>
+<li><a href="#partial-function-template-specialization">Partial Function Template Specialization</a></li>
+<li><a href="#understanding-odr-one-definition-rule-1">Understanding ODR (One Definition Rule)</a></li>
+<li><a href="#inline-requirements-summary-1">Inline Requirements Summary</a></li>
+<li><a href="#function-template-overloading-vs-specialization">Function Template Overloading vs Specialization</a></li>
+<li><a href="#practical-examples-1">Practical Examples</a></li>
+<li><a href="#common-mistakes-to-avoid-1">Common Mistakes to Avoid</a></li>
+<li><a href="#key-takeaways-6">Key Takeaways</a></li>
+</ol>
+<hr>
+<h2 id="what-is-function-template-specialization"><a class="header" href="#what-is-function-template-specialization">What is Function Template Specialization?</a></h2>
+<p>Function template specialization allows you to provide a custom implementation of a template function for specific template arguments. This is useful when the generic algorithm doesn’t work well for certain types or when you need optimized behavior for specific types.</p>
+<p><strong>Important distinction from class templates:</strong></p>
+<ul>
+<li><strong>Full specialization</strong>: Supported for function templates</li>
+<li><strong>Partial specialization</strong>: <strong>NOT supported</strong> for function templates (use overloading instead)</li>
+</ul>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="full-function-template-specialization"><a class="header" href="#full-function-template-specialization">Full Function Template Specialization</a></h2>
+<h3 id="what-is-full-function-template-specialization"><a class="header" href="#what-is-full-function-template-specialization">What is Full Function Template Specialization?</a></h3>
+<p>Full function template specialization provides a complete alternative implementation when <strong>all</strong> template parameters are specified with concrete types.</p>
+<h3 id="syntax-and-examples-1"><a class="header" href="#syntax-and-examples-1">Syntax and Examples</a></h3>
+<pre><code class="language-cpp">// Primary template
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; "Generic: " &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Full specialization for const char*
+template &lt;&gt;
+void print&lt;const char*&gt;(const char* value) {
+    std::cout &lt;&lt; "String: " &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Full specialization for bool
+template &lt;&gt;
+void print&lt;bool&gt;(bool value) {
+    std::cout &lt;&lt; "Boolean: " &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+
+// Usage
+int main() {
+    print(42);           // Uses primary template
+    print("hello");      // Uses const char* specialization
+    print(true);         // Uses bool specialization
+}
+</code></pre>
+<h3 id="template-argument-deduction"><a class="header" href="#template-argument-deduction">Template Argument Deduction</a></h3>
+<p>You can often omit the template arguments in the specialization if they can be deduced:</p>
+<pre><code class="language-cpp">// Primary template
+template &lt;typename T&gt;
+T max(T a, T b) {
+    return (a &gt; b) ? a : b;
+}
+
+// Full specialization - explicit template argument
+template &lt;&gt;
+const char* max&lt;const char*&gt;(const char* a, const char* b) {
+    return (strcmp(a, b) &gt; 0) ? a : b;
+}
+
+// Alternative: Let compiler deduce (cleaner syntax)
+template &lt;&gt;
+const char* max(const char* a, const char* b) {
+    return (strcmp(a, b) &gt; 0) ? a : b;
+}
+</code></pre>
+<h3 id="key-characteristics-2"><a class="header" href="#key-characteristics-2">Key Characteristics</a></h3>
+<ul>
+<li>Uses <code>template &lt;&gt;</code> syntax (empty template parameter list)</li>
+<li>Specifies <strong>concrete types</strong> for all template parameters</li>
+<li>Creates a <strong>regular function</strong>, not a template</li>
+<li>Must match the primary template’s signature exactly (except for type substitution)</li>
+</ul>
+<p><strong>Important Note:</strong> Because full specialization creates a regular function, it behaves like any other regular function definition and is subject to ODR rules.</p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="partial-function-template-specialization"><a class="header" href="#partial-function-template-specialization">Partial Function Template Specialization</a></h2>
+<h3 id="why-partial-specialization-is-not-supported"><a class="header" href="#why-partial-specialization-is-not-supported">Why Partial Specialization is NOT Supported</a></h3>
+<p>Unlike class templates, <strong>function templates do NOT support partial specialization</strong>. This is a language limitation.</p>
+<pre><code class="language-cpp">// Primary template
+template &lt;typename T, typename U&gt;
+void process(T a, U b) {
+    std::cout &lt;&lt; "Generic\n";
+}
+
+// ❌ ERROR: Partial specialization not allowed for function templates
+template &lt;typename T&gt;
+void process&lt;T, int&gt;(T a, int b) {
+    std::cout &lt;&lt; "Specialized for int\n";
+}
+</code></pre>
+<h3 id="the-solution-function-overloading"><a class="header" href="#the-solution-function-overloading">The Solution: Function Overloading</a></h3>
+<p>Instead of partial specialization, use <strong>function overloading</strong> to achieve similar results:</p>
+<pre><code class="language-cpp">// Primary template
+template &lt;typename T, typename U&gt;
+void process(T a, U b) {
+    std::cout &lt;&lt; "Generic: T and U\n";
+}
+
+// Overload for when second parameter is int
+template &lt;typename T&gt;
+void process(T a, int b) {
+    std::cout &lt;&lt; "Overload: T and int\n";
+}
+
+// Overload for pointer types
+template &lt;typename T, typename U&gt;
+void process(T* a, U* b) {
+    std::cout &lt;&lt; "Overload: pointers\n";
+}
+
+// Usage
+int main() {
+    process(1.5, 2.5);      // Generic: T and U
+    process(1.5, 2);        // Overload: T and int
+    int x = 1, y = 2;
+    process(&amp;x, &amp;y);        // Overload: pointers
+}
+</code></pre>
+<h3 id="overloading-patterns"><a class="header" href="#overloading-patterns">Overloading Patterns</a></h3>
+<p>Common patterns that would be partial specialization in classes:</p>
+<pre><code class="language-cpp">// Pattern 1: Same type for multiple parameters
+template &lt;typename T&gt;
+void compare(T a, T b) {
+    std::cout &lt;&lt; "Same type comparison\n";
+}
+
+// Pattern 2: Pointer types
+template &lt;typename T&gt;
+void process(T* ptr) {
+    std::cout &lt;&lt; "Pointer processing\n";
+}
+
+// Pattern 3: Const types
+template &lt;typename T&gt;
+void handle(const T&amp; value) {
+    std::cout &lt;&lt; "Const reference handling\n";
+}
+
+// Pattern 4: Array types
+template &lt;typename T, size_t N&gt;
+void processArray(T (&amp;arr)[N]) {
+    std::cout &lt;&lt; "Array of size " &lt;&lt; N &lt;&lt; "\n";
+}
+</code></pre>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="understanding-odr-one-definition-rule-1"><a class="header" href="#understanding-odr-one-definition-rule-1">Understanding ODR (One Definition Rule)</a></h2>
+<p>Now that we’ve seen what function template specializations are, let’s understand the <strong>One Definition Rule (ODR)</strong>. This rule is the foundation for why full specializations require <code>inline</code> when defined in headers.</p>
+<h3 id="what-is-odr-1"><a class="header" href="#what-is-odr-1">What is ODR?</a></h3>
+<p>The One Definition Rule states that:</p>
+<ol>
+<li><strong>Variables and non-inline functions</strong> can have only <strong>one definition</strong> in the entire program across all translation units</li>
+<li><strong>Templates and inline functions</strong> can be defined in multiple translation units, but all definitions must be <strong>identical</strong></li>
+<li><strong>Function templates</strong> are exempt from ODR violations because they’re not instantiated until used</li>
+</ol>
+<h3 id="why-odr-matters-for-function-templates"><a class="header" href="#why-odr-matters-for-function-templates">Why ODR Matters for Function Templates</a></h3>
+<p>When you <code>#include</code> a header file in multiple <code>.cpp</code> files, each <code>.cpp</code> file becomes a separate <strong>translation unit</strong>. The linker combines all translation units into the final executable.</p>
+<h4 id="example-of-odr-violation-1"><a class="header" href="#example-of-odr-violation-1">Example of ODR Violation</a></h4>
+<pre><code class="language-cpp">// utils.h
+void regularFunction(int x) {  // Regular function definition in header
+    std::cout &lt;&lt; x &lt;&lt; "\n";
+}
+
+// file1.cpp
+#include "utils.h"  // Translation unit 1 gets a definition
+
+// file2.cpp
+#include "utils.h"  // Translation unit 2 gets a definition
+
+// Linker error: multiple definition of 'regularFunction(int)'
+</code></pre>
+<h3 id="how-odr-affects-function-template-specialization"><a class="header" href="#how-odr-affects-function-template-specialization">How ODR Affects Function Template Specialization</a></h3>
+<h4 id="primary-function-templates-are-odr-safe"><a class="header" href="#primary-function-templates-are-odr-safe">Primary Function Templates Are ODR-Safe</a></h4>
+<p>Regular function templates don’t violate ODR because:</p>
+<ul>
+<li>Templates are <strong>not compiled until instantiated</strong></li>
+<li>The compiler generates code only when the template is used</li>
+<li>Multiple identical template definitions are expected and merged by the linker</li>
+</ul>
+<pre><code class="language-cpp">// utils.h - This is fine!
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+// file1.cpp
+#include "utils.h"
+print(42);  // Instantiates print&lt;int&gt;
+
+// file2.cpp
+#include "utils.h"
+print(100);  // Same instantiation - compiler merges them
+</code></pre>
+<p><strong>No ODR violation</strong> because this is a template definition, not an actual function definition.</p>
+<h4 id="full-specialization-creates-regular-functions-odr-risk"><a class="header" href="#full-specialization-creates-regular-functions-odr-risk">Full Specialization Creates Regular Functions (ODR Risk!)</a></h4>
+<p>Here’s the critical point: <strong>Full function template specialization creates a regular function</strong>, which means it <strong>follows ODR rules for regular code</strong>.</p>
+<h5 id="odr-violation-example-with-full-specialization-1"><a class="header" href="#odr-violation-example-with-full-specialization-1">ODR Violation Example with Full Specialization</a></h5>
+<pre><code class="language-cpp">// utils.h
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Full specialization - THIS VIOLATES ODR if in header!
+template &lt;&gt;
+void print&lt;bool&gt;(bool value) {
+    // This is a regular function definition now
+    std::cout &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+
+// file1.cpp
+#include "utils.h"  // Gets definition of print&lt;bool&gt;
+
+// file2.cpp
+#include "utils.h"  // Gets ANOTHER definition of print&lt;bool&gt;
+
+// Linker error: multiple definition of 'print&lt;bool&gt;(bool)'
+</code></pre>
+<p><strong>Why ODR is violated:</strong></p>
+<ul>
+<li><code>print&lt;bool&gt;</code> is a <strong>regular function</strong>, not a template</li>
+<li>Both <code>file1.cpp</code> and <code>file2.cpp</code> include the header, creating two definitions</li>
+<li>The linker sees two definitions and reports an error</li>
+</ul>
+<h3 id="the-inline-solution-1"><a class="header" href="#the-inline-solution-1">The <code>inline</code> Solution</a></h3>
+<p>The <code>inline</code> keyword tells the linker: “Multiple identical definitions are allowed; just pick one.”</p>
+<pre><code class="language-cpp">// utils.h
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Using 'inline' makes multiple definitions legal
+template &lt;&gt;
+inline void print&lt;bool&gt;(bool value) {
+    std::cout &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+
+// file1.cpp
+#include "utils.h"  // Definition 1
+
+// file2.cpp
+#include "utils.h"  // Definition 2 - OK with inline!
+</code></pre>
+<p><strong>With <code>inline</code>:</strong> The linker recognizes these as intentionally duplicated definitions and merges them.</p>
+<h3 id="visual-summary-odr-and-function-templates"><a class="header" href="#visual-summary-odr-and-function-templates">Visual Summary: ODR and Function Templates</a></h3>
+<pre><code>Primary Template:           ┌─────────────────┐
+template &lt;typename T&gt;       │   Template      │
+void func(T) { }            │  (ODR-exempt)   │
+                            └─────────────────┘
+                                    ↓
+                            Multiple includes OK
+                            Compiler handles it
+
+
+Function Overload:          ┌─────────────────┐
+template &lt;typename T&gt;       │   Template      │
+void func(T*) { }           │  (ODR-exempt)   │
+                            └─────────────────┘
+                                    ↓
+                            Multiple includes OK
+                            Compiler handles it
+
+
+Full Specialization:        ┌─────────────────┐
+template &lt;&gt;                 │ Regular Function│
+void func&lt;int&gt;(int) { }     │  (ODR applies!) │
+                            └─────────────────┘
+                                    ↓
+                            ┌──────────┴──────────┐
+                            ↓                     ↓
+                      In header file          In CPP file
+                    (needs 'inline'!)      (no 'inline' needed)
+                            ↓                     ↓
+                    Would violate ODR      Only one definition
+                    without 'inline'
+</code></pre>
+<h3 id="three-ways-to-avoid-odr-violations-1"><a class="header" href="#three-ways-to-avoid-odr-violations-1">Three Ways to Avoid ODR Violations</a></h3>
+<h4 id="option-1-use-inline-keyword-in-header"><a class="header" href="#option-1-use-inline-keyword-in-header">Option 1: Use <code>inline</code> Keyword in Header</a></h4>
+<pre><code class="language-cpp">// utils.h
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+template &lt;&gt;
+inline void print&lt;bool&gt;(bool value) {  // inline required
+    std::cout &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+</code></pre>
+<p><strong>No ODR violation:</strong> Explicit <code>inline</code> keyword allows multiple definitions.</p>
+<h4 id="option-2-move-to-cpp-file-single-definition"><a class="header" href="#option-2-move-to-cpp-file-single-definition">Option 2: Move to CPP File (Single Definition)</a></h4>
+<pre><code class="language-cpp">// utils.h
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Declaration only
+template &lt;&gt;
+void print&lt;bool&gt;(bool value);
+
+// utils.cpp
+template &lt;&gt;
+void print&lt;bool&gt;(bool value) {  // No inline needed
+    std::cout &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+</code></pre>
+<p><strong>No ODR violation:</strong> Only one translation unit has the definition.</p>
+<h4 id="option-3-use-function-overloading-instead"><a class="header" href="#option-3-use-function-overloading-instead">Option 3: Use Function Overloading Instead</a></h4>
+<pre><code class="language-cpp">// utils.h - No specialization, just overloading
+template &lt;typename T&gt;
+void print(T value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Regular overload - still a template
+inline void print(bool value) {
+    std::cout &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+</code></pre>
+<p><strong>Note:</strong> This is not a specialization but an overload, which may have different resolution rules.</p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="inline-requirements-summary-1"><a class="header" href="#inline-requirements-summary-1">Inline Requirements Summary</a></h2>
+<p>Now that we understand ODR and how it applies to function template specializations, here’s a quick reference for when <code>inline</code> is required:</p>
+<h3 id="full-function-template-specialization-1"><a class="header" href="#full-function-template-specialization-1">Full Function Template Specialization</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Location</th><th>Inline Required?</th><th>Reason</th></tr>
+</thead>
+<tbody>
+<tr><td>Header</td><td><strong>YES</strong> (must use <code>inline</code>)</td><td>Regular function definition - would violate ODR without <code>inline</code></td></tr>
+<tr><td>CPP file</td><td>No</td><td>Only one translation unit has the definition</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="primary-function-template"><a class="header" href="#primary-function-template">Primary Function Template</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Location</th><th>Inline Required?</th><th>Reason</th></tr>
+</thead>
+<tbody>
+<tr><td>Header</td><td>No</td><td>Template definition - ODR doesn’t apply to templates</td></tr>
+<tr><td>CPP file</td><td><strong>Not recommended</strong></td><td>Templates need to be visible at instantiation point - causes linker errors</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="function-overloads-alternative-to-partial-specialization"><a class="header" href="#function-overloads-alternative-to-partial-specialization">Function Overloads (Alternative to Partial Specialization)</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Location</th><th>Inline Required?</th><th>Reason</th></tr>
+</thead>
+<tbody>
+<tr><td>Header (template overload)</td><td>No</td><td>Still a template - ODR doesn’t apply to templates</td></tr>
+<tr><td>Header (non-template overload)</td><td><strong>YES</strong></td><td>Regular function - would violate ODR without <code>inline</code></td></tr>
+<tr><td>CPP file</td><td>Depends</td><td>Template overloads not recommended; non-template OK</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Key Difference from Class Templates:</strong> Function template specializations are always defined in one place (not split between declaration and definition), so the inline requirement is simpler.</p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="function-template-overloading-vs-specialization"><a class="header" href="#function-template-overloading-vs-specialization">Function Template Overloading vs Specialization</a></h2>
+<p>Understanding when to use overloading versus specialization is crucial for function templates.</p>
+<h3 id="overload-resolution-order"><a class="header" href="#overload-resolution-order">Overload Resolution Order</a></h3>
+<p>The compiler selects functions in this order:</p>
+<ol>
+<li><strong>Non-template functions</strong> (exact match)</li>
+<li><strong>Template overloads</strong> (more specialized)</li>
+<li><strong>Primary template</strong> (most generic)</li>
+<li><strong>Template specializations</strong> are considered <strong>after</strong> selecting the best template</li>
+</ol>
+<h3 id="example-surprising-behavior"><a class="header" href="#example-surprising-behavior">Example: Surprising Behavior</a></h3>
+<pre><code class="language-cpp">// Primary template
+template &lt;typename T&gt;
+void process(T value) {
+    std::cout &lt;&lt; "Primary template\n";
+}
+
+// Overload for pointers
+template &lt;typename T&gt;
+void process(T* value) {
+    std::cout &lt;&lt; "Pointer overload\n";
+}
+
+// Full specialization of primary template
+template &lt;&gt;
+void process&lt;int*&gt;(int* value) {
+    std::cout &lt;&lt; "int* specialization\n";
+}
+
+int main() {
+    int x = 42;
+    int* ptr = &amp;x;
+    
+    process(ptr);  // What gets called?
+    // Answer: "Pointer overload" - NOT the specialization!
+    // The overload is more specialized than the primary template,
+    // so the specialization of the primary template is never considered
+}
+</code></pre>
+<h3 id="best-practice-prefer-overloading"><a class="header" href="#best-practice-prefer-overloading">Best Practice: Prefer Overloading</a></h3>
+<pre><code class="language-cpp">// ✅ BETTER: Use overloading instead of specialization
+template &lt;typename T&gt;
+void process(T value) {
+    std::cout &lt;&lt; "Generic\n";
+}
+
+template &lt;typename T&gt;
+void process(T* value) {
+    std::cout &lt;&lt; "Pointer\n";
+}
+
+// For specific types, use non-template overload
+inline void process(int* value) {
+    std::cout &lt;&lt; "int pointer\n";
+}
+</code></pre>
+<h3 id="when-to-use-specialization"><a class="header" href="#when-to-use-specialization">When to Use Specialization</a></h3>
+<p>Use full specialization when:</p>
+<ul>
+<li>You need to completely replace the implementation for a specific type</li>
+<li>The specialization is for the <strong>exact template signature</strong> being used</li>
+<li>You understand overload resolution and have verified it behaves as expected</li>
+</ul>
+<p>Use overloading when:</p>
+<ul>
+<li>You want to handle patterns (pointers, arrays, const, etc.)</li>
+<li>You want more predictable behavior</li>
+<li>You need “partial specialization” behavior (not supported for functions)</li>
+</ul>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="practical-examples-1"><a class="header" href="#practical-examples-1">Practical Examples</a></h2>
+<h3 id="example-1-string-handling-specialization"><a class="header" href="#example-1-string-handling-specialization">Example 1: String Handling Specialization</a></h3>
+<pre><code class="language-cpp">// utils.h
+#include &lt;iostream&gt;
+#include &lt;cstring&gt;
+
+// Primary template
+template &lt;typename T&gt;
+bool isEqual(T a, T b) {
+    return a == b;
+}
+
+// Full specialization for C-strings (must use inline in header)
+template &lt;&gt;
+inline bool isEqual&lt;const char*&gt;(const char* a, const char* b) {
+    return strcmp(a, b) == 0;
+}
+
+// Usage
+int main() {
+    std::cout &lt;&lt; isEqual(5, 5) &lt;&lt; "\n";           // Uses primary template
+    std::cout &lt;&lt; isEqual("hello", "hello") &lt;&lt; "\n"; // Uses specialization
+}
+</code></pre>
+<h3 id="example-2-performance-optimization"><a class="header" href="#example-2-performance-optimization">Example 2: Performance Optimization</a></h3>
+<pre><code class="language-cpp">// algorithm.h
+#include &lt;algorithm&gt;
+#include &lt;cstring&gt;
+
+// Primary template - element by element
+template &lt;typename T&gt;
+void copyArray(T* dest, const T* src, size_t count) {
+    for (size_t i = 0; i &lt; count; ++i) {
+        dest[i] = src[i];
+    }
+}
+
+// Specialization for trivially copyable types - use memcpy
+template &lt;&gt;
+inline void copyArray&lt;int&gt;(int* dest, const int* src, size_t count) {
+    std::memcpy(dest, src, count * sizeof(int));
+}
+
+template &lt;&gt;
+inline void copyArray&lt;double&gt;(double* dest, const double* src, size_t count) {
+    std::memcpy(dest, src, count * sizeof(double));
+}
+</code></pre>
+<h3 id="example-3-using-overloading-instead-of-specialization"><a class="header" href="#example-3-using-overloading-instead-of-specialization">Example 3: Using Overloading Instead of Specialization</a></h3>
+<pre><code class="language-cpp">// printer.h
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+// Primary template
+template &lt;typename T&gt;
+void print(const T&amp; value) {
+    std::cout &lt;&lt; value &lt;&lt; "\n";
+}
+
+// Overload for vectors (still a template - no inline needed)
+template &lt;typename T&gt;
+void print(const std::vector&lt;T&gt;&amp; vec) {
+    std::cout &lt;&lt; "[";
+    for (size_t i = 0; i &lt; vec.size(); ++i) {
+        std::cout &lt;&lt; vec[i];
+        if (i &lt; vec.size() - 1) std::cout &lt;&lt; ", ";
+    }
+    std::cout &lt;&lt; "]\n";
+}
+
+// Overload for bool (non-template - needs inline)
+inline void print(bool value) {
+    std::cout &lt;&lt; (value ? "true" : "false") &lt;&lt; "\n";
+}
+</code></pre>
+<h3 id="example-4-multiple-template-parameters"><a class="header" href="#example-4-multiple-template-parameters">Example 4: Multiple Template Parameters</a></h3>
+<pre><code class="language-cpp">// comparator.h
+#include &lt;iostream&gt;
+
+// Primary template
+template &lt;typename T, typename U&gt;
+bool areEqual(T a, U b) {
+    return false;  // Different types - not equal
+}
+
+// Specialization when both types are the same
+template &lt;typename T&gt;
+inline bool areEqual(T a, T b) {
+    return a == b;
+}
+
+// Specialization for comparing int and double
+template &lt;&gt;
+inline bool areEqual&lt;int, double&gt;(int a, double b) {
+    return static_cast&lt;double&gt;(a) == b;
+}
+</code></pre>
+<h3 id="example-5-separating-declaration-and-definition"><a class="header" href="#example-5-separating-declaration-and-definition">Example 5: Separating Declaration and Definition</a></h3>
+<pre><code class="language-cpp">// math_utils.h
+template &lt;typename T&gt;
+T square(T value);
+
+// Specialization declaration
+template &lt;&gt;
+int square&lt;int&gt;(int value);
+
+// math_utils.cpp
+#include "math_utils.h"
+
+template &lt;typename T&gt;
+T square(T value) {
+    return value * value;
+}
+
+// Specialization definition (no inline needed in .cpp)
+template &lt;&gt;
+int square&lt;int&gt;(int value) {
+    std::cout &lt;&lt; "Squaring int: " &lt;&lt; value &lt;&lt; "\n";
+    return value * value;
+}
+
+// Explicit instantiation for types you want to support
+template double square&lt;double&gt;(double);
+template float square&lt;float&gt;(float);
+</code></pre>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="common-mistakes-to-avoid-1"><a class="header" href="#common-mistakes-to-avoid-1">Common Mistakes to Avoid</a></h2>
+<h3 id="mistake-1-forgetting-inline-in-header"><a class="header" href="#mistake-1-forgetting-inline-in-header">Mistake 1: Forgetting <code>inline</code> in Header</a></h3>
+<pre><code class="language-cpp">// ❌ WRONG: Full specialization in header without inline
+// utils.h
+template &lt;typename T&gt;
+void func(T value) { }
+
+template &lt;&gt;
+void func&lt;int&gt;(int value) { }  // ODR violation!
+
+// ✅ CORRECT: Use inline
+template &lt;&gt;
+inline void func&lt;int&gt;(int value) { }
+</code></pre>
+<h3 id="mistake-2-attempting-partial-specialization"><a class="header" href="#mistake-2-attempting-partial-specialization">Mistake 2: Attempting Partial Specialization</a></h3>
+<pre><code class="language-cpp">// ❌ WRONG: Partial specialization not allowed
+template &lt;typename T, typename U&gt;
+void process(T a, U b) { }
+
+template &lt;typename T&gt;
+void process&lt;T, int&gt;(T a, int b) { }  // Compilation error!
+
+// ✅ CORRECT: Use overloading
+template &lt;typename T&gt;
+void process(T a, int b) { }
+</code></pre>
+<h3 id="mistake-3-specialization-after-overload"><a class="header" href="#mistake-3-specialization-after-overload">Mistake 3: Specialization After Overload</a></h3>
+<pre><code class="language-cpp">// ❌ PROBLEMATIC: Specialization may not be called
+template &lt;typename T&gt;
+void func(T value) { std::cout &lt;&lt; "Primary\n"; }
+
+template &lt;typename T&gt;
+void func(T* value) { std::cout &lt;&lt; "Pointer overload\n"; }
+
+template &lt;&gt;
+void func&lt;int*&gt;(int* value) { std::cout &lt;&lt; "int* spec\n"; }
+
+int x = 0;
+func(&amp;x);  // Calls "Pointer overload", not "int* spec"!
+
+// ✅ BETTER: Use overloading consistently
+inline void func(int* value) { std::cout &lt;&lt; "int* overload\n"; }
+</code></pre>
+<h3 id="mistake-4-declaring-specialization-before-primary-template"><a class="header" href="#mistake-4-declaring-specialization-before-primary-template">Mistake 4: Declaring Specialization Before Primary Template</a></h3>
+<pre><code class="language-cpp">// ❌ WRONG: Specialization declared before primary template
+template &lt;&gt;
+void func&lt;int&gt;(int value);
+
+template &lt;typename T&gt;
+void func(T value);  // Primary template comes too late
+
+// ✅ CORRECT: Primary template first
+template &lt;typename T&gt;
+void func(T value);
+
+template &lt;&gt;
+void func&lt;int&gt;(int value);
+</code></pre>
+<h3 id="mistake-5-template-parameter-mismatch"><a class="header" href="#mistake-5-template-parameter-mismatch">Mistake 5: Template Parameter Mismatch</a></h3>
+<pre><code class="language-cpp">// Primary template with default argument
+template &lt;typename T = int&gt;
+void func(T value) { }
+
+// ❌ WRONG: Specialization must match exactly
+template &lt;&gt;
+void func&lt;&gt;(int value) { }  // Ambiguous
+
+// ✅ CORRECT: Explicit type
+template &lt;&gt;
+void func&lt;int&gt;(int value) { }
+</code></pre>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="key-takeaways-6"><a class="header" href="#key-takeaways-6">Key Takeaways</a></h2>
+<ol>
+<li><strong>Full specialization only</strong>: Function templates support full specialization but NOT partial specialization</li>
+<li><strong>Use overloading</strong>: For pattern-based behavior, use function overloading instead of attempting partial specialization</li>
+<li><strong>Inline in headers</strong>: Full specializations in headers MUST use <code>inline</code> to avoid ODR violations</li>
+<li><strong>CPP file option</strong>: Full specializations can go in <code>.cpp</code> files without <code>inline</code></li>
+<li><strong>Overload resolution</strong>: Specializations are considered AFTER overload resolution, which can lead to surprising behavior</li>
+<li><strong>Prefer overloading</strong>: In most cases, function overloading is clearer and more predictable than specialization</li>
+<li><strong>Primary template first</strong>: Always declare the primary template before any specializations</li>
+<li><strong>ODR is the reason</strong>: Full specializations create regular functions that must follow ODR</li>
+</ol>
+<h3 id="quick-decision-guide-1"><a class="header" href="#quick-decision-guide-1">Quick Decision Guide</a></h3>
+<ul>
+<li>Need to handle patterns (pointers, const, etc.)? → <strong>Use overloading</strong></li>
+<li>Need to completely replace implementation for one specific type? → <strong>Use full specialization</strong></li>
+<li>Putting specialization in header? → <strong>Must use <code>inline</code></strong></li>
+<li>Want partial specialization behavior? → <strong>Use overloading (or a class template helper)</strong></li>
+</ul>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 
                     </main>
 
