@@ -6,7 +6,7 @@ stored, how they persist, and their lifetimes.
 
 ------------------------------------------------------------------------
 
-## 🧩 Sections of a C++ Program in Memory
+## Sections of a C++ Program in Memory
 
 A typical C++ program's memory layout looks like this:
 
@@ -83,7 +83,7 @@ void foo() {
 
 ------------------------------------------------------------------------
 
-## ⚙️ Storage Classes in C++
+## Storage Classes in C++
 
 Storage classes define the **scope**, **lifetime**, and **visibility**
 of variables.
@@ -100,7 +100,7 @@ of variables.
 
 ------------------------------------------------------------------------
 
-## 🧠 Mapping Storage Classes to Memory Sections
+## Mapping Storage Classes to Memory Sections
 
 | Example                      | Storage Class            | Memory Section     |
 |------------------------------|--------------------------|--------------------|
@@ -111,7 +111,7 @@ of variables.
 | `register int r = 5;`        | register                 | Register / Stack   |
 
 
-## 🔍 Example Program
+## Example Program
 
 ``` cpp
 #include <iostream>
@@ -136,7 +136,7 @@ int main() {
 
 ------------------------------------------------------------------------
 
-## 🧭 Diagram: Complete Memory Layout
+## Diagram: Complete Memory Layout
 
             +----------------------------------+
             |           Stack                  |
@@ -160,7 +160,7 @@ int main() {
 
 ------------------------------------------------------------------------
 
-## 🧩 Summary
+## Summary
 
 -   **Stack:** Local and temporary data.
 -   **Heap:** Dynamic runtime allocations.
@@ -170,7 +170,7 @@ int main() {
 
 ------------------------------------------------------------------------
 
-## 🧱 Understanding Static Variables in Depth
+## Understanding Static Variables in Depth
 
 ### What Makes `static` Special?
 
