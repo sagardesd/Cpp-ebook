@@ -22,3 +22,4 @@
   - [Class Templates](./class_templates.md)
   - [Templates Belong in Headers](./template_emit.md)
   - [Class Template Specialization](./class_template_specialization.md)
+  - [Function Template Specialization](./func_template_specialization.md)
