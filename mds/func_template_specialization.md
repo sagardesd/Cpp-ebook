@@ -1,4 +1,4 @@
-# C++ Function Template Specialization Guide
+# C++ Function Template Specialization
 
 ## Table of Contents
 
