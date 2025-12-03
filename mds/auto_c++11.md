@@ -14,7 +14,8 @@
 
 ## 1. What is the Auto Keyword?
 
-The `auto` keyword in C++11 allows the compiler to automatically deduce the type of a variable from its initializer. This simplifies code and reduces redundancy, especially when dealing with complex type names.
+The `auto` keyword in C++11 allows the compiler to automatically deduce the type of a variable from its initializer.
+This simplifies code and reduces redundancy, especially when dealing with complex type names.
 
 ### Basic Example
 
