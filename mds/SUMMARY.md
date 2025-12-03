@@ -24,4 +24,4 @@
   - [Class Template Specialization](./class_template_specialization.md)
   - [Function Template Specialization](./func_template_specialization.md)
   - [Why typename needed in nested Templates](./typename_template.md)
-  - [Concepts - C++2O](./concepts.md)
+  - [Concepts - C++2O](./concepts_c++20.md)
