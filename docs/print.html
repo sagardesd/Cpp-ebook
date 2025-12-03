@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3d3ec5cb.js";
+            window.path_to_searchindex_js = "searchindex-b7f9bcbe.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1258bbed.js"></script>
+        <script src="toc-ad288909.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -12996,6 +12996,7 @@ MyString c = a.charsInCommon(b);  // Much better!
 <h2 id="what-are-templates"><a class="header" href="#what-are-templates">What Are Templates?</a></h2>
 <p><strong>Templates are C++’s way of writing generic code that can work on any data type (built-in and user-defined).</strong></p>
 <p>In essence, templates automate code generation. You write the function logic once, and the compiler generates the necessary versions for each data type you use.</p>
+<p>Eventhough template itself needs a separate book to understand each and every aspect of it, here we will cover all the basic things about template.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="function-template"><a class="header" href="#function-template">Function Template</a></h1>
 <h2 id="table-of-contents-14"><a class="header" href="#table-of-contents-14">Table of Contents</a></h2>
@@ -15384,6 +15385,451 @@ void func&lt;int&gt;(int value) { }
 <li>Want partial specialization behavior? → <strong>Use overloading (or a class template helper)</strong></li>
 </ul>
 <p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-disambiguation-type-vs-value"><a class="header" href="#the-disambiguation-type-vs-value">The Disambiguation: Type vs. Value</a></h1>
+<h2 id="table-of-contents-19"><a class="header" href="#table-of-contents-19">Table of Contents</a></h2>
+<ol>
+<li><a href="#1-introduction-the-dependent-name-problem">Introduction: The Dependent Name Problem</a></li>
+<li><a href="#2-why-is-typename-needed">Why is Typename Needed?</a></li>
+<li><a href="#3-basic-rules-for-using-typename">Basic Rules for Using Typename</a></li>
+<li><a href="#4-common-examples-and-use-cases">Common Examples and Use Cases</a></li>
+<li><a href="#5-c11-and-later-type-aliases">C++11 and Later: Type Aliases</a></li>
+<li><a href="#6-common-compilation-errors">Common Compilation Errors</a></li>
+<li><a href="#7-practical-real-world-example">Practical Real-World Example</a></li>
+<li><a href="#8-c11-alternative-using-auto">C++11 Alternative: Using auto</a></li>
+<li><a href="#9-summary-and-best-practices">Summary and Best Practices</a></li>
+</ol>
+<hr>
+<h2 id="1-introduction-the-dependent-name-problem"><a class="header" href="#1-introduction-the-dependent-name-problem">1. Introduction: The Dependent Name Problem</a></h2>
+<p>When working with templates in C++, the compiler sometimes encounters names that depend on template parameters. These are called <strong>dependent names</strong>. The problem is that the compiler cannot always determine whether a dependent name refers to a type or a value until the template is instantiated.</p>
+<p>The <code>typename</code> keyword is used to explicitly tell the compiler that a dependent name refers to a <strong>type</strong>, not a value or other entity.</p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="2-why-is-typename-needed"><a class="header" href="#2-why-is-typename-needed">2. Why is Typename Needed?</a></h2>
+<h3 id="the-ambiguity-problem"><a class="header" href="#the-ambiguity-problem">The Ambiguity Problem</a></h3>
+<p>Consider this scenario:</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func() {
+    T::value_type x;  // Is value_type a type or a static member variable?
+}
+</code></pre>
+<p>The compiler doesn’t know if <code>T::value_type</code> is:</p>
+<ul>
+<li>A <strong>type</strong> (like <code>int</code>, <code>std::string</code>, etc.)</li>
+<li>A <strong>static member variable</strong> that’s being multiplied with <code>x</code></li>
+</ul>
+<p>Without additional information, the compiler assumes it’s a <strong>value/variable</strong>, not a type. This is where <code>typename</code> comes in.</p>
+<h3 id="the-solution-1"><a class="header" href="#the-solution-1">The Solution</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func() {
+    typename T::value_type x;  // Now compiler knows it's a type!
+}
+</code></pre>
+<p>By adding <code>typename</code>, we explicitly tell the compiler that <code>T::value_type</code> is a type name.</p>
+<h3 id="why-the-compiler-cannot-determine-this-automatically"><a class="header" href="#why-the-compiler-cannot-determine-this-automatically">Why the Compiler Cannot Determine This Automatically</a></h3>
+<p>The fundamental reason the compiler cannot determine whether a dependent name is a type or value is because of <strong>template specialization</strong>. A template can be specialized to change the meaning of nested names completely.</p>
+<p>Here’s a concrete example:</p>
+<pre><code class="language-cpp">// Primary template - value_type is a TYPE
+template&lt;typename T&gt;
+class Container {
+public:
+    typedef int value_type;  // This is a type
+};
+
+// Template specialization - value_type is a VALUE!
+template&lt;&gt;
+class Container&lt;double&gt; {
+public:
+    static int value_type;  // This is a static variable, not a type!
+};
+
+// Initialize the static member
+int Container&lt;double&gt;::value_type = 42;
+
+// Now write a template function
+template&lt;typename T&gt;
+void process() {
+    // What is Container&lt;T&gt;::value_type?
+    // - If T is int, it's a TYPE (from primary template)
+    // - If T is double, it's a VALUE (from specialization)
+    
+    // Without typename, compiler assumes VALUE (multiplication)
+    // Container&lt;T&gt;::value_type * x;  
+    
+    // With typename, we assert it's a TYPE (variable declaration)
+    typename Container&lt;T&gt;::value_type x;
+}
+
+int main() {
+    process&lt;int&gt;();     // Works - value_type is a type here
+    // process&lt;double&gt;(); // ERROR - value_type is a value, not a type!
+}
+</code></pre>
+<p><strong>Key insight:</strong> When the compiler sees the template definition of <code>process()</code>, it doesn’t know what <code>T</code> will be instantiated with. The meaning of <code>Container&lt;T&gt;::value_type</code> could change based on specializations that might be defined elsewhere in the code (or even in other translation units).</p>
+<h3 id="another-example-partial-specialization"><a class="header" href="#another-example-partial-specialization">Another Example: Partial Specialization</a></h3>
+<pre><code class="language-cpp">// Primary template
+template&lt;typename T&gt;
+struct Traits {
+    typedef T value_type;  // value_type is a type
+};
+
+// Partial specialization for pointers
+template&lt;typename T&gt;
+struct Traits&lt;T*&gt; {
+    static const int value_type = 100;  // value_type is a value!
+};
+
+template&lt;typename T&gt;
+void foo() {
+    // Is Traits&lt;T&gt;::value_type a type or value?
+    // Depends on whether T is a pointer or not!
+    // - If T is int, value_type is a TYPE
+    // - If T is int*, value_type is a VALUE
+    
+    typename Traits&lt;T&gt;::value_type x;  // Must use typename to assert it's a type
+}
+
+int main() {
+    foo&lt;int&gt;();   // OK - value_type is a type
+    // foo&lt;int*&gt;(); // ERROR - value_type is a value, not a type!
+}
+</code></pre>
+<h3 id="the-two-phase-lookup-problem"><a class="header" href="#the-two-phase-lookup-problem">The Two-Phase Lookup Problem</a></h3>
+<p>The C++ compiler uses <strong>two-phase name lookup</strong> for templates:</p>
+<ol>
+<li><strong>Phase 1 (Template Definition):</strong> When the template is first parsed, the compiler checks syntax and resolves non-dependent names</li>
+<li><strong>Phase 2 (Template Instantiation):</strong> When the template is instantiated with actual types, dependent names are resolved</li>
+</ol>
+<p>During <strong>Phase 1</strong>, the compiler cannot look into <code>T</code> to see what members it has because:</p>
+<ul>
+<li><code>T</code> is not yet known</li>
+<li>Even if a primary template exists, there might be specializations defined later</li>
+<li>Specializations can completely change the meaning of nested names</li>
+</ul>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void example() {
+    // Phase 1: Compiler sees this but doesn't know what T is
+    // Cannot determine if T::nested is a type or value
+    // Must make an assumption or require programmer guidance
+    
+    T::nested x;  // Compiler assumes this is: (T::nested) * x (multiplication)
+    
+    typename T::nested y;  // Programmer explicitly says: it's a type declaration
+}
+</code></pre>
+<h3 id="why-default-to-value-instead-of-type"><a class="header" href="#why-default-to-value-instead-of-type">Why Default to Value Instead of Type?</a></h3>
+<p>You might wonder: why does the compiler default to interpreting dependent names as <strong>values</strong> rather than <strong>types</strong>?</p>
+<p>The answer is historical and pragmatic:</p>
+<ol>
+<li><strong>Backward compatibility</strong> with older C++ code</li>
+<li><strong>More common case</strong> - Most identifiers in code are values/variables, not types</li>
+<li><strong>Explicit is better</strong> - Forcing programmers to be explicit about types prevents ambiguity</li>
+</ol>
+<p>Consider:</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func() {
+    T::x * ptr;  // Without special rules, what does this mean?
+}
+</code></pre>
+<p>This could be:</p>
+<ul>
+<li><strong>Multiplication:</strong> <code>(T::x) * ptr</code> - multiply static member <code>T::x</code> by variable <code>ptr</code></li>
+<li><strong>Pointer declaration:</strong> <code>T::x* ptr</code> - declare <code>ptr</code> as pointer to type <code>T::x</code></li>
+</ul>
+<p>The C++ standard chose to default to the <strong>multiplication interpretation</strong> (value), requiring <code>typename</code> to explicitly indicate the <strong>type interpretation</strong>.</p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="3-basic-rules-for-using-typename"><a class="header" href="#3-basic-rules-for-using-typename">3. Basic Rules for Using Typename</a></h2>
+<h3 id="rule-1-use-typename-for-dependent-type-names"><a class="header" href="#rule-1-use-typename-for-dependent-type-names">Rule 1: Use typename for Dependent Type Names</a></h3>
+<p>A <strong>dependent name</strong> is a name that depends on a template parameter.</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class MyClass {
+    typename T::nested_type member;  // T::nested_type is dependent on T
+};
+</code></pre>
+<h3 id="rule-2-typename-is-not-needed-for-non-dependent-names"><a class="header" href="#rule-2-typename-is-not-needed-for-non-dependent-names">Rule 2: typename is NOT Needed for Non-Dependent Names</a></h3>
+<pre><code class="language-cpp">class Container {
+public:
+    typedef int value_type;
+};
+
+// Not a template - no typename needed
+Container::value_type x;  // OK without typename
+
+template&lt;typename T&gt;
+void func() {
+    // Not dependent on template parameter - no typename needed
+    Container::value_type y;  // OK without typename
+    
+    // Dependent on T - typename required
+    typename T::value_type z;  // typename required
+}
+</code></pre>
+<h3 id="rule-3-typename-is-not-needed-in-base-class-lists-or-initializer-lists"><a class="header" href="#rule-3-typename-is-not-needed-in-base-class-lists-or-initializer-lists">Rule 3: typename is NOT Needed in Base Class Lists or Initializer Lists</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Derived : public T::BaseClass {  // No typename here
+    
+    Derived() : T::BaseClass() {  // No typename here
+        typename T::value_type x;  // But typename needed here
+    }
+};
+</code></pre>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="4-common-examples-and-use-cases"><a class="header" href="#4-common-examples-and-use-cases">4. Common Examples and Use Cases</a></h2>
+<h3 id="example-1-stl-container-iterators"><a class="header" href="#example-1-stl-container-iterators">Example 1: STL Container Iterators</a></h3>
+<p>This is one of the most common use cases:</p>
+<pre><code class="language-cpp">#include &lt;vector&gt;
+#include &lt;list&gt;
+
+// Without typename - COMPILATION ERROR
+template&lt;typename T&gt;
+void printContainer(const T&amp; container) {
+    // ERROR: need 'typename' before 'T::const_iterator'
+    for (T::const_iterator it = container.begin(); 
+         it != container.end(); ++it) {
+        std::cout &lt;&lt; *it &lt;&lt; " ";
+    }
+}
+
+// Correct version with typename
+template&lt;typename T&gt;
+void printContainer(const T&amp; container) {
+    // OK: typename tells compiler const_iterator is a type
+    for (typename T::const_iterator it = container.begin(); 
+         it != container.end(); ++it) {
+        std::cout &lt;&lt; *it &lt;&lt; " ";
+    }
+}
+
+// Usage
+int main() {
+    std::vector&lt;int&gt; vec = {1, 2, 3, 4, 5};
+    std::list&lt;double&gt; lst = {1.1, 2.2, 3.3};
+    
+    printContainer(vec);
+    printContainer(lst);
+}
+</code></pre>
+<h3 id="example-2-value-type-from-containers"><a class="header" href="#example-2-value-type-from-containers">Example 2: Value Type from Containers</a></h3>
+<pre><code class="language-cpp">#include &lt;vector&gt;
+#include &lt;iostream&gt;
+
+template&lt;typename Container&gt;
+void processFirst(const Container&amp; c) {
+    // Need typename because value_type depends on Container
+    typename Container::value_type firstElement = c[0];
+    
+    std::cout &lt;&lt; "First element: " &lt;&lt; firstElement &lt;&lt; std::endl;
+}
+
+int main() {
+    std::vector&lt;int&gt; vec = {10, 20, 30};
+    processFirst(vec);  // value_type is int
+    
+    std::vector&lt;double&gt; dvec = {1.5, 2.5, 3.5};
+    processFirst(dvec);  // value_type is double
+}
+</code></pre>
+<h3 id="example-3-nested-type-definitions"><a class="header" href="#example-3-nested-type-definitions">Example 3: Nested Type Definitions</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Outer {
+public:
+    typedef T value_type;
+    
+    class Inner {
+    public:
+        typedef T* pointer_type;
+    };
+};
+
+template&lt;typename T&gt;
+void useNestedTypes() {
+    // Need typename for dependent nested types
+    typename Outer&lt;T&gt;::value_type val;
+    typename Outer&lt;T&gt;::Inner::pointer_type ptr;
+    
+    // Example usage
+    val = T();
+    ptr = &amp;val;
+}
+
+int main() {
+    useNestedTypes&lt;int&gt;();
+}
+</code></pre>
+<h3 id="example-4-return-type-declaration"><a class="header" href="#example-4-return-type-declaration">Example 4: Return Type Declaration</a></h3>
+<pre><code class="language-cpp">template&lt;typename Container&gt;
+typename Container::value_type getFirst(const Container&amp; c) {
+    return c[0];
+}
+
+// Usage
+int main() {
+    std::vector&lt;int&gt; vec = {100, 200, 300};
+    int first = getFirst(vec);  // Returns int
+    
+    std::vector&lt;std::string&gt; svec = {"hello", "world"};
+    std::string str = getFirst(svec);  // Returns std::string
+}
+</code></pre>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="5-c11-and-later-type-aliases"><a class="header" href="#5-c11-and-later-type-aliases">5. C++11 and Later: Type Aliases</a></h2>
+<p>With C++11’s <code>using</code> for type aliases, you still need <code>typename</code>:</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class MyClass {
+public:
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&amp;;
+};
+
+template&lt;typename T&gt;
+void func() {
+    typename MyClass&lt;T&gt;::value_type val;
+    typename MyClass&lt;T&gt;::pointer ptr;
+    typename MyClass&lt;T&gt;::reference ref = val;
+}
+</code></pre>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="6-common-compilation-errors"><a class="header" href="#6-common-compilation-errors">6. Common Compilation Errors</a></h2>
+<h3 id="error-1-missing-typename"><a class="header" href="#error-1-missing-typename">Error 1: Missing typename</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func(const T&amp; container) {
+    T::iterator it = container.begin();  // ERROR
+}
+</code></pre>
+<p><strong>Error Message:</strong></p>
+<pre><code>error: need 'typename' before 'T::iterator' because 'T' is a dependent scope
+</code></pre>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func(const T&amp; container) {
+    typename T::iterator it = container.begin();  // OK
+}
+</code></pre>
+<h3 id="error-2-unnecessary-typename-non-dependent-context"><a class="header" href="#error-2-unnecessary-typename-non-dependent-context">Error 2: Unnecessary typename (Non-dependent Context)</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func() {
+    typename std::vector&lt;int&gt;::iterator it;  // Warning: unnecessary typename
+}
+</code></pre>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+void func() {
+    std::vector&lt;int&gt;::iterator it;  // OK - not dependent on T
+}
+</code></pre>
+<h3 id="error-3-typename-in-wrong-places"><a class="header" href="#error-3-typename-in-wrong-places">Error 3: typename in Wrong Places</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Derived : public typename T::Base {  // ERROR: no typename in base class list
+};
+</code></pre>
+<p><strong>Fix:</strong></p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Derived : public T::Base {  // OK
+};
+</code></pre>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="7-practical-real-world-example"><a class="header" href="#7-practical-real-world-example">7. Practical Real-World Example</a></h2>
+<p>Here’s a complete example that shows typical usage:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;list&gt;
+#include &lt;algorithm&gt;
+
+// Generic function to find and return an element
+template&lt;typename Container&gt;
+typename Container::value_type 
+findElement(const Container&amp; c, const typename Container::value_type&amp; target) {
+    typename Container::const_iterator it = std::find(c.begin(), c.end(), target);
+    
+    if (it != c.end()) {
+        return *it;
+    }
+    
+    return typename Container::value_type();  // Return default-constructed value
+}
+
+// Generic function to process container elements
+template&lt;typename Container&gt;
+void processContainer(const Container&amp; c) {
+    std::cout &lt;&lt; "Container contents: ";
+    
+    for (typename Container::const_iterator it = c.begin(); 
+         it != c.end(); ++it) {
+        std::cout &lt;&lt; *it &lt;&lt; " ";
+    }
+    
+    std::cout &lt;&lt; std::endl;
+    
+    // Use value_type for temporary storage
+    typename Container::value_type sum = typename Container::value_type();
+    
+    for (typename Container::const_iterator it = c.begin(); 
+         it != c.end(); ++it) {
+        sum += *it;
+    }
+    
+    std::cout &lt;&lt; "Sum: " &lt;&lt; sum &lt;&lt; std::endl;
+}
+
+int main() {
+    std::vector&lt;int&gt; vec = {1, 2, 3, 4, 5};
+    std::list&lt;double&gt; lst = {1.1, 2.2, 3.3, 4.4};
+    
+    processContainer(vec);
+    processContainer(lst);
+    
+    int found = findElement(vec, 3);
+    std::cout &lt;&lt; "Found in vector: " &lt;&lt; found &lt;&lt; std::endl;
+    
+    double foundDouble = findElement(lst, 2.2);
+    std::cout &lt;&lt; "Found in list: " &lt;&lt; foundDouble &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="8-c11-alternative-using-auto"><a class="header" href="#8-c11-alternative-using-auto">8. C++11 Alternative: Using auto</a></h2>
+<p>In C++11 and later, you can often use <code>auto</code> to avoid writing <code>typename</code>:</p>
+<pre><code class="language-cpp">// Before C++11 - need typename
+template&lt;typename Container&gt;
+void func(const Container&amp; c) {
+    typename Container::const_iterator it = c.begin();
+}
+
+// C++11 and later - auto deduces the type
+template&lt;typename Container&gt;
+void func(const Container&amp; c) {
+    auto it = c.begin();  // Much simpler!
+}
+</code></pre>
+<p>However, <code>auto</code> cannot be used everywhere (like function return types in C++11), so <code>typename</code> is still necessary in many cases. <code>auto</code> will be covered more in a separate chapter.</p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="9-summary-and-best-practices"><a class="header" href="#9-summary-and-best-practices">9. Summary and Best Practices</a></h2>
+<h3 id="when-to-use-typename"><a class="header" href="#when-to-use-typename">When to Use typename:</a></h3>
+<ol>
+<li>When accessing a <strong>type</strong> that is nested inside a template parameter</li>
+<li>For <strong>dependent names</strong> (names that depend on template parameters)</li>
+<li>With iterators from template containers</li>
+<li>With <code>value_type</code>, <code>pointer</code>, <code>reference</code>, and other nested typedefs</li>
+</ol>
+<h3 id="when-not-to-use-typename"><a class="header" href="#when-not-to-use-typename">When NOT to Use typename:</a></h3>
+<ol>
+<li>In base class lists</li>
+<li>In constructor initializer lists</li>
+<li>For non-dependent names (names that don’t depend on template parameters)</li>
+<li>When the name is not a type (like a static member variable)</li>
+</ol>
+<h3 id="key-takeaway"><a class="header" href="#key-takeaway">Key Takeaway:</a></h3>
+<p>The <code>typename</code> keyword disambiguates dependent names in templates, explicitly telling the compiler that a nested name refers to a <strong>type</strong> rather than a value. Without it, the compiler defaults to interpreting dependent names as values, leading to compilation errors. While modern C++ features like <code>auto</code> can reduce the need for <code>typename</code> in some cases, understanding when and why to use it remains essential for template programming.</p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 
                     </main>
 
