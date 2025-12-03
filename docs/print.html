@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6f03775c.js";
+            window.path_to_searchindex_js = "searchindex-8634fe2d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-383177be.js"></script>
+        <script src="toc-1e803a2e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -16577,31 +16577,31 @@ void demonstrateDeduction() {
 <p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-benefits-of-using-auto"><a class="header" href="#3-benefits-of-using-auto">3. Benefits of Using Auto</a></h2>
-<h3 id="1-reduces-code-verbosity"><a class="header" href="#1-reduces-code-verbosity">1: Reduces Code Verbosity</a></h3>
+<h3 id="reduces-code-verbosity"><a class="header" href="#reduces-code-verbosity">Reduces Code Verbosity</a></h3>
 <pre><code class="language-cpp">// Verbose
 std::map&lt;std::string, std::vector&lt;int&gt;&gt;::const_iterator it = myMap.begin();
 
 // Clean
 auto it = myMap.cbegin();
 </code></pre>
-<h3 id="2-prevents-type-mismatch-issues"><a class="header" href="#2-prevents-type-mismatch-issues">2: Prevents Type Mismatch Issues</a></h3>
+<h3 id="prevents-type-mismatch-issues"><a class="header" href="#prevents-type-mismatch-issues">Prevents Type Mismatch Issues</a></h3>
 <pre><code class="language-cpp">// Potential problem - implicit conversion
 unsigned int size = vec.size();  // size_t converted to unsigned int
 
 // Correct type automatically
 auto size = vec.size();  // size_t (correct type)
 </code></pre>
-<h3 id="3-easier-refactoring"><a class="header" href="#3-easier-refactoring">3: Easier Refactoring</a></h3>
+<h3 id="easier-refactoring"><a class="header" href="#easier-refactoring">Easier Refactoring</a></h3>
 <p>If you change a function’s return type, code using <code>auto</code> doesn’t need updates.</p>
 <pre><code class="language-cpp">// If getValue() return type changes from int to long,
 // this code still works without modification
 auto value = getValue();
 </code></pre>
-<h3 id="4-works-with-lambda-expressions"><a class="header" href="#4-works-with-lambda-expressions">4: Works with Lambda Expressions</a></h3>
+<h3 id="works-with-lambda-expressions"><a class="header" href="#works-with-lambda-expressions">Works with Lambda Expressions</a></h3>
 <p>Before C++14, you couldn’t write the type of a lambda explicitly.</p>
 <pre><code class="language-cpp">auto lambda = [](int x, int y) { return x + y; };
 </code></pre>
-<h3 id="5-simplifies-template-code"><a class="header" href="#5-simplifies-template-code">5: Simplifies Template Code</a></h3>
+<h3 id="simplifies-template-code"><a class="header" href="#simplifies-template-code">Simplifies Template Code</a></h3>
 <pre><code class="language-cpp">template&lt;typename T1, typename T2&gt;
 void multiply(T1 a, T2 b) {
     auto result = a * b;  // Type deduced correctly regardless of T1, T2
