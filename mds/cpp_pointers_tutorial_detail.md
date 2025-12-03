@@ -1,4 +1,4 @@
-# C++ Pointers & Dynamic Memory Allocation - Complete Tutorial
+# C++ Pointers & Dynamic Memory Allocation
 
 ## Table of Contents
 1. [Introduction to Pointers](#1-introduction-to-pointers)
