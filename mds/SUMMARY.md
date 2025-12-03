@@ -25,3 +25,4 @@
   - [Function Template Specialization](./func_template_specialization.md)
   - [Why typename needed in nested Templates](./typename_template.md)
   - [Concepts - C++2O](./concepts_c++20.md)
+- [Value Catagories - C++11](./value_categories.md)
