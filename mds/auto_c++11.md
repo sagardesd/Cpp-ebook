@@ -185,7 +185,7 @@ void demonstrateDeduction() {
 
 ## 3. Benefits of Using Auto
 
-### 1: Reduces Code Verbosity
+### Reduces Code Verbosity
 
 ```cpp
 // Verbose
@@ -195,7 +195,7 @@ std::map<std::string, std::vector<int>>::const_iterator it = myMap.begin();
 auto it = myMap.cbegin();
 ```
 
-### 2: Prevents Type Mismatch Issues
+### Prevents Type Mismatch Issues
 
 ```cpp
 // Potential problem - implicit conversion
@@ -205,7 +205,7 @@ unsigned int size = vec.size();  // size_t converted to unsigned int
 auto size = vec.size();  // size_t (correct type)
 ```
 
-### 3: Easier Refactoring
+### Easier Refactoring
 
 If you change a function's return type, code using `auto` doesn't need updates.
 
@@ -215,7 +215,7 @@ If you change a function's return type, code using `auto` doesn't need updates.
 auto value = getValue();
 ```
 
-### 4: Works with Lambda Expressions
+### Works with Lambda Expressions
 
 Before C++14, you couldn't write the type of a lambda explicitly.
 
@@ -223,7 +223,7 @@ Before C++14, you couldn't write the type of a lambda explicitly.
 auto lambda = [](int x, int y) { return x + y; };
 ```
 
-### 5: Simplifies Template Code
+### Simplifies Template Code
 
 ```cpp
 template<typename T1, typename T2>
