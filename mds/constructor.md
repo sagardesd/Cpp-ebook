@@ -1,4 +1,4 @@
-# C++ Constructors and Destructors - Complete Guide
+# C++ Constructors and Destructors
 
 ## Table of Contents
 1. [Constructors](#constructors)
