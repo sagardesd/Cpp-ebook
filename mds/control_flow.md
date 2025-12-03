@@ -1,4 +1,4 @@
-# Control Flow in C++ - Complete Guide
+# Control Flow in C++
 
 ## Table of Contents
 1. [Introduction](#introduction)
