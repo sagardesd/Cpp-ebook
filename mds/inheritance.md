@@ -1,4 +1,4 @@
-# C++ Inheritance: Complete Tutorial
+# C++ Inheritance
 
 ## What is Inheritance?
 
