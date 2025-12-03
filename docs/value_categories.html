@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found</title>
-        <base href="/cpp-ebook-by-sagar/">
+        <title>Value Catagories - C++11</title>
 
 
         <!-- Custom HTML head -->
@@ -175,13 +174,184 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></li>
+<li><a href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></li>
+<li><a href="#lvalue">lvalue</a></li>
+<li><a href="#xvalue-expiring-value">xvalue (expiring value)</a></li>
+<li><a href="#summary-table">Summary Table</a></li>
+<li><a href="#quick-examples">Quick Examples</a></li>
+<li><a href="#intuition">Intuition</a></li>
+<li><a href="#visual-relationships">Visual Relationships</a></li>
+</ol>
+<hr>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>In C++, every expression has two properties: a <strong>type</strong> and a <strong>value category</strong>.<br>Value categories describe what kind of value an expression yields.</p>
+<p>C++11 introduced 3 primary categories:</p>
+<ul>
+<li><strong>lvalue</strong></li>
+<li><strong>xvalue</strong></li>
+<li><strong>prvalue</strong></li>
+</ul>
+<p>And two broader categories:</p>
+<ul>
+<li><strong>glvalue</strong> = lvalue or xvalue</li>
+<li><strong>rvalue</strong> = xvalue or prvalue</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="value-category-hierarchy-diagram"><a class="header" href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></h2>
+<pre><code>                    expression
+                        |
+           +------------+------------+
+           |                         |
+       glvalue                    rvalue
+           |                         |
+      +----+----+              +-----+-----+
+      |         |              |           |
+   lvalue    xvalue        xvalue      prvalue
+</code></pre>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>glvalue</strong> (generalized lvalue): Has identity</li>
+<li><strong>rvalue</strong>: Can be moved from</li>
+<li><strong>lvalue</strong>: Has identity, cannot be moved from (unless explicitly cast)</li>
+<li><strong>xvalue</strong>: Has identity AND can be moved from</li>
+<li><strong>prvalue</strong>: No identity, temporary value</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="prvalue-pure-rvalue"><a class="header" href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></h2>
+<p>A <em>prvalue</em> is a temporary value that does not refer to an existing object.</p>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">int x = 5;          // 5 is a prvalue  
+int y = x + 10;     // (x + 10) is a prvalue  
+std::string s("hi"); // temporary std::string → prvalue
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>❌ Not addressable (no identity)</li>
+<li>Creates a new temporary object</li>
+<li>Result of most operators and literals</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="lvalue"><a class="header" href="#lvalue">lvalue</a></h2>
+<p>An <em>lvalue</em> refers to an identifiable, persistent object in memory.</p>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">int a = 10;  // a is an lvalue  
+int &amp;r = a;  // r is also an lvalue  
+struct S { int m; };
+S s;
+s.m = 5;     // s.m is an lvalue
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>✅ Addressable (has identity)</li>
+<li>Persists beyond a single expression</li>
+<li>Can appear on the left side of assignment</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="xvalue-expiring-value"><a class="header" href="#xvalue-expiring-value">xvalue (expiring value)</a></h2>
+<p>An <em>xvalue</em> is a special glvalue that refers to an object whose resources can be reused (i.e., movable).</p>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">std::string s = "hello";
+std::string s2 = std::move(s);  // std::move(s) → xvalue  
+
+struct S { std::string name; };
+S getS();
+getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>✅ Addressable (has identity)</li>
+<li>About to expire (resources can be moved)</li>
+<li>Result of <code>std::move()</code> or member access on rvalue</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="summary-table"><a class="header" href="#summary-table">Summary Table</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Category</th><th>Meaning</th><th>Example</th><th>Addressable?</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>prvalue</strong></td><td>Temporary / non-object expression</td><td><code>5</code>, <code>"hi"</code>, <code>x+1</code></td><td>❌</td></tr>
+<tr><td><strong>lvalue</strong></td><td>Persistent object with identity</td><td>variables, members</td><td>✅</td></tr>
+<tr><td><strong>xvalue</strong></td><td>Expiring object suitable for move</td><td><code>std::move(obj)</code></td><td>✅</td></tr>
+<tr><td><strong>glvalue</strong></td><td>lvalue or xvalue</td><td>—</td><td>✅</td></tr>
+<tr><td><strong>rvalue</strong></td><td>prvalue or xvalue</td><td>—</td><td>depends</td></tr>
+</tbody>
+</table>
+</div>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
+<pre><code class="language-cpp">int a = 10;        // a → lvalue  
+int b = a + 5;     // a + 5 → prvalue  
+
+int &amp;r = a;        // r → lvalue  
+
+int &amp;&amp;rr = 20;     // 20 → prvalue; rr → lvalue (named ref)  
+
+std::string s = "hello";          
+std::string s2 = std::move(s);    // xvalue  
+
+struct S { int m; };
+S get();
+get().m = 1;        // get() → prvalue, .m → xvalue
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="intuition"><a class="header" href="#intuition">Intuition</a></h2>
+<ul>
+<li><strong>prvalue</strong> → makes a new temporary object</li>
+<li><strong>lvalue</strong> → refers to an existing object</li>
+<li><strong>xvalue</strong> → refers to a disposable/expiring object</li>
+<li><strong>glvalue</strong> → has identity</li>
+<li><strong>rvalue</strong> → temporary or movable</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="visual-relationships"><a class="header" href="#visual-relationships">Visual Relationships</a></h2>
+<pre><code>Properties Matrix:
+
+                    Has Identity    No Identity
+                    ────────────    ───────────
+Can Move From       │  xvalue   │   prvalue  │
+                    ────────────────────────────
+Cannot Move From    │  lvalue   │     N/A    │
+                    ────────────────────────────
+
+Groupings:
+
+glvalue = { lvalue, xvalue }  ← Things with identity
+rvalue  = { xvalue, prvalue } ← Things you can move from
+</code></pre>
+<p><strong>Key Insight:</strong></p>
+<ul>
+<li><strong>xvalue</strong> is the intersection: has identity AND can be moved from</li>
+<li>Think of value categories as answering two questions:
+<ol>
+<li>Does it have an identity (address)?</li>
+<li>Can we steal its resources (move)?</li>
+</ol>
+</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="concepts_c++20.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -190,6 +360,9 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="concepts_c++20.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
             </nav>
 

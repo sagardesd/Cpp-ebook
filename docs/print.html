@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6d2aba13.js";
+            window.path_to_searchindex_js = "searchindex-8a3c2241.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1cd3888e.js"></script>
+        <script src="toc-3cd2d651.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -16260,7 +16260,178 @@ void function(ConceptName auto param);
 </div>
 <p><strong>Key Takeaway:</strong> Concepts make templates safer, clearer, and much easier to use correctly!</p>
 <p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<hr><div style="break-before: page; page-break-before: always;"></div>
+<h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
+<h2 id="table-of-contents-21"><a class="header" href="#table-of-contents-21">Table of Contents</a></h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></li>
+<li><a href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></li>
+<li><a href="#lvalue">lvalue</a></li>
+<li><a href="#xvalue-expiring-value">xvalue (expiring value)</a></li>
+<li><a href="#summary-table-1">Summary Table</a></li>
+<li><a href="#quick-examples">Quick Examples</a></li>
+<li><a href="#intuition">Intuition</a></li>
+<li><a href="#visual-relationships">Visual Relationships</a></li>
+</ol>
 <hr>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>In C++, every expression has two properties: a <strong>type</strong> and a <strong>value category</strong>.<br>Value categories describe what kind of value an expression yields.</p>
+<p>C++11 introduced 3 primary categories:</p>
+<ul>
+<li><strong>lvalue</strong></li>
+<li><strong>xvalue</strong></li>
+<li><strong>prvalue</strong></li>
+</ul>
+<p>And two broader categories:</p>
+<ul>
+<li><strong>glvalue</strong> = lvalue or xvalue</li>
+<li><strong>rvalue</strong> = xvalue or prvalue</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="value-category-hierarchy-diagram"><a class="header" href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></h2>
+<pre><code>                    expression
+                        |
+           +------------+------------+
+           |                         |
+       glvalue                    rvalue
+           |                         |
+      +----+----+              +-----+-----+
+      |         |              |           |
+   lvalue    xvalue        xvalue      prvalue
+</code></pre>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>glvalue</strong> (generalized lvalue): Has identity</li>
+<li><strong>rvalue</strong>: Can be moved from</li>
+<li><strong>lvalue</strong>: Has identity, cannot be moved from (unless explicitly cast)</li>
+<li><strong>xvalue</strong>: Has identity AND can be moved from</li>
+<li><strong>prvalue</strong>: No identity, temporary value</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="prvalue-pure-rvalue"><a class="header" href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></h2>
+<p>A <em>prvalue</em> is a temporary value that does not refer to an existing object.</p>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">int x = 5;          // 5 is a prvalue  
+int y = x + 10;     // (x + 10) is a prvalue  
+std::string s("hi"); // temporary std::string → prvalue
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>❌ Not addressable (no identity)</li>
+<li>Creates a new temporary object</li>
+<li>Result of most operators and literals</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="lvalue"><a class="header" href="#lvalue">lvalue</a></h2>
+<p>An <em>lvalue</em> refers to an identifiable, persistent object in memory.</p>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">int a = 10;  // a is an lvalue  
+int &amp;r = a;  // r is also an lvalue  
+struct S { int m; };
+S s;
+s.m = 5;     // s.m is an lvalue
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>✅ Addressable (has identity)</li>
+<li>Persists beyond a single expression</li>
+<li>Can appear on the left side of assignment</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="xvalue-expiring-value"><a class="header" href="#xvalue-expiring-value">xvalue (expiring value)</a></h2>
+<p>An <em>xvalue</em> is a special glvalue that refers to an object whose resources can be reused (i.e., movable).</p>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">std::string s = "hello";
+std::string s2 = std::move(s);  // std::move(s) → xvalue  
+
+struct S { std::string name; };
+S getS();
+getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>✅ Addressable (has identity)</li>
+<li>About to expire (resources can be moved)</li>
+<li>Result of <code>std::move()</code> or member access on rvalue</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="summary-table-1"><a class="header" href="#summary-table-1">Summary Table</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Category</th><th>Meaning</th><th>Example</th><th>Addressable?</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>prvalue</strong></td><td>Temporary / non-object expression</td><td><code>5</code>, <code>"hi"</code>, <code>x+1</code></td><td>❌</td></tr>
+<tr><td><strong>lvalue</strong></td><td>Persistent object with identity</td><td>variables, members</td><td>✅</td></tr>
+<tr><td><strong>xvalue</strong></td><td>Expiring object suitable for move</td><td><code>std::move(obj)</code></td><td>✅</td></tr>
+<tr><td><strong>glvalue</strong></td><td>lvalue or xvalue</td><td>—</td><td>✅</td></tr>
+<tr><td><strong>rvalue</strong></td><td>prvalue or xvalue</td><td>—</td><td>depends</td></tr>
+</tbody>
+</table>
+</div>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
+<pre><code class="language-cpp">int a = 10;        // a → lvalue  
+int b = a + 5;     // a + 5 → prvalue  
+
+int &amp;r = a;        // r → lvalue  
+
+int &amp;&amp;rr = 20;     // 20 → prvalue; rr → lvalue (named ref)  
+
+std::string s = "hello";          
+std::string s2 = std::move(s);    // xvalue  
+
+struct S { int m; };
+S get();
+get().m = 1;        // get() → prvalue, .m → xvalue
+</code></pre>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="intuition"><a class="header" href="#intuition">Intuition</a></h2>
+<ul>
+<li><strong>prvalue</strong> → makes a new temporary object</li>
+<li><strong>lvalue</strong> → refers to an existing object</li>
+<li><strong>xvalue</strong> → refers to a disposable/expiring object</li>
+<li><strong>glvalue</strong> → has identity</li>
+<li><strong>rvalue</strong> → temporary or movable</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="visual-relationships"><a class="header" href="#visual-relationships">Visual Relationships</a></h2>
+<pre><code>Properties Matrix:
+
+                    Has Identity    No Identity
+                    ────────────    ───────────
+Can Move From       │  xvalue   │   prvalue  │
+                    ────────────────────────────
+Cannot Move From    │  lvalue   │     N/A    │
+                    ────────────────────────────
+
+Groupings:
+
+glvalue = { lvalue, xvalue }  ← Things with identity
+rvalue  = { xvalue, prvalue } ← Things you can move from
+</code></pre>
+<p><strong>Key Insight:</strong></p>
+<ul>
+<li><strong>xvalue</strong> is the intersection: has identity AND can be moved from</li>
+<li>Think of value categories as answering two questions:
+<ol>
+<li>Does it have an identity (address)?</li>
+<li>Can we steal its resources (move)?</li>
+</ol>
+</li>
+</ul>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
