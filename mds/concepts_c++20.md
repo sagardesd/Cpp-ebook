@@ -59,7 +59,9 @@ specialization 'min<StudentId>' requested here
 1 error generated.
 ```
 
-### What Happened? Understanding Template Instantiation
+### What Happened? 
+
+Understanding Template Instantiation
 
 Here's the critical timeline:
 
