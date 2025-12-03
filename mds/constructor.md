@@ -1284,27 +1284,27 @@ public:
 [↑ Back to Table of Contents](#table-of-contents)
 
 <a id="copy-constructor"></a>
-# 📘 Understanding Copy Constructors in C++
+# Understanding Copy Constructors in C++
 
 Let’s explore **what a copy constructor is**, **when it’s invoked**, and understand **deep vs shallow copies** and **temporary objects** through examples.
 
 ---
 
-## 🧠 What is a Copy Constructor?
+## What is a Copy Constructor?
 
 A **copy constructor** in C++ is a special constructor used to **create a new object as a copy of an existing object**.
 
-### 📜 Syntax
+### Syntax
 ```cpp
 ClassName(const ClassName& other);
 ```
 
-### ⚙️ Purpose
+### Purpose
 - Defines how an object should be copied.
 - Required when your class **manages resources** (like memory, files, sockets).
 - Prevents issues like **double deletion** and **dangling pointers**.
 
-### 🧩 When is it Invoked?
+### When is it Invoked?
 The compiler automatically calls the copy constructor in these cases:
 
 1. **Object initialization using another object**  
@@ -1334,7 +1334,7 @@ If you do not define a copy constructor, the compiler provides a **default shall
 
 ---
 
-## 🧩 Step 1: Basic Class Without Copy Constructor
+## Step 1: Basic Class Without Copy Constructor
 
 ```cpp
 #include <iostream>
@@ -1362,7 +1362,7 @@ int main() {
 }
 ```
 
-### 🧨 Problem: Shallow Copy
+### Problem: Shallow Copy
 The compiler automatically generates a **default copy constructor** that performs a **member-wise (shallow) copy**.  
 That means both `obj1` and `obj2` will have their `ptr` pointing to the same memory location.
 When both destructors run:
@@ -1377,11 +1377,11 @@ a.out(53252,0x1f91d60c0) malloc: *** error for object 0x6000013a4020: pointer be
 a.out(53252,0x1f91d60c0) malloc: *** set a breakpoint in malloc_error_break to debug
 [1]    53252 abort      ./a.out
 ```
-💥 **Result:** *Double free or corruption* runtime error.
+**Result:** *Double free or corruption* runtime error.
 
 ---
 
-## 🧪 Step 2: What Valgrind(linux)/leaks(mac) Shows
+## Step 2: What Valgrind(linux)/leaks(mac) Shows
 
 If you run this under Valgrind, you’ll see:
 
@@ -1408,7 +1408,7 @@ This happens because **two destructors delete the same pointer**.
 
 ---
 
-## ✅ Step 3: Add a Custom Copy Constructor (Deep Copy)
+## Step 3: Add a Custom Copy Constructor (Deep Copy)
 
 We fix this by allocating **new memory** for each object, and **copying the value** instead of the pointer.
 
@@ -1448,7 +1448,7 @@ Now each object has its own `ptr`, and deletion is safe.
 
 ---
 
-## 🔍 Step 4: Problem with Temporaries (rvalues or prvalues in c++11)
+## Step 4: Problem with Temporaries (rvalues or prvalues in c++11)
 
 Let’s add a function that **returns a temporary object**:
 
@@ -1477,7 +1477,7 @@ Why?
 
 ---
 
-## 🧱 Step 5: Fix by Adding `const` to Copy Constructor
+## Step 5: Fix by Adding `const` to Copy Constructor
 
 ```cpp
 #include <iostream>
@@ -1522,9 +1522,9 @@ Now it works for both:
 
 ---
 
-## 🧠 Step 6: Understanding Temporary Objects
+## Step 6: Understanding Temporary Objects
 
-### 💡 What is a Temporary (prvalue)?
+### What is a Temporary (prvalue)?
 - Created by expressions like `Foo(20)` or `return Foo()`.
 - Exists only until the end of the full expression.
 - Cannot be modified (non-const binding forbidden).
@@ -1537,7 +1537,7 @@ so that **temporaries** can be used to create new objects safely.
 
 ---
 
-## 🕵️‍♂️ Step 7: Unoptimized Invocations
+## Step 7: Unoptimized Invocations
 
 Before compiler optimizations (like **Return Value Optimization**, RVO),  
 the following may happen when you call `get_obj()`:
@@ -1560,7 +1560,7 @@ Foo(const Foo&) invoked (deep copy), *ptr = 30
 
 ---
 
-## 🧾 Summary
+## Summary
 
 | Concept | Description |
 |----------|--------------|
@@ -1573,7 +1573,7 @@ Foo(const Foo&) invoked (deep copy), *ptr = 30
 
 ---
 
-Next step 👉 **Move Constructor**  
+Next step **Move Constructor**  
 (to optimize performance and avoid unnecessary deep copies for temporaries).
 
 [↑ Back to Table of Contents](#table-of-contents)
