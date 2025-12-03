@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-912c1d96.js";
+            window.path_to_searchindex_js = "searchindex-6d2aba13.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f57e8da3.js"></script>
+        <script src="toc-1cd3888e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,7 +175,19 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="c-concepts-constraining-templates-c20"><a class="header" href="#c-concepts-constraining-templates-c20">C++ Concepts: Constraining Templates (C++20)</a></h1>
-<h2 id="the-problem-unclear-template-requirements"><a class="header" href="#the-problem-unclear-template-requirements">The Problem: Unclear Template Requirements</a></h2>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#1-the-problem-unclear-template-requirements">The Problem: Unclear Template Requirements</a></li>
+<li><a href="#2-the-solution-c20-concepts">The Solution: C++20 Concepts</a></li>
+<li><a href="#3-more-concept-examples">More Concept Examples</a></li>
+<li><a href="#4-common-standard-library-concepts-c20">Common Standard Library Concepts (C++20)</a></li>
+<li><a href="#5-concepts-with-iterators">Concepts with Iterators</a></li>
+<li><a href="#6-concepts-recap">Concepts Recap</a></li>
+<li><a href="#7-quick-reference-concept-syntax">Quick Reference: Concept Syntax</a></li>
+<li><a href="#8-summary">Summary</a></li>
+</ol>
+<hr>
+<h2 id="1-the-problem-unclear-template-requirements"><a class="header" href="#1-the-problem-unclear-template-requirements">1. The Problem: Unclear Template Requirements</a></h2>
 <p>Consider this simple template function:</p>
 <pre><code class="language-cpp">template &lt;typename T&gt;
 T min(const T&amp; a, const T&amp; b) {
@@ -209,7 +221,8 @@ specialization 'min&lt;StudentId&gt;' requested here
     ^
 1 error generated.
 </code></pre>
-<h3 id="what-happened-understanding-template-instantiation"><a class="header" href="#what-happened-understanding-template-instantiation">What Happened? Understanding Template Instantiation</a></h3>
+<h3 id="what-happened"><a class="header" href="#what-happened">What Happened?</a></h3>
+<p>Understanding Template Instantiation</p>
 <p>Here’s the critical timeline:</p>
 <p><strong>Step 1: You write the call</strong></p>
 <pre><code class="language-cpp">min&lt;StudentId&gt;(thomas, rachel);
@@ -274,7 +287,9 @@ min&lt;StudentId&gt;(thomas, rachel);  // NOW the error appears!
 </li>
 </ol>
 <p><strong>Big Question:</strong> How do we put constraints on templates so the compiler can check them BEFORE instantiation?</p>
-<h2 id="the-solution-c20-concepts"><a class="header" href="#the-solution-c20-concepts">The Solution: C++20 Concepts</a></h2>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="2-the-solution-c20-concepts"><a class="header" href="#2-the-solution-c20-concepts">2. The Solution: C++20 Concepts</a></h2>
 <h3 id="what-is-a-concept"><a class="header" href="#what-is-a-concept">What is a Concept?</a></h3>
 <p><strong>A concept is a named set of constraints on template parameters introduced in C++20.</strong></p>
 <p>In simple terms:</p>
@@ -427,7 +442,9 @@ note: because 'StudentId' does not satisfy 'Comparable'
 </tbody>
 </table>
 </div>
-<h2 id="more-concept-examples"><a class="header" href="#more-concept-examples">More Concept Examples</a></h2>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="3-more-concept-examples"><a class="header" href="#3-more-concept-examples">3. More Concept Examples</a></h2>
 <h3 id="example-1-requiring-multiple-operations"><a class="header" href="#example-1-requiring-multiple-operations">Example 1: Requiring Multiple Operations</a></h3>
 <pre><code class="language-cpp">template &lt;typename T&gt;
 concept Arithmetic = requires(T a, T b) {
@@ -477,7 +494,9 @@ void sort(std::vector&lt;T&gt;&amp; vec) {
     // Sort implementation
 }
 </code></pre>
-<h2 id="common-standard-library-concepts-c20"><a class="header" href="#common-standard-library-concepts-c20">Common Standard Library Concepts (C++20)</a></h2>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="4-common-standard-library-concepts-c20"><a class="header" href="#4-common-standard-library-concepts-c20">4. Common Standard Library Concepts (C++20)</a></h2>
 <p>The STL provides many built-in concepts in <code>&lt;concepts&gt;</code>:</p>
 <div class="table-wrapper">
 <table>
@@ -495,8 +514,10 @@ void sort(std::vector&lt;T&gt;&amp; vec) {
 </tbody>
 </table>
 </div>
-<p>All the available builtin concepts can be found here: https://en.cppreference.com/w/cpp/concepts.html</p>
-<h2 id="concepts-with-iterators"><a class="header" href="#concepts-with-iterators">Concepts with Iterators</a></h2>
+<p>All the built-in concepts can be found here: https://en.cppreference.com/w/cpp/concepts.html</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="5-concepts-with-iterators"><a class="header" href="#5-concepts-with-iterators">5. Concepts with Iterators</a></h2>
 <pre><code class="language-cpp">template &lt;typename It, typename T&gt;
 concept SearchableIterator = requires(It it, T value) {
     { *it } -&gt; std::convertible_to&lt;T&gt;;  // Can dereference
@@ -514,7 +535,9 @@ It find(It begin, It end, const T&amp; value) {
     return end;
 }
 </code></pre>
-<h2 id="concepts-recap"><a class="header" href="#concepts-recap">Concepts Recap</a></h2>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="6-concepts-recap"><a class="header" href="#6-concepts-recap">6. Concepts Recap</a></h2>
 <h3 id="two-main-reasons-to-use-concepts"><a class="header" href="#two-main-reasons-to-use-concepts">Two Main Reasons to Use Concepts</a></h3>
 <ol>
 <li>
@@ -541,7 +564,9 @@ It find(It begin, It end, const T&amp; value) {
 <li>Many older codebases still use older constraint techniques (SFINAE, <code>std::enable_if</code>)</li>
 <li>Compiler support is still maturing</li>
 </ul>
-<h2 id="quick-reference-concept-syntax"><a class="header" href="#quick-reference-concept-syntax">Quick Reference: Concept Syntax</a></h2>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="7-quick-reference-concept-syntax"><a class="header" href="#7-quick-reference-concept-syntax">7. Quick Reference: Concept Syntax</a></h2>
 <pre><code class="language-cpp">// Define a concept
 template &lt;typename T&gt;
 concept ConceptName = requires(T obj) {
@@ -559,7 +584,9 @@ void function(T param);
 // Use concept with auto parameters (C++20)
 void function(ConceptName auto param);
 </code></pre>
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="8-summary"><a class="header" href="#8-summary">8. Summary</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -574,8 +601,9 @@ void function(ConceptName auto param);
 </tbody>
 </table>
 </div>
-<p><strong>Note:</strong> Concepts make templates safer, clearer, and much easier to use correctly!</p>
-
+<p><strong>Key Takeaway:</strong> Concepts make templates safer, clearer, and much easier to use correctly!</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
