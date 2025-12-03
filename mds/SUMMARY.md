@@ -23,3 +23,4 @@
   - [Templates Belong in Headers](./template_emit.md)
   - [Class Template Specialization](./class_template_specialization.md)
   - [Function Template Specialization](./func_template_specialization.md)
+  - [Why typename needed in nested Templates](./typename_template.md)
