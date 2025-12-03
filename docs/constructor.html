@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-9793c495.js";
+            window.path_to_searchindex_js = "searchindex-3d3ec5cb.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-1258bbed.js"></script>
@@ -174,7 +174,7 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="c-constructors-and-destructors---complete-guide"><a class="header" href="#c-constructors-and-destructors---complete-guide">C++ Constructors and Destructors - Complete Guide</a></h1>
+                        <h1 id="c-constructors-and-destructors"><a class="header" href="#c-constructors-and-destructors">C++ Constructors and Destructors</a></h1>
 <h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
 <ol>
 <li><a href="#constructors">Constructors</a></li>
@@ -1290,21 +1290,21 @@ public:
 <p>✗ <strong>Why it’s bad:</strong> The count is the object’s primary state. If you’re modifying it, the object IS changing, so the function shouldn’t be <code>const</code>.</p>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 <p><a id="copy-constructor"></a></p>
-<h1 id="-understanding-copy-constructors-in-c"><a class="header" href="#-understanding-copy-constructors-in-c">📘 Understanding Copy Constructors in C++</a></h1>
+<h1 id="understanding-copy-constructors-in-c"><a class="header" href="#understanding-copy-constructors-in-c">Understanding Copy Constructors in C++</a></h1>
 <p>Let’s explore <strong>what a copy constructor is</strong>, <strong>when it’s invoked</strong>, and understand <strong>deep vs shallow copies</strong> and <strong>temporary objects</strong> through examples.</p>
 <hr>
-<h2 id="-what-is-a-copy-constructor"><a class="header" href="#-what-is-a-copy-constructor">🧠 What is a Copy Constructor?</a></h2>
+<h2 id="what-is-a-copy-constructor"><a class="header" href="#what-is-a-copy-constructor">What is a Copy Constructor?</a></h2>
 <p>A <strong>copy constructor</strong> in C++ is a special constructor used to <strong>create a new object as a copy of an existing object</strong>.</p>
-<h3 id="-syntax"><a class="header" href="#-syntax">📜 Syntax</a></h3>
+<h3 id="syntax-2"><a class="header" href="#syntax-2">Syntax</a></h3>
 <pre><code class="language-cpp">ClassName(const ClassName&amp; other);
 </code></pre>
-<h3 id="-purpose"><a class="header" href="#-purpose">⚙️ Purpose</a></h3>
+<h3 id="purpose"><a class="header" href="#purpose">Purpose</a></h3>
 <ul>
 <li>Defines how an object should be copied.</li>
 <li>Required when your class <strong>manages resources</strong> (like memory, files, sockets).</li>
 <li>Prevents issues like <strong>double deletion</strong> and <strong>dangling pointers</strong>.</li>
 </ul>
-<h3 id="-when-is-it-invoked"><a class="header" href="#-when-is-it-invoked">🧩 When is it Invoked?</a></h3>
+<h3 id="when-is-it-invoked"><a class="header" href="#when-is-it-invoked">When is it Invoked?</a></h3>
 <p>The compiler automatically calls the copy constructor in these cases:</p>
 <ol>
 <li>
@@ -1333,7 +1333,7 @@ public:
 </ol>
 <p>If you do not define a copy constructor, the compiler provides a <strong>default shallow copy constructor</strong>, which may not be safe for classes managing dynamic memory.</p>
 <hr>
-<h2 id="-step-1-basic-class-without-copy-constructor"><a class="header" href="#-step-1-basic-class-without-copy-constructor">🧩 Step 1: Basic Class Without Copy Constructor</a></h2>
+<h2 id="step-1-basic-class-without-copy-constructor"><a class="header" href="#step-1-basic-class-without-copy-constructor">Step 1: Basic Class Without Copy Constructor</a></h2>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
 class Foo {
@@ -1358,7 +1358,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h3 id="-problem-shallow-copy"><a class="header" href="#-problem-shallow-copy">🧨 Problem: Shallow Copy</a></h3>
+<h3 id="problem-shallow-copy"><a class="header" href="#problem-shallow-copy">Problem: Shallow Copy</a></h3>
 <p>The compiler automatically generates a <strong>default copy constructor</strong> that performs a <strong>member-wise (shallow) copy</strong>.<br>That means both <code>obj1</code> and <code>obj2</code> will have their <code>ptr</code> pointing to the same memory location.
 When both destructors run:</p>
 <ul>
@@ -1373,9 +1373,9 @@ a.out(53252,0x1f91d60c0) malloc: *** error for object 0x6000013a4020: pointer be
 a.out(53252,0x1f91d60c0) malloc: *** set a breakpoint in malloc_error_break to debug
 [1]    53252 abort      ./a.out
 </code></pre>
-<p>💥 <strong>Result:</strong> <em>Double free or corruption</em> runtime error.</p>
+<p><strong>Result:</strong> <em>Double free or corruption</em> runtime error.</p>
 <hr>
-<h2 id="-step-2-what-valgrindlinuxleaksmac-shows"><a class="header" href="#-step-2-what-valgrindlinuxleaksmac-shows">🧪 Step 2: What Valgrind(linux)/leaks(mac) Shows</a></h2>
+<h2 id="step-2-what-valgrindlinuxleaksmac-shows"><a class="header" href="#step-2-what-valgrindlinuxleaksmac-shows">Step 2: What Valgrind(linux)/leaks(mac) Shows</a></h2>
 <p>If you run this under Valgrind, you’ll see:</p>
 <pre><code>==1234== Invalid free() / delete / delete[]
 ==1234==    at 0x4C2B5D5: operator delete(void*) (vg_replace_malloc.c:642)
@@ -1394,7 +1394,7 @@ a.out(56120,0x1f91d60c0) malloc: *** set a breakpoint in malloc_error_break to d
 </code></pre>
 <p>This happens because <strong>two destructors delete the same pointer</strong>.</p>
 <hr>
-<h2 id="-step-3-add-a-custom-copy-constructor-deep-copy"><a class="header" href="#-step-3-add-a-custom-copy-constructor-deep-copy">✅ Step 3: Add a Custom Copy Constructor (Deep Copy)</a></h2>
+<h2 id="step-3-add-a-custom-copy-constructor-deep-copy"><a class="header" href="#step-3-add-a-custom-copy-constructor-deep-copy">Step 3: Add a Custom Copy Constructor (Deep Copy)</a></h2>
 <p>We fix this by allocating <strong>new memory</strong> for each object, and <strong>copying the value</strong> instead of the pointer.</p>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
@@ -1428,7 +1428,7 @@ int main() {
 </code></pre>
 <p>Now each object has its own <code>ptr</code>, and deletion is safe.</p>
 <hr>
-<h2 id="-step-4-problem-with-temporaries-rvalues-or-prvalues-in-c11"><a class="header" href="#-step-4-problem-with-temporaries-rvalues-or-prvalues-in-c11">🔍 Step 4: Problem with Temporaries (rvalues or prvalues in c++11)</a></h2>
+<h2 id="step-4-problem-with-temporaries-rvalues-or-prvalues-in-c11"><a class="header" href="#step-4-problem-with-temporaries-rvalues-or-prvalues-in-c11">Step 4: Problem with Temporaries (rvalues or prvalues in c++11)</a></h2>
 <p>Let’s add a function that <strong>returns a temporary object</strong>:</p>
 <pre><code class="language-cpp">Foo get_obj() {
     return Foo(20); // creates a temporary (prvalue)
@@ -1450,7 +1450,7 @@ note: candidate constructor not viable: expects an lvalue for 1st argument
 <li>In C++, <strong>non-const lvalue references</strong> cannot bind to temporaries.</li>
 </ul>
 <hr>
-<h2 id="-step-5-fix-by-adding-const-to-copy-constructor"><a class="header" href="#-step-5-fix-by-adding-const-to-copy-constructor">🧱 Step 5: Fix by Adding <code>const</code> to Copy Constructor</a></h2>
+<h2 id="step-5-fix-by-adding-const-to-copy-constructor"><a class="header" href="#step-5-fix-by-adding-const-to-copy-constructor">Step 5: Fix by Adding <code>const</code> to Copy Constructor</a></h2>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
 class Foo {
@@ -1492,8 +1492,8 @@ int main() {
 <li><strong>temporaries (prvalues)</strong> returned from functions</li>
 </ul>
 <hr>
-<h2 id="-step-6-understanding-temporary-objects"><a class="header" href="#-step-6-understanding-temporary-objects">🧠 Step 6: Understanding Temporary Objects</a></h2>
-<h3 id="-what-is-a-temporary-prvalue"><a class="header" href="#-what-is-a-temporary-prvalue">💡 What is a Temporary (prvalue)?</a></h3>
+<h2 id="step-6-understanding-temporary-objects"><a class="header" href="#step-6-understanding-temporary-objects">Step 6: Understanding Temporary Objects</a></h2>
+<h3 id="what-is-a-temporary-prvalue"><a class="header" href="#what-is-a-temporary-prvalue">What is a Temporary (prvalue)?</a></h3>
 <ul>
 <li>Created by expressions like <code>Foo(20)</code> or <code>return Foo()</code>.</li>
 <li>Exists only until the end of the full expression.</li>
@@ -1504,7 +1504,7 @@ int main() {
 </code></pre>
 <p>so that <strong>temporaries</strong> can be used to create new objects safely.</p>
 <hr>
-<h2 id="-step-7-unoptimized-invocations"><a class="header" href="#-step-7-unoptimized-invocations">🕵️‍♂️ Step 7: Unoptimized Invocations</a></h2>
+<h2 id="step-7-unoptimized-invocations"><a class="header" href="#step-7-unoptimized-invocations">Step 7: Unoptimized Invocations</a></h2>
 <p>Before compiler optimizations (like <strong>Return Value Optimization</strong>, RVO),<br>the following may happen when you call <code>get_obj()</code>:</p>
 <ol>
 <li><code>Foo(30)</code> temporary created (constructor invoked)</li>
@@ -1522,7 +1522,7 @@ Foo(const Foo&amp;) invoked (deep copy), *ptr = 30
 <p>In optimized builds, modern compilers often <strong>elide</strong> these copies (RVO),<br>so you might see fewer constructor calls.</p>
 </blockquote>
 <hr>
-<h2 id="-summary"><a class="header" href="#-summary">🧾 Summary</a></h2>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -1539,9 +1539,9 @@ Foo(const Foo&amp;) invoked (deep copy), *ptr = 30
 </table>
 </div>
 <hr>
-<p>Next step 👉 <strong>Move Constructor</strong><br>(to optimize performance and avoid unnecessary deep copies for temporaries).</p>
+<p>Next step <strong>Move Constructor</strong><br>(to optimize performance and avoid unnecessary deep copies for temporaries).</p>
 <h2 id="-back-to-table-of-contents"><a class="header" href="#-back-to-table-of-contents"><a href="#table-of-contents">↑ Back to Table of Contents</a></a></h2>
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<h2 id="summary-1"><a class="header" href="#summary-1">Summary</a></h2>
 <p><strong>Constructors</strong> initialize objects after memory allocation, while <strong>destructors</strong> clean up resources before memory deallocation. Using the <code>explicit</code> keyword on constructors is a best practice that prevents implicit type conversions, making your code safer, clearer, and more maintainable.</p>
 <p><strong>Member initializer lists</strong> allow you to initialize member variables at the moment of their construction, which is essential for <code>const</code> and reference members, and more efficient for all member variables.</p>
 <p><strong>The <code>this</code> pointer</strong> is a hidden pointer passed to every member function that points to the calling object. When working with <code>const</code> objects, member functions must be marked as <code>const</code> to accept a <code>const Foo* const</code> instead of <code>Foo* const</code>, ensuring const-correctness and type safety.</p>
