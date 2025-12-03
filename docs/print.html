@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b7f9bcbe.js";
+            window.path_to_searchindex_js = "searchindex-912c1d96.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-ad288909.js"></script>
+        <script src="toc-f57e8da3.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -15830,6 +15830,408 @@ void func(const Container&amp; c) {
 <h3 id="key-takeaway"><a class="header" href="#key-takeaway">Key Takeaway:</a></h3>
 <p>The <code>typename</code> keyword disambiguates dependent names in templates, explicitly telling the compiler that a nested name refers to a <strong>type</strong> rather than a value. Without it, the compiler defaults to interpreting dependent names as values, leading to compilation errors. While modern C++ features like <code>auto</code> can reduce the need for <code>typename</code> in some cases, understanding when and why to use it remains essential for template programming.</p>
 <p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="c-concepts-constraining-templates-c20"><a class="header" href="#c-concepts-constraining-templates-c20">C++ Concepts: Constraining Templates (C++20)</a></h1>
+<h2 id="the-problem-unclear-template-requirements"><a class="header" href="#the-problem-unclear-template-requirements">The Problem: Unclear Template Requirements</a></h2>
+<p>Consider this simple template function:</p>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<p><strong>Question:</strong> What must be true of type <code>T</code> for us to be able to use <code>min</code>?</p>
+<p><strong>Answer:</strong> <code>T</code> must have an <code>operator&lt;</code> defined that returns something convertible to <code>bool</code>.</p>
+<h3 id="when-things-go-wrong"><a class="header" href="#when-things-go-wrong">When Things Go Wrong</a></h3>
+<pre><code class="language-cpp">struct StudentId {
+    std::string name;
+    std::string id;
+};
+
+int main() {
+    StudentId thomas { "Thomas", "S001" };
+    StudentId rachel { "Rachel", "S002" };
+    
+    min&lt;StudentId&gt;(thomas, rachel);  // Compiler error!
+}
+</code></pre>
+<h3 id="the-confusing-error-message"><a class="header" href="#the-confusing-error-message">The Confusing Error Message</a></h3>
+<pre><code>$ g++ main.cpp --std=c++20
+main.cpp:9:12: error: invalid operands to binary expression
+('const StudentId' and 'const StudentId')
+    return a &lt; b ? a : b;
+           ~ ^ ~
+main.cpp:20:3: note: in instantiation of function template
+specialization 'min&lt;StudentId&gt;' requested here
+    min&lt;StudentId&gt;(thomas, rachel);
+    ^
+1 error generated.
+</code></pre>
+<h3 id="what-happened-understanding-template-instantiation"><a class="header" href="#what-happened-understanding-template-instantiation">What Happened? Understanding Template Instantiation</a></h3>
+<p>Here’s the critical timeline:</p>
+<p><strong>Step 1: You write the call</strong></p>
+<pre><code class="language-cpp">min&lt;StudentId&gt;(thomas, rachel);
+</code></pre>
+<p><strong>Step 2: Compiler sees the template</strong></p>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<p>At this point, the compiler thinks: <em>“min for StudentIds, coming right up! The template looks fine, let me instantiate it…”</em></p>
+<p><strong>Step 3: Compiler instantiates the template</strong> (creates a concrete function)</p>
+<pre><code class="language-cpp">StudentId min(const StudentId&amp; a, const StudentId&amp; b) {
+    return a &lt; b ? a : b;  // NOW it tries to compile this line
+}
+</code></pre>
+<p><strong>Step 4: Compiler discovers the problem</strong>
+<em>“AHHH what do I do here! I don’t know how to compare two StudentIds with &lt;”</em></p>
+<h3 id="the-critical-problem-late-error-detection"><a class="header" href="#the-critical-problem-late-error-detection">The Critical Problem: Late Error Detection</a></h3>
+<p><strong>The compiler CANNOT check if <code>StudentId</code> has <code>operator&lt;</code> until it actually instantiates the template!</strong></p>
+<p>Why? Because templates are NOT compiled when they’re defined—they’re only compiled when they’re instantiated with specific types.</p>
+<pre><code class="language-cpp">// When you write this, the compiler does NOT check if T has operator&lt;
+template &lt;typename T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;  // No error yet!
+}
+
+// The compiler only checks when you USE it with a specific type
+min&lt;StudentId&gt;(thomas, rachel);  // NOW the error appears!
+</code></pre>
+<p>This creates several problems:</p>
+<ol>
+<li>
+<p><strong>Errors appear far from the actual mistake</strong></p>
+<ul>
+<li>You made the mistake at the call site: <code>min&lt;StudentId&gt;(...)</code></li>
+<li>But the error points to line 9 inside the template definition: <code>return a &lt; b ? a : b;</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Confusing error messages</strong></p>
+<ul>
+<li>The error talks about template internals, not your code</li>
+<li>“in instantiation of function template specialization” - what does that even mean?</li>
+</ul>
+</li>
+<li>
+<p><strong>No way to know requirements upfront</strong></p>
+<ul>
+<li>How do you know <code>min</code> requires <code>operator&lt;</code>?</li>
+<li>You have to read the implementation or documentation</li>
+<li>The compiler can’t help you until it’s too late</li>
+</ul>
+</li>
+<li>
+<p><strong>Bad templates can produce really confusing compiler errors</strong></p>
+<ul>
+<li>Imagine a template with 50 lines of code</li>
+<li>The error could be buried deep in that implementation</li>
+<li>You see errors about code you didn’t even write!</li>
+</ul>
+</li>
+</ol>
+<p><strong>Big Question:</strong> How do we put constraints on templates so the compiler can check them BEFORE instantiation?</p>
+<h2 id="the-solution-c20-concepts"><a class="header" href="#the-solution-c20-concepts">The Solution: C++20 Concepts</a></h2>
+<h3 id="what-is-a-concept"><a class="header" href="#what-is-a-concept">What is a Concept?</a></h3>
+<p><strong>A concept is a named set of constraints on template parameters introduced in C++20.</strong></p>
+<p>In simple terms:</p>
+<ul>
+<li>A concept defines <strong>requirements</strong> that a type must satisfy</li>
+<li>It allows you to specify <strong>what operations a type must support</strong> to be used with a template</li>
+<li>The compiler checks these requirements <strong>before instantiating</strong> the template</li>
+<li>If the requirements aren’t met, you get a clear error message at the call site</li>
+</ul>
+<p>Think of concepts as “compile-time interfaces” or “type constraints” for templates.</p>
+<h3 id="how-concepts-solve-the-instantiation-problem"><a class="header" href="#how-concepts-solve-the-instantiation-problem">How Concepts Solve the Instantiation Problem</a></h3>
+<p>Concepts solve the instantiation problem by checking constraints <strong>before</strong> the compiler tries to instantiate the template.</p>
+<h3 id="key-benefit-early-error-detection"><a class="header" href="#key-benefit-early-error-detection">Key Benefit: Early Error Detection</a></h3>
+<p><strong>Without concepts:</strong></p>
+<ol>
+<li>Compiler tries to instantiate <code>min&lt;StudentId&gt;</code></li>
+<li>Compiler generates the function body</li>
+<li>Compiler tries to compile <code>a &lt; b</code></li>
+<li><strong>Error discovered!</strong> (too late)</li>
+</ol>
+<p><strong>With concepts:</strong></p>
+<ol>
+<li>Compiler checks: “Does <code>StudentId</code> satisfy <code>Comparable</code>?”</li>
+<li><strong>Error discovered immediately!</strong> (before instantiation)</li>
+<li>Compiler never even tries to instantiate the template</li>
+<li>You get a clear error at the call site</li>
+</ol>
+<p>Concepts allow us to:</p>
+<ul>
+<li><strong>Check constraints BEFORE instantiation</strong> (most important!)</li>
+<li>Be explicit about what we require of a template type</li>
+<li>Prevent template instantiation unless all constraints are met</li>
+<li>Get much better compiler error messages</li>
+</ul>
+<h3 id="concept-syntax"><a class="header" href="#concept-syntax">Concept Syntax</a></h3>
+<p>The general syntax for defining a concept is:</p>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+concept ConceptName = constraint_expression;
+</code></pre>
+<p>Where <code>constraint_expression</code> can be:</p>
+<ul>
+<li>A <code>requires</code> expression (most common)</li>
+<li>A conjunction of concepts using <code>&amp;&amp;</code></li>
+<li>A disjunction of concepts using <code>||</code></li>
+<li>A simple type trait like <code>std::is_integral_v&lt;T&gt;</code></li>
+</ul>
+<h4 id="requires-expression-syntax"><a class="header" href="#requires-expression-syntax">Requires Expression Syntax</a></h4>
+<pre><code class="language-cpp">requires(parameter_list) {
+    requirement1;
+    requirement2;
+    ...
+}
+</code></pre>
+<p><strong>Types of requirements:</strong></p>
+<ol>
+<li>
+<p><strong>Simple requirement</strong> - Expression must be valid</p>
+<pre><code class="language-cpp">a + b;           // a + b must compile
+a.size();        // a must have a size() method
+</code></pre>
+</li>
+<li>
+<p><strong>Type requirement</strong> - Type must exist</p>
+<pre><code class="language-cpp">typename T::value_type;      // T must have a value_type member
+typename T::iterator;         // T must have an iterator member
+</code></pre>
+</li>
+<li>
+<p><strong>Compound requirement</strong> - Expression must be valid and return specific type</p>
+<pre><code class="language-cpp">{ expression } -&gt; concept&lt;args&gt;;
+{ a &lt; b } -&gt; std::convertible_to&lt;bool&gt;;     // a &lt; b must return bool-like
+{ a.begin() } -&gt; std::same_as&lt;typename T::iterator&gt;;
+</code></pre>
+</li>
+<li>
+<p><strong>Nested requirement</strong> - Another constraint must be satisfied</p>
+<pre><code class="language-cpp">requires std::is_copy_constructible_v&lt;T&gt;;
+</code></pre>
+</li>
+</ol>
+<h3 id="breaking-down-the-comparable-concept"><a class="header" href="#breaking-down-the-comparable-concept">Breaking Down the Comparable Concept</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+concept Comparable = requires(T a, T b) {
+    { a &lt; b } -&gt; std::convertible_to&lt;bool&gt;;
+};
+</code></pre>
+<p>Let’s break this down:</p>
+<pre><code class="language-cpp">concept Comparable = ...
+</code></pre>
+<p><strong>Concept:</strong> A named set of constraints</p>
+<pre><code class="language-cpp">requires(T a, T b) { ... }
+</code></pre>
+<p><strong>Requires clause:</strong> “Given two T’s, I expect the following to hold”</p>
+<pre><code class="language-cpp">{ a &lt; b } -&gt; std::convertible_to&lt;bool&gt;;
+</code></pre>
+<p><strong>Constraint 1:</strong> Anything inside the <code>{ }</code> must compile without error (i.e., <code>a &lt; b</code> must be valid)</p>
+<p><strong>Constraint 2:</strong> The result must be convertible to <code>bool</code> (note: <code>std::convertible_to</code> is itself a concept!)</p>
+<h3 id="using-the-comparable-concept"><a class="header" href="#using-the-comparable-concept">Using the Comparable Concept</a></h3>
+<p>There are two syntaxes for applying concepts to templates:</p>
+<h4 id="syntax-1-using-requires-clause"><a class="header" href="#syntax-1-using-requires-clause">Syntax 1: Using <code>requires</code> clause</a></h4>
+<pre><code class="language-cpp">template &lt;typename T&gt; requires Comparable&lt;T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<h4 id="syntax-2-super-slick-shorthand-preferred"><a class="header" href="#syntax-2-super-slick-shorthand-preferred">Syntax 2: Super slick shorthand (preferred)</a></h4>
+<pre><code class="language-cpp">template &lt;Comparable T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<p>This reads naturally: “T must be Comparable”</p>
+<h3 id="concepts-greatly-improve-compiler-errors"><a class="header" href="#concepts-greatly-improve-compiler-errors">Concepts Greatly Improve Compiler Errors</a></h3>
+<p>Now when you try to use <code>min</code> with <code>StudentId</code>:</p>
+<pre><code class="language-cpp">template &lt;Comparable T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;
+}
+
+StudentId thomas { "Thomas", "S001" };
+StudentId rachel { "Rachel", "S002" };
+
+min&lt;StudentId&gt;(thomas, rachel);  // Much clearer error!
+</code></pre>
+<p><strong>New error message:</strong></p>
+<pre><code>error: no matching function for call to 'min'
+note: candidate template ignored: constraints not satisfied
+note: because 'StudentId' does not satisfy 'Comparable'
+</code></pre>
+<p>Much better! The error now clearly states:</p>
+<ul>
+<li>The problem is at the <strong>call site</strong> (where you used it)</li>
+<li><code>StudentId</code> doesn’t satisfy the <code>Comparable</code> concept</li>
+<li><strong>No template instantiation attempted!</strong></li>
+<li>No confusing template instantiation details</li>
+</ul>
+<h3 id="the-game-changer-constraint-checking-before-instantiation"><a class="header" href="#the-game-changer-constraint-checking-before-instantiation">The Game Changer: Constraint Checking Before Instantiation</a></h3>
+<p>This is the crucial difference:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Without Concepts</th><th>With Concepts</th></tr>
+</thead>
+<tbody>
+<tr><td>❌ Try to instantiate template</td><td>✅ Check constraints first</td></tr>
+<tr><td>❌ Generate function code</td><td>✅ If constraints fail, STOP</td></tr>
+<tr><td>❌ Try to compile generated code</td><td>✅ Never instantiate bad templates</td></tr>
+<tr><td>❌ Error deep in template code</td><td>✅ Error at call site</td></tr>
+<tr><td>❌ “invalid operands to binary expression”</td><td>✅ “does not satisfy Comparable”</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="more-concept-examples"><a class="header" href="#more-concept-examples">More Concept Examples</a></h2>
+<h3 id="example-1-requiring-multiple-operations"><a class="header" href="#example-1-requiring-multiple-operations">Example 1: Requiring Multiple Operations</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+concept Arithmetic = requires(T a, T b) {
+    { a + b } -&gt; std::convertible_to&lt;T&gt;;
+    { a - b } -&gt; std::convertible_to&lt;T&gt;;
+    { a * b } -&gt; std::convertible_to&lt;T&gt;;
+    { a / b } -&gt; std::convertible_to&lt;T&gt;;
+};
+
+template &lt;Arithmetic T&gt;
+T average(const T&amp; a, const T&amp; b) {
+    return (a + b) / T(2);
+}
+</code></pre>
+<h3 id="example-2-requiring-member-functions"><a class="header" href="#example-2-requiring-member-functions">Example 2: Requiring Member Functions</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+concept Printable = requires(T obj) {
+    { obj.toString() } -&gt; std::convertible_to&lt;std::string&gt;;
+};
+
+template &lt;Printable T&gt;
+void display(const T&amp; obj) {
+    std::cout &lt;&lt; obj.toString() &lt;&lt; std::endl;
+}
+</code></pre>
+<h3 id="example-3-requiring-type-members"><a class="header" href="#example-3-requiring-type-members">Example 3: Requiring Type Members</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+concept Container = requires(T container) {
+    typename T::value_type;           // Must have value_type member
+    typename T::iterator;             // Must have iterator member
+    { container.begin() } -&gt; std::same_as&lt;typename T::iterator&gt;;
+    { container.end() } -&gt; std::same_as&lt;typename T::iterator&gt;;
+    { container.size() } -&gt; std::convertible_to&lt;std::size_t&gt;;
+};
+
+template &lt;Container C&gt;
+void printSize(const C&amp; container) {
+    std::cout &lt;&lt; "Size: " &lt;&lt; container.size() &lt;&lt; std::endl;
+}
+</code></pre>
+<h3 id="example-4-combining-concepts"><a class="header" href="#example-4-combining-concepts">Example 4: Combining Concepts</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+concept Sortable = Comparable&lt;T&gt; &amp;&amp; std::copyable&lt;T&gt;;
+
+template &lt;Sortable T&gt;
+void sort(std::vector&lt;T&gt;&amp; vec) {
+    // Sort implementation
+}
+</code></pre>
+<h2 id="common-standard-library-concepts-c20"><a class="header" href="#common-standard-library-concepts-c20">Common Standard Library Concepts (C++20)</a></h2>
+<p>The STL provides many built-in concepts in <code>&lt;concepts&gt;</code>:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>std::same_as&lt;T, U&gt;</code></td><td>T and U are the same type</td></tr>
+<tr><td><code>std::convertible_to&lt;From, To&gt;</code></td><td>From is convertible to To</td></tr>
+<tr><td><code>std::integral&lt;T&gt;</code></td><td>T is an integral type</td></tr>
+<tr><td><code>std::floating_point&lt;T&gt;</code></td><td>T is a floating point type</td></tr>
+<tr><td><code>std::copyable&lt;T&gt;</code></td><td>T can be copied</td></tr>
+<tr><td><code>std::movable&lt;T&gt;</code></td><td>T can be moved</td></tr>
+<tr><td><code>std::default_initializable&lt;T&gt;</code></td><td>T can be default constructed</td></tr>
+</tbody>
+</table>
+</div>
+<p>All the available builtin concepts can be found here: https://en.cppreference.com/w/cpp/concepts.html</p>
+<h2 id="concepts-with-iterators"><a class="header" href="#concepts-with-iterators">Concepts with Iterators</a></h2>
+<pre><code class="language-cpp">template &lt;typename It, typename T&gt;
+concept SearchableIterator = requires(It it, T value) {
+    { *it } -&gt; std::convertible_to&lt;T&gt;;  // Can dereference
+    { ++it } -&gt; std::same_as&lt;It&amp;&gt;;      // Can increment
+    { it != it } -&gt; std::convertible_to&lt;bool&gt;;  // Can compare
+};
+
+template &lt;SearchableIterator&lt;T&gt; It, typename T&gt;
+It find(It begin, It end, const T&amp; value) {
+    for (It it = begin; it != end; ++it) {
+        if (*it == value) {
+            return it;
+        }
+    }
+    return end;
+}
+</code></pre>
+<h2 id="concepts-recap"><a class="header" href="#concepts-recap">Concepts Recap</a></h2>
+<h3 id="two-main-reasons-to-use-concepts"><a class="header" href="#two-main-reasons-to-use-concepts">Two Main Reasons to Use Concepts</a></h3>
+<ol>
+<li>
+<p><strong>Better compiler error messages</strong></p>
+<ul>
+<li>Errors caught at the constraint level, not deep in template code</li>
+<li>Clear indication of which requirements aren’t met</li>
+<li>Errors appear at the call site where they’re most useful</li>
+</ul>
+</li>
+<li>
+<p><strong>Better IDE support</strong></p>
+<ul>
+<li>Improved Intellisense/autocomplete</li>
+<li>IDEs can show which types satisfy which concepts</li>
+<li>Better code navigation and refactoring</li>
+</ul>
+</li>
+</ol>
+<h3 id="current-limitations"><a class="header" href="#current-limitations">Current Limitations</a></h3>
+<ul>
+<li>Concepts are still a relatively new feature (C++20)</li>
+<li>The STL does not yet support them fully across all libraries</li>
+<li>Many older codebases still use older constraint techniques (SFINAE, <code>std::enable_if</code>)</li>
+<li>Compiler support is still maturing</li>
+</ul>
+<h2 id="quick-reference-concept-syntax"><a class="header" href="#quick-reference-concept-syntax">Quick Reference: Concept Syntax</a></h2>
+<pre><code class="language-cpp">// Define a concept
+template &lt;typename T&gt;
+concept ConceptName = requires(T obj) {
+    // constraints go here
+};
+
+// Use concept - Method 1
+template &lt;typename T&gt; requires ConceptName&lt;T&gt;
+void function(T param);
+
+// Use concept - Method 2 (preferred)
+template &lt;ConceptName T&gt;
+void function(T param);
+
+// Use concept with auto parameters (C++20)
+void function(ConceptName auto param);
+</code></pre>
+<h2 id="summary-12"><a class="header" href="#summary-12">Summary</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Before Concepts</th><th>With Concepts</th></tr>
+</thead>
+<tbody>
+<tr><td>Template errors deep in instantiation</td><td>Errors at call site</td></tr>
+<tr><td>Unclear requirements</td><td>Explicit, named requirements</td></tr>
+<tr><td>Cryptic error messages</td><td>Clear, understandable errors</td></tr>
+<tr><td>No IDE help</td><td>Better IDE support</td></tr>
+<tr><td>Requirements in documentation only</td><td>Requirements in code</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Note:</strong> Concepts make templates safer, clearer, and much easier to use correctly!</p>
 
                     </main>
 
