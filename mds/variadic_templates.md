@@ -1,22 +1,21 @@
 # Variadic Templates
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [The Problem: Variable Number of Arguments](#the-problem-variable-number-of-arguments)
-3. [Solution 1: Manual Function Overloading](#solution-1-manual-function-overloading)
-4. [Solution 2: Using std::vector](#solution-2-using-stdvector)
-5. [Variadic Templates](#solution-3-variadic-templates)
+1. [The Problem: Variable Number of Arguments](#the-problem-variable-number-of-arguments)
+2. [Solution 1: Manual Function Overloading](#solution-1-manual-function-overloading)
+3. [Solution 2: Using std::vector](#solution-2-using-stdvector)
+4. [Variadic Templates](#solution-3-variadic-templates)
     - [What is a Variadic Template?](#what-is-a-variadic-template)
     - [Basic Syntax](#basic-syntax)
     - [Complete Example: Variadic min](#complete-example-variadic-min)
     - [How It Works](#how-it-works)
-6. [Parameter Packs Deep Dive](#parameter-packs-deep-dive)
+5. [Parameter Packs Deep Dive](#parameter-packs-deep-dive)
     - [Template Parameter Packs](#template-parameter-packs)
     - [Function Parameter Packs](#function-parameter-packs)
     - [Pack Expansion](#pack-expansion)
-7. [Modern C++17: Fold Expressions](#modern-c17-fold-expressions)
-8. [Common Variadic Patterns](#common-variadic-patterns)
-9. [Summary](#summary)
+6. [Modern C++17: Fold Expressions](#modern-c17-fold-expressions)
+7. [Common Variadic Patterns](#common-variadic-patterns)
+8. [Summary](#summary)
 
 ---
 
