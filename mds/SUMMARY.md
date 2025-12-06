@@ -26,5 +26,7 @@
   - [Why typename needed in nested Templates](./typename_template.md)
   - [Concepts (>= C++2O)](./concepts_c++20.md)
   - [Variadic Templates (>= C++11)](./variadic_templates.md)
+  - [Abbreviated Function Templates (>= C++20)](./abbreviated_function_templates.md)
 - [Value Catagories (>= C++11)](./value_categories.md)
 - [auto (>= C++11)](./auto_c++11.md)
+- 
