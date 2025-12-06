@@ -29,4 +29,3 @@
   - [Abbreviated Function Templates (>= C++20)](./abbreviated_function_templates.md)
 - [Value Catagories (>= C++11)](./value_categories.md)
 - [auto (>= C++11)](./auto_c++11.md)
-- 
