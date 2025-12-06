@@ -20,7 +20,7 @@
 
 ---
 
-# Variadic Templates Tutorial: From Problem to Solution
+# Variadic Templates: From Problem to Solution
 
 ## The Problem: Variable Number of Arguments
 
