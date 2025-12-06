@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8634fe2d.js";
+            window.path_to_searchindex_js = "searchindex-b4f46b08.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1e803a2e.js"></script>
+        <script src="toc-7f49564c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -16261,8 +16261,722 @@ void function(ConceptName auto param);
 <p><strong>Key Takeaway:</strong> Concepts make templates safer, clearer, and much easier to use correctly!</p>
 <p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr><div style="break-before: page; page-break-before: always;"></div>
-<h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
+<h1 id="variadic-templates"><a class="header" href="#variadic-templates">Variadic Templates</a></h1>
 <h2 id="table-of-contents-21"><a class="header" href="#table-of-contents-21">Table of Contents</a></h2>
+<ol>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#the-problem-variable-number-of-arguments">The Problem: Variable Number of Arguments</a></li>
+<li><a href="#solution-1-manual-function-overloading">Solution 1: Manual Function Overloading</a></li>
+<li><a href="#solution-2-using-stdvector">Solution 2: Using std::vector</a></li>
+<li><a href="#solution-3-variadic-templates">Variadic Templates</a>
+<ul>
+<li><a href="#what-is-a-variadic-template">What is a Variadic Template?</a></li>
+<li><a href="#basic-syntax-5">Basic Syntax</a></li>
+<li><a href="#complete-example-variadic-min">Complete Example: Variadic min</a></li>
+<li><a href="#how-it-works">How It Works</a></li>
+</ul>
+</li>
+<li><a href="#parameter-packs-deep-dive">Parameter Packs Deep Dive</a>
+<ul>
+<li><a href="#template-parameter-packs">Template Parameter Packs</a></li>
+<li><a href="#function-parameter-packs">Function Parameter Packs</a></li>
+<li><a href="#pack-expansion">Pack Expansion</a></li>
+</ul>
+</li>
+<li><a href="#modern-c17-fold-expressions">Modern C++17: Fold Expressions</a></li>
+<li><a href="#common-variadic-patterns">Common Variadic Patterns</a></li>
+<li><a href="#summary-12">Summary</a></li>
+</ol>
+<hr>
+<h1 id="variadic-templates-from-problem-to-solution"><a class="header" href="#variadic-templates-from-problem-to-solution">Variadic Templates: From Problem to Solution</a></h1>
+<h2 id="the-problem-variable-number-of-arguments"><a class="header" href="#the-problem-variable-number-of-arguments">The Problem: Variable Number of Arguments</a></h2>
+<p>Suppose we want to write a <code>min</code> function that finds the minimum of any number of values:
+The following example is taken from the <code>Concepts</code> chapter.
+Here in this example <code>Comparable</code> is a concept, so dont get confused.</p>
+<pre><code class="language-cpp">template &lt;Comparable T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    return a &lt; b ? a : b;
+}
+
+min(2.4, 7.5);              // ✓ This works
+min(2.4, 7.5, 5.3);         // ✗ ERROR: No matching function
+min(2.4, 7.5, 5.3, 1.2);    // ✗ ERROR: No matching function
+</code></pre>
+<p>How do we make <code>min</code> accept a variable number of parameters?</p>
+<h2 id="solution-1-function-overloading-the-manual-way"><a class="header" href="#solution-1-function-overloading-the-manual-way">Solution 1: Function Overloading (The Manual Way)</a></h2>
+<p>We could manually write overloads for different numbers of parameters:</p>
+<pre><code class="language-cpp">// 2 parameters
+template &lt;Comparable T&gt;
+T min(const T&amp; a, const T&amp; b) { 
+    return a &lt; b ? a : b; 
+}
+
+// 3 parameters
+template &lt;Comparable T&gt;
+T min(const T&amp; a, const T&amp; b, const T&amp; c) {
+    auto m = min(b, c);          // Calls 2-parameter version
+    return a &lt; m ? a : m;
+}
+
+// 4 parameters
+template &lt;Comparable T&gt;
+T min(const T&amp; a, const T&amp; b, const T&amp; c, const T&amp; d) {
+    auto m = min(b, c, d);       // Calls 3-parameter version
+    return a &lt; m ? a : m;
+}
+</code></pre>
+<p><strong>Results:</strong></p>
+<pre><code class="language-cpp">min(2.4, 7.5);              // ✓ Works
+min(2.4, 7.5, 5.3);         // ✓ Works now
+min(2.4, 7.5, 5.3, 1.2);    // ✓ Works too!
+min(2.4, 7.5, 5.3, 1.2, 3.4, 6.7, 8.9, 9.1); // ✗ Need to write more overloads...
+</code></pre>
+<h3 id="problems-with-this-approach"><a class="header" href="#problems-with-this-approach">Problems with This Approach</a></h3>
+<p><strong>Tedious</strong>: Need to write many overloads manually<br><strong>Limited</strong>: Only works up to the number of overloads you write<br><strong>Not scalable</strong>: What if someone needs 10 or 20 parameters?<br><strong>Repetitive</strong>: Notice the pattern? The compiler should handle this!</p>
+<h2 id="solution-2-using-stdvector-the-dynamic-way"><a class="header" href="#solution-2-using-stdvector-the-dynamic-way">Solution 2: Using std::vector (The Dynamic Way)</a></h2>
+<p>Can we use a vector to hold variable numbers of arguments?</p>
+<pre><code class="language-cpp">template &lt;Comparable T&gt;
+T min(const std::vector&lt;T&gt;&amp; values) {
+    if (values.size() == 1) return values[0];
+    
+    const auto&amp; first = values[0];
+    std::vector&lt;T&gt; rest(++values.begin(), values.end());
+    auto m = min(rest);              // Recursive call
+    return first &lt; m ? first : m;
+}
+
+// Usage with brace initialization
+min({2.4, 7.5});
+min({2.4, 7.5, 5.3});
+min({2.4, 7.5, 5.3, 1.2});
+</code></pre>
+<h3 id="problems-with-this-approach-1"><a class="header" href="#problems-with-this-approach-1">Problems with This Approach</a></h3>
+<p><strong>Runtime overhead</strong>: Must allocate a vector for every call<br><strong>Recursive copying</strong>: Each recursive call copies the remaining elements<br><strong>Memory allocation</strong>: Dynamic memory allocation is expensive<br><strong>Awkward syntax</strong>: Requires braces <code>{}</code> around arguments<br><strong>No compile-time optimization</strong>: Cannot be fully optimized away</p>
+<p><strong>Key insight</strong>: We need the compiler to generate the code at compile-time, not handle it at runtime!</p>
+<p>So how can we ask compiler to generate these underlying functions for us ?
+Here comes the Variadic Templates.</p>
+<h2 id="variadic-templates-"><a class="header" href="#variadic-templates-">Variadic Templates ✨</a></h2>
+<h3 id="enter-c11-a-game-changing-feature"><a class="header" href="#enter-c11-a-game-changing-feature">Enter C++11: A Game-Changing Feature</a></h3>
+<p>C++11 introduced <strong>variadic templates</strong>, a powerful feature that allows templates to accept a variable number of arguments. Instead of manually writing overloads or relying on runtime containers, variadic templates let the <strong>compiler</strong> automatically generate all the code we need at compile-time!</p>
+<h3 id="what-is-a-variadic-template"><a class="header" href="#what-is-a-variadic-template">What is a Variadic Template?</a></h3>
+<p>A <strong>variadic template</strong> is a template that can accept any number (zero or more) of template arguments. It uses a special construct called a <strong>parameter pack</strong> to capture these arguments.</p>
+<p><strong>Definition:</strong></p>
+<blockquote>
+<p>A variadic template uses parameter packs (<code>...</code>) to accept and work with a variable number of types or values, enabling type-safe, compile-time generation of code for any number of arguments.</p>
+</blockquote>
+<h3 id="basic-syntax-5"><a class="header" href="#basic-syntax-5">Basic Syntax</a></h3>
+<pre><code class="language-cpp">// Template with parameter pack
+template &lt;typename... Args&gt;
+//                  ^^^^^^
+//                  Parameter pack (captures 0 or more types)
+void function(Args... args) {
+//            ^^^^^^^^^^^^
+//            Function parameter pack (captures 0 or more values)
+    // Use args... here
+}
+</code></pre>
+<p><strong>Key syntax elements:</strong></p>
+<ul>
+<li><code>typename... Args</code> - Declares a <strong>template parameter pack</strong> (types)</li>
+<li><code>Args... args</code> - Declares a <strong>function parameter pack</strong> (values)</li>
+<li><code>args...</code> - <strong>Expands</strong> the parameter pack</li>
+</ul>
+<h3 id="the-complete-solution"><a class="header" href="#the-complete-solution">The Complete Solution</a></h3>
+<pre><code class="language-cpp">// Base case: single value (stops recursion)
+template &lt;Comparable T&gt;
+T min(const T&amp; value) { 
+    return value; 
+}
+
+// Recursive case: 2 or more values (variadic template)
+template &lt;Comparable T, Comparable... Args&gt;
+//                      ^^^^^^^^^^^^^^^^^^
+//                      Parameter pack: accepts 0+ types
+T min(const T&amp; first, const Args&amp;... rest) {
+//                    ^^^^^^^^^^^^^^^^^
+//                    Function parameter pack: 0+ arguments
+    auto min_rest = min(rest...);     // Recursive call with remaining args
+//                      ^^^^^^^       // Pack expansion: expands rest...
+    return first &lt; min_rest ? first : min_rest;
+}
+</code></pre>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-cpp">min(2.4, 7.5);                    // ✓ Works!
+min(2.4, 7.5, 5.3);               // ✓ Works!
+min(2.4, 7.5, 5.3, 1.2);          // ✓ Works!
+min(2.4, 7.5, 5.3, 1.2, 3.4);     // ✓ Works!
+// Works with ANY number of arguments!
+</code></pre>
+<h3 id="how-it-works-step-by-step"><a class="header" href="#how-it-works-step-by-step">How It Works: Step-by-Step</a></h3>
+<p>Let’s trace <code>min(5, 2, 8, 1)</code> and see what template functions the compiler generates:</p>
+<pre><code>═══════════════════════════════════════════════════════════════════════════════
+                    COMPILER GENERATES THESE FUNCTIONS FOR US!
+═══════════════════════════════════════════════════════════════════════════════
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ CALL 1: min(5, 2, 8, 1)                                                   ║
+║                                                                           ║
+║ Template Deduction:  T = int,  Args = [int, int, int]                     ║
+║ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓   ║
+║ ┃ GENERATED FUNCTION:                                                 ┃   ║
+║ ┃ int min(const int&amp; v, const int&amp; a0, const int&amp; a1, const int&amp; a2) {┃   ║
+║ ┃     auto m = min(a0, a1, a2);  // Calls next instantiation          ┃   ║
+║ ┃     return v &lt; m ? v : m;                                           ┃   ║
+║ ┃ }                                                                   ┃   ║
+║ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛   ║
+║                                                                           ║
+║ Runtime Values:  v=5, a0=2, a1=8, a2=1                                    ║
+║ Calls: min(2, 8, 1)  ────────────────────────────────────────────────────→║
+╚═══════════════════════════════════════════════════════════════════════════╝
+                                      ↓
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ CALL 2: min(2, 8, 1)                                                      ║
+║                                                                           ║
+║ Template Deduction:  T = int,  Args = [int, int]                          ║
+║ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓           ║
+║ ┃ GENERATED FUNCTION:                                         ┃           ║
+║ ┃ int min(const int&amp; v, const int&amp; a0, const int&amp; a1) {       ┃           ║
+║ ┃     auto m = min(a0, a1);  // Calls next instantiation      ┃           ║
+║ ┃     return v &lt; m ? v : m;                                   ┃           ║
+║ ┃ }                                                           ┃           ║
+║ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ║
+║                                                                           ║
+║ Runtime Values:  v=2, a0=8, a1=1                                          ║
+║ Calls: min(8, 1)  ──────────────────────────────────────────────────────→ ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+                                      ↓
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ CALL 3: min(8, 1)                                                         ║
+║                                                                           ║
+║ Template Deduction:  T = int,  Args = [int]                               ║
+║ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓           ║
+║ ┃ GENERATED FUNCTION:                                         ┃           ║
+║ ┃ int min(const int&amp; v, const int&amp; a0) {                      ┃           ║
+║ ┃     auto m = min(a0);  // Calls base case                   ┃           ║
+║ ┃     return v &lt; m ? v : m;                                   ┃           ║
+║ ┃ }                                                           ┃           ║
+║ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ║
+║                                                                           ║
+║ Runtime Values:  v=8, a0=1                                                ║
+║ Calls: min(1)  ─────────────────────────────────────────────────────────→ ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+                                      ↓
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║ CALL 4: min(1)                                     ★ BASE CASE ★          ║
+║                                                                           ║
+║ Template Deduction:  T = int,  Args = [] (empty!)                         ║
+║ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓           ║
+║ ┃ MATCHED BASE CASE FUNCTION:                                 ┃           ║
+║ ┃ int min(const int&amp; v) {                                     ┃           ║
+║ ┃     return v;  // No recursion!                             ┃           ║
+║ ┃ }                                                           ┃           ║
+║ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ║
+║                                                                           ║
+║ Runtime Values:  v=1                                                      ║
+║ Returns: 1  ← Recursion stops!                                            ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════
+                         RETURN VALUES (Unwinding)
+═══════════════════════════════════════════════════════════════════════════════
+
+                     min(1) returns → 1
+                              ↑
+┌───────────────────────────────────────────────────────────────────┐
+│ min(8, 1):  m=1,  return 8 &lt; 1 ? 8 : 1  →  returns 1              │
+└───────────────────────────────────────────────────────────────────┘
+                              ↑
+┌───────────────────────────────────────────────────────────────────┐
+│ min(2, 8, 1):  m=1,  return 2 &lt; 1 ? 2 : 1  →  returns 1           │
+└───────────────────────────────────────────────────────────────────┘
+                              ↑
+┌───────────────────────────────────────────────────────────────────┐
+│ min(5, 2, 8, 1):  m=1,  return 5 &lt; 1 ? 5 : 1  →  returns 1        │
+└───────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                             FINAL RESULT: 1 ✓
+═══════════════════════════════════════════════════════════════════════════════
+
+💡 KEY INSIGHT: The compiler generated 4 complete functions for us!
+   ✓ min(int, int, int, int) - 4 parameters
+   ✓ min(int, int, int)      - 3 parameters  
+   ✓ min(int, int)           - 2 parameters
+   ✓ min(int)                - 1 parameter (base case)
+
+   All at COMPILE TIME with ZERO runtime overhead!
+═══════════════════════════════════════════════════════════════════════════════
+</code></pre>
+<h2 id="understanding-the-syntax-parameter-packs-deep-dive"><a class="header" href="#understanding-the-syntax-parameter-packs-deep-dive">Understanding the Syntax: Parameter Packs Deep Dive</a></h2>
+<h3 id="what-is-a-parameter-pack"><a class="header" href="#what-is-a-parameter-pack">What is a Parameter Pack?</a></h3>
+<p>A <strong>parameter pack</strong> is a template parameter that accepts zero or more template arguments. Think of it as a compile-time container that holds a variable number of elements (types or values).</p>
+<p>There are three types of parameter packs:</p>
+<ol>
+<li><strong>Template Parameter Pack</strong> - holds types</li>
+<li><strong>Function Parameter Pack</strong> - holds function arguments (values)</li>
+<li><strong>Template Template Parameter Pack</strong> - holds template templates</li>
+</ol>
+<h3 id="1-template-parameter-pack-declaration"><a class="header" href="#1-template-parameter-pack-declaration">1. Template Parameter Pack Declaration</a></h3>
+<pre><code class="language-cpp">template &lt;Comparable T, Comparable... Args&gt;
+//                      ^^^^^^^^^^^^^^^^^
+//                      Template parameter pack
+</code></pre>
+<p><strong>Syntax breakdown:</strong></p>
+<ul>
+<li><code>...Args</code> declares a <strong>template parameter pack</strong> named <code>Args</code></li>
+<li>The <code>...</code> comes <strong>before</strong> the identifier when capturing</li>
+<li>It can match <strong>zero or more</strong> types</li>
+<li>Each type must satisfy the <code>Comparable</code> concept</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">// Type parameter pack
+template&lt;typename... Types&gt;
+struct Container {};
+
+Container&lt;int, double, char&gt; c1;        // Types = [int, double, char]
+Container&lt;std::string&gt; c2;              // Types = [std::string]
+Container&lt;&gt; c3;                         // Types = [] (empty!)
+
+// Non-type parameter pack
+template&lt;int... Values&gt;
+struct IntList {};
+
+IntList&lt;1, 2, 3, 4&gt; list1;              // Values = [1, 2, 3, 4]
+IntList&lt;42&gt; list2;                       // Values = [42]
+IntList&lt;&gt; list3;                         // Values = [] (empty!)
+
+// Template template parameter pack
+template&lt;template&lt;typename&gt; typename... Templates&gt;
+struct TemplateList {};
+
+TemplateList&lt;std::vector, std::list, std::deque&gt; tl;
+</code></pre>
+<h3 id="2-function-parameter-pack-declaration"><a class="header" href="#2-function-parameter-pack-declaration">2. Function Parameter Pack Declaration</a></h3>
+<pre><code class="language-cpp">T min(const T&amp; first, const Args&amp;... rest)
+//                    ^^^^^^^^^^^^^^^^^
+//                    Function parameter pack
+</code></pre>
+<p><strong>Syntax breakdown:</strong></p>
+<ul>
+<li><code>const Args&amp;... rest</code> declares a function parameter pack named <code>rest</code></li>
+<li>The <code>...</code> comes <strong>before</strong> the identifier when capturing</li>
+<li><code>Args</code> is expanded first (it’s a template parameter pack)</li>
+<li>Then <code>&amp;...</code> creates references to each expanded type</li>
+<li>Finally, <code>rest</code> names the entire pack</li>
+</ul>
+<p><strong>What this expands to:</strong></p>
+<p>If <code>Args = [int, double, char]</code>, then:</p>
+<pre><code class="language-cpp">const Args&amp;... rest
+    ↓
+const int&amp; r0, const double&amp; r1, const char&amp; r2
+</code></pre>
+<p><strong>More examples:</strong></p>
+<pre><code class="language-cpp">// By value
+void func1(Types... args);              // Takes copies
+// Expands to: Type1 arg1, Type2 arg2, ...
+
+// By const reference
+void func2(const Types&amp;... args);       // Takes const refs
+// Expands to: const Type1&amp; arg1, const Type2&amp; arg2, ...
+
+// By forwarding reference (perfect forwarding)
+void func3(Types&amp;&amp;... args);            // Universal references
+// Expands to: Type1&amp;&amp; arg1, Type2&amp;&amp; arg2, ...
+</code></pre>
+<h3 id="3-pack-expansion-the-magic-happens"><a class="header" href="#3-pack-expansion-the-magic-happens">3. Pack Expansion: The Magic Happens</a></h3>
+<p>Pack expansion is where the compiler replaces the pattern with actual elements. The <code>...</code> comes <strong>after</strong> the pattern when expanding.</p>
+<pre><code class="language-cpp">auto min_rest = min(rest...);
+//                  ^^^^^^^^
+//                  Pack expansion
+</code></pre>
+<p><strong>How it works:</strong></p>
+<p>If <code>rest</code> contains <code>[a, b, c]</code>, then:</p>
+<pre><code class="language-cpp">min(rest...)
+    ↓
+min(a, b, c)
+</code></pre>
+<h3 id="pack-expansion-contexts"><a class="header" href="#pack-expansion-contexts">Pack Expansion Contexts</a></h3>
+<p>Parameter packs can be expanded in many contexts:</p>
+<h4 id="a-function-call-arguments"><a class="header" href="#a-function-call-arguments">A. Function Call Arguments</a></h4>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void forward_to_func(Args&amp;&amp;... args) {
+    some_function(std::forward&lt;Args&gt;(args)...);
+    //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    //            Pattern: std::forward&lt;Args&gt;(args)
+    //            Expands to: std::forward&lt;Arg1&gt;(arg1), std::forward&lt;Arg2&gt;(arg2), ...
+}
+</code></pre>
+<h4 id="b-initializer-lists"><a class="header" href="#b-initializer-lists">B. Initializer Lists</a></h4>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void example(Args... args) {
+    std::vector&lt;int&gt; vec{args...};           // Expands to: {arg1, arg2, arg3, ...}
+    auto tuple = std::tuple{args...};        // Expands to: tuple{arg1, arg2, arg3, ...}
+    int array[] = {args...};                 // Expands to: {arg1, arg2, arg3, ...}
+}
+</code></pre>
+<h4 id="c-template-arguments"><a class="header" href="#c-template-arguments">C. Template Arguments</a></h4>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void example(Args... args) {
+    // Pattern: decltype(args)
+    std::tuple&lt;decltype(args)...&gt; tpl;       
+    // Expands to: std::tuple&lt;decltype(arg1), decltype(arg2), ...&gt;
+    
+    // Pattern: std::vector&lt;Args&gt;
+    std::tuple&lt;std::vector&lt;Args&gt;...&gt; vec_tuple;
+    // Expands to: std::tuple&lt;std::vector&lt;Arg1&gt;, std::vector&lt;Arg2&gt;, ...&gt;
+}
+</code></pre>
+<h4 id="d-base-class-lists"><a class="header" href="#d-base-class-lists">D. Base Class Lists</a></h4>
+<pre><code class="language-cpp">template&lt;typename... Bases&gt;
+struct MultiInherit : Bases... {
+    //                ^^^^^^^^^
+    //                Expands to: Base1, Base2, Base3, ...
+    
+    using Bases::foo...;  // Bring all foo() methods into scope
+    //            ^^^^^
+    //            Expands to: using Base1::foo; using Base2::foo; ...
+};
+</code></pre>
+<h4 id="e-lambda-captures"><a class="header" href="#e-lambda-captures">E. Lambda Captures</a></h4>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void example(Args... args) {
+    // Capture by copy
+    auto lambda1 = [args...] { return process(args...); };
+    //             ^^^^^^^^                   ^^^^^^^^
+    //             Capture pack                Expand pack
+    
+    // Capture by reference
+    auto lambda2 = [&amp;args...] { return process(args...); };
+    
+    // Init-capture with move (C++20)
+    auto lambda3 = [...args = std::move(args)] { 
+        return process(args...); 
+    };
+}
+</code></pre>
+<h3 id="complex-pack-expansion-patterns"><a class="header" href="#complex-pack-expansion-patterns">Complex Pack Expansion Patterns</a></h3>
+<p>The pattern can be arbitrarily complex:</p>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void complex_example(Args... args) {
+    // Simple pattern: just the pack
+    func(args...);
+    // Expands to: func(arg1, arg2, arg3, ...)
+    
+    // Pattern with function call
+    func(transform(args)...);
+    // Expands to: func(transform(arg1), transform(arg2), ...)
+    
+    // Pattern with template
+    func(std::make_unique&lt;Args&gt;(args)...);
+    // Expands to: func(std::make_unique&lt;Arg1&gt;(arg1), 
+    //                  std::make_unique&lt;Arg2&gt;(arg2), ...)
+    
+    // Pattern with multiple operations
+    func((args * 2 + 1)...);
+    // Expands to: func((arg1 * 2 + 1), (arg2 * 2 + 1), ...)
+}
+</code></pre>
+<h3 id="multiple-parameter-packs-in-one-expression"><a class="header" href="#multiple-parameter-packs-in-one-expression">Multiple Parameter Packs in One Expression</a></h3>
+<p>When expanding multiple packs simultaneously, they must have the <strong>same length</strong>:</p>
+<pre><code class="language-cpp">template&lt;typename... Ts, typename... Us&gt;
+void zip(Ts... ts, Us... us) {
+    // Both packs must have same length
+    auto pairs = std::tuple{std::pair(ts, us)...};
+    // Expands to: std::tuple{std::pair(t1, u1), std::pair(t2, u2), ...}
+}
+
+zip(1, 2, 3, "a", "b", "c");  // OK: both have 3 elements
+zip(1, 2, "a");               // ERROR: first has 2, second has 1
+</code></pre>
+<h3 id="sizeof-operator"><a class="header" href="#sizeof-operator">sizeof…() Operator</a></h3>
+<p>Get the number of elements in a parameter pack:</p>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void example(Args... args) {
+    constexpr size_t type_count = sizeof...(Args);   // Number of types
+    constexpr size_t arg_count = sizeof...(args);    // Number of arguments
+    
+    static_assert(sizeof...(Args) == sizeof...(args)); // Always true
+    
+    std::cout &lt;&lt; "Received " &lt;&lt; sizeof...(args) &lt;&lt; " arguments\n";
+}
+
+example(1, 2.5, "hello");  // Prints: Received 3 arguments
+</code></pre>
+<h3 id="nested-pack-expansion"><a class="header" href="#nested-pack-expansion">Nested Pack Expansion</a></h3>
+<p>Packs can be expanded inside other packs:</p>
+<pre><code class="language-cpp">template&lt;typename... Outer&gt;
+void nested(Outer... outer) {
+    // Inner pack expansion inside outer pack expansion
+    auto result = std::tuple{
+        std::vector{outer, outer, outer}...
+        // For each outer element, create a vector with 3 copies
+    };
+    
+    // If outer = [1, 2, 3], creates:
+    // std::tuple{std::vector{1, 1, 1}, 
+    //            std::vector{2, 2, 2}, 
+    //            std::vector{3, 3, 3}}
+}
+</code></pre>
+<h3 id="pack-expansion-in-sizeof"><a class="header" href="#pack-expansion-in-sizeof">Pack Expansion in sizeof</a></h3>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void example(Args... args) {
+    // Get total size of all arguments
+    size_t total_size = (sizeof(args) + ...);  // Fold expression
+    
+    // Or create array of sizes
+    size_t sizes[] = {sizeof(args)...};
+    // Expands to: {sizeof(arg1), sizeof(arg2), sizeof(arg3), ...}
+}
+</code></pre>
+<h3 id="key-rules-for-pack-expansion"><a class="header" href="#key-rules-for-pack-expansion">Key Rules for Pack Expansion</a></h3>
+<ol>
+<li>
+<p><strong>Ellipsis position matters:</strong></p>
+<ul>
+<li><code>...Name</code> = <strong>capture</strong> a pack</li>
+<li><code>Pattern...</code> = <strong>expand</strong> a pack</li>
+</ul>
+</li>
+<li>
+<p><strong>Expansion must be in valid context</strong> (see contexts above)</p>
+</li>
+<li>
+<p><strong>Cannot expand outside valid context:</strong></p>
+<pre><code class="language-cpp">// ERROR: Can't expand in arbitrary expression
+template&lt;typename... Args&gt;
+void bad(Args... args) {
+    int x = args...;  // ERROR! Not a valid expansion context
+}
+</code></pre>
+</li>
+<li>
+<p><strong>Multiple packs in one expansion must have same length</strong></p>
+</li>
+<li>
+<p><strong>Empty packs are valid:</strong></p>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;
+void func(Args... args) {}
+
+func();  // OK! Args and args are both empty
+</code></pre>
+</li>
+</ol>
+<h3 id="visual-summary-capture-vs-expansion"><a class="header" href="#visual-summary-capture-vs-expansion">Visual Summary: Capture vs Expansion</a></h3>
+<pre><code class="language-cpp">template&lt;typename... Args&gt;              // Capture template pack
+void example(Args... args) {            // Capture function pack
+    //       ^^^^^^^^^^^^
+    //       This is expansion! Args... becomes Arg1 arg1, Arg2 arg2, ...
+    
+    func(args...);                      // Expand pack
+    //   ^^^^^^^
+    //   Pattern = args, Expansion = args...
+    
+    func((args + 1)...);                // Expand with pattern
+    //   ^^^^^^^^^^^^^
+    //   Pattern = (args + 1), Expansion = (args + 1)...
+}
+</code></pre>
+<p><strong>Remember:</strong></p>
+<ul>
+<li>Ellipsis <strong>before</strong> = Capture (<code>...name</code>)</li>
+<li>Ellipsis <strong>after</strong> = Expand (<code>pattern...</code>)</li>
+</ul>
+<h2 id="the-pattern-base-case--recursive-case"><a class="header" href="#the-pattern-base-case--recursive-case">The Pattern: Base Case + Recursive Case</a></h2>
+<p>Variadic templates typically follow this pattern:</p>
+<pre><code class="language-cpp">// BASE CASE: Handles the "stop condition"
+template &lt;typename T&gt;
+ReturnType function(T value) {
+    // Handle single value
+    return /* something */;
+}
+
+// RECURSIVE CASE: Handles 2+ arguments
+template &lt;typename T, typename... Args&gt;
+ReturnType function(T first, Args... rest) {
+    auto result = function(rest...);  // Recurse with remaining args
+    // Combine first with result
+    return /* combined result */;
+}
+</code></pre>
+<h2 id="more-examples"><a class="header" href="#more-examples">More Examples</a></h2>
+<h3 id="example-1-print-all-arguments"><a class="header" href="#example-1-print-all-arguments">Example 1: Print All Arguments</a></h3>
+<pre><code class="language-cpp">// Base case
+void print() {
+    std::cout &lt;&lt; std::endl;
+}
+
+// Recursive case
+template &lt;typename T, typename... Args&gt;
+void print(const T&amp; first, const Args&amp;... rest) {
+    std::cout &lt;&lt; first &lt;&lt; " ";
+    print(rest...);  // Recursive call
+}
+
+// Usage
+print(1, 2.5, "hello", 'x');
+// Output: 1 2.5 hello x
+</code></pre>
+<h3 id="example-2-sum-all-arguments"><a class="header" href="#example-2-sum-all-arguments">Example 2: Sum All Arguments</a></h3>
+<pre><code class="language-cpp">// Base case
+template &lt;typename T&gt;
+T sum(T value) {
+    return value;
+}
+
+// Recursive case
+template &lt;typename T, typename... Args&gt;
+T sum(T first, Args... rest) {
+    return first + sum(rest...);
+}
+
+// Usage
+auto result = sum(1, 2, 3, 4, 5);  // result = 15
+</code></pre>
+<h3 id="example-3-check-all-conditions"><a class="header" href="#example-3-check-all-conditions">Example 3: Check All Conditions</a></h3>
+<pre><code class="language-cpp">// Base case
+bool all_true(bool value) {
+    return value;
+}
+
+// Recursive case
+template &lt;typename... Args&gt;
+bool all_true(bool first, Args... rest) {
+    return first &amp;&amp; all_true(rest...);
+}
+
+// Usage
+bool result = all_true(true, true, false, true);  // result = false
+</code></pre>
+<h2 id="modern-c17-alternative-fold-expressions"><a class="header" href="#modern-c17-alternative-fold-expressions">Modern C++17 Alternative: Fold Expressions</a></h2>
+<p>C++17 introduced <strong>fold expressions</strong>, which provide a more concise syntax:</p>
+<pre><code class="language-cpp">// Using fold expression (C++17)
+template &lt;Comparable T, Comparable... Args&gt;
+T min(T first, Args... rest) {
+    return (first &lt; ... &lt; rest) ? first : min(rest...);
+}
+
+// Even simpler with fold
+template &lt;typename... Args&gt;
+void print(const Args&amp;... args) {
+    ((std::cout &lt;&lt; args &lt;&lt; " "), ...);  // Fold over comma operator
+    std::cout &lt;&lt; std::endl;
+}
+
+template &lt;typename... Args&gt;
+auto sum(Args... args) {
+    return (... + args);  // Fold over + operator
+}
+
+template &lt;typename... Args&gt;
+bool all_true(Args... args) {
+    return (... &amp;&amp; args);  // Fold over &amp;&amp; operator
+}
+</code></pre>
+<p>Fold expression will be covered in a separate section in more details.</p>
+<h2 id="comparison-all-three-approaches"><a class="header" href="#comparison-all-three-approaches">Comparison: All Three Approaches</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Approach</th><th>Code Size</th><th>Runtime Cost</th><th>Flexibility</th><th>Syntax</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Manual Overloading</strong></td><td>Large (N functions for N args)</td><td>None</td><td>Limited</td><td>Simple</td></tr>
+<tr><td><strong>Vector</strong></td><td>Small</td><td>High (allocation, copying)</td><td>Unlimited</td><td>Awkward braces</td></tr>
+<tr><td><strong>Variadic Templates</strong></td><td>Generated at compile-time</td><td>None (fully inlined)</td><td>Unlimited</td><td>Clean</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="key-advantages-of-variadic-templates"><a class="header" href="#key-advantages-of-variadic-templates">Key Advantages of Variadic Templates</a></h2>
+<p><strong>Zero runtime overhead</strong>: All code generated at compile-time<br><strong>Type-safe</strong>: Compiler checks all types<br><strong>Unlimited flexibility</strong>: Works with any number of arguments<br><strong>Clean syntax</strong>: No braces or wrappers needed<br><strong>Fully optimizable</strong>: Compiler can inline everything<br><strong>Compile-time errors</strong>: Problems caught during compilation</p>
+<h2 id="common-patterns"><a class="header" href="#common-patterns">Common Patterns</a></h2>
+<h3 id="pattern-1-process-first-recurse-on-rest"><a class="header" href="#pattern-1-process-first-recurse-on-rest">Pattern 1: Process First, Recurse on Rest</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+void process_all(T value) {
+    process(value);  // Base case
+}
+
+template &lt;typename T, typename... Args&gt;
+void process_all(T first, Args... rest) {
+    process(first);        // Process first
+    process_all(rest...);  // Recurse on rest
+}
+</code></pre>
+<h3 id="pattern-2-accumulate-result"><a class="header" href="#pattern-2-accumulate-result">Pattern 2: Accumulate Result</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+T accumulate(T value) {
+    return value;  // Base case
+}
+
+template &lt;typename T, typename... Args&gt;
+T accumulate(T first, Args... rest) {
+    return combine(first, accumulate(rest...));  // Combine with result
+}
+</code></pre>
+<h3 id="pattern-3-check-all-elements"><a class="header" href="#pattern-3-check-all-elements">Pattern 3: Check All Elements</a></h3>
+<pre><code class="language-cpp">template &lt;typename T&gt;
+bool check_all(T value) {
+    return check(value);  // Base case
+}
+
+template &lt;typename T, typename... Args&gt;
+bool check_all(T first, Args... rest) {
+    return check(first) &amp;&amp; check_all(rest...);  // Short-circuit on false
+}
+</code></pre>
+<h2 id="important-notes-1"><a class="header" href="#important-notes-1">Important Notes</a></h2>
+<h3 id="1-base-case-is-essential"><a class="header" href="#1-base-case-is-essential">1. Base Case is Essential</a></h3>
+<p>Without a base case, recursion never stops:</p>
+<pre><code class="language-cpp">// WRONG: No base case!
+template &lt;typename T, typename... Args&gt;
+void print(T first, Args... rest) {
+    std::cout &lt;&lt; first &lt;&lt; " ";
+    print(rest...);  // Infinite recursion when rest is empty!
+}
+</code></pre>
+<h3 id="2-parameter-packs-must-be-last"><a class="header" href="#2-parameter-packs-must-be-last">2. Parameter Packs Must Be Last</a></h3>
+<pre><code class="language-cpp">// CORRECT
+template &lt;typename First, typename... Rest&gt;
+void func(First f, Rest... r);
+
+// WRONG: Can't have parameters after pack
+template &lt;typename... Args, typename Last&gt;  // ERROR!
+void func(Args... args, Last l);
+</code></pre>
+<h3 id="3-empty-packs-are-valid"><a class="header" href="#3-empty-packs-are-valid">3. Empty Packs Are Valid</a></h3>
+<pre><code class="language-cpp">template &lt;typename... Args&gt;
+void func(Args... args) {
+    std::cout &lt;&lt; "Number of args: " &lt;&lt; sizeof...(args) &lt;&lt; "\n";
+}
+
+func();        // Valid! sizeof...(args) = 0
+func(1);       // sizeof...(args) = 1
+func(1, 2, 3); // sizeof...(args) = 3
+</code></pre>
+<h2 id="summary-12"><a class="header" href="#summary-12">Summary</a></h2>
+<p><strong>Variadic templates</strong> solve the problem of writing functions that accept a variable number of arguments:</p>
+<ul>
+<li><strong>Syntax</strong>: <code>template &lt;typename... Args&gt;</code> for parameter packs</li>
+<li><strong>Pattern</strong>: Base case + recursive case</li>
+<li><strong>Expansion</strong>: <code>args...</code> expands the pack</li>
+<li><strong>Benefits</strong>: Zero runtime cost, type-safe, unlimited flexibility</li>
+<li><strong>Modern C++17</strong>: Fold expressions provide even more concise syntax</li>
+</ul>
+<p>Variadic templates are a powerful tool that combines:</p>
+<ul>
+<li>The flexibility of runtime solutions (like vectors)</li>
+<li>The performance of compile-time code generation</li>
+<li>The elegance of recursive algorithms</li>
+</ul>
+<p>They’re essential for modern C++ generic programming!</p>
+<h1 id="note-due-to-extremely-large-size-embedding-full-verbose-tutorial-directly-here"><a class="header" href="#note-due-to-extremely-large-size-embedding-full-verbose-tutorial-directly-here">NOTE: Due to extremely large size, embedding full verbose tutorial directly here</a></h1>
+<h1 id="may-exceed-message-limits-instead-i-will-now-reconstruct-the-full-content-exactly"><a class="header" href="#may-exceed-message-limits-instead-i-will-now-reconstruct-the-full-content-exactly">may exceed message limits. Instead, I will now reconstruct the full content exactly.</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
+<h2 id="table-of-contents-22"><a class="header" href="#table-of-contents-22">Table of Contents</a></h2>
 <ol>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></li>
@@ -16288,7 +17002,7 @@ void function(ConceptName auto param);
 <li><strong>glvalue</strong> = lvalue or xvalue</li>
 <li><strong>rvalue</strong> = xvalue or prvalue</li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="value-category-hierarchy-diagram"><a class="header" href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></h2>
 <pre><code>                    expression
@@ -16309,7 +17023,7 @@ void function(ConceptName auto param);
 <li><strong>xvalue</strong>: Has identity AND can be moved from</li>
 <li><strong>prvalue</strong>: No identity, temporary value</li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="prvalue-pure-rvalue"><a class="header" href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></h2>
 <p>A <em>prvalue</em> is a temporary value that does not refer to an existing object.</p>
@@ -16324,7 +17038,7 @@ std::string s("hi"); // temporary std::string → prvalue
 <li>Creates a new temporary object</li>
 <li>Result of most operators and literals</li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="lvalue"><a class="header" href="#lvalue">lvalue</a></h2>
 <p>An <em>lvalue</em> refers to an identifiable, persistent object in memory.</p>
@@ -16341,7 +17055,7 @@ s.m = 5;     // s.m is an lvalue
 <li>Persists beyond a single expression</li>
 <li>Can appear on the left side of assignment</li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="xvalue-expiring-value"><a class="header" href="#xvalue-expiring-value">xvalue (expiring value)</a></h2>
 <p>An <em>xvalue</em> is a special glvalue that refers to an object whose resources can be reused (i.e., movable).</p>
@@ -16359,7 +17073,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 <li>About to expire (resources can be moved)</li>
 <li>Result of <code>std::move()</code> or member access on rvalue</li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="summary-table-1"><a class="header" href="#summary-table-1">Summary Table</a></h2>
 <div class="table-wrapper">
@@ -16376,7 +17090,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
 <pre><code class="language-cpp">int a = 10;        // a → lvalue  
@@ -16393,7 +17107,7 @@ struct S { int m; };
 S get();
 get().m = 1;        // get() → prvalue, .m → xvalue
 </code></pre>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="intuition"><a class="header" href="#intuition">Intuition</a></h2>
 <ul>
@@ -16403,7 +17117,7 @@ get().m = 1;        // get() → prvalue, .m → xvalue
 <li><strong>glvalue</strong> → has identity</li>
 <li><strong>rvalue</strong> → temporary or movable</li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="visual-relationships"><a class="header" href="#visual-relationships">Visual Relationships</a></h2>
 <pre><code>Properties Matrix:
@@ -16430,10 +17144,10 @@ rvalue  = { xvalue, prvalue } ← Things you can move from
 </ol>
 </li>
 </ul>
-<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-auto-keyword"><a class="header" href="#c11-auto-keyword">C++11 auto Keyword</a></h1>
-<h2 id="table-of-contents-22"><a class="header" href="#table-of-contents-22">Table of Contents</a></h2>
+<h2 id="table-of-contents-23"><a class="header" href="#table-of-contents-23">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-what-is-the-auto-keyword">What is the Auto Keyword?</a></li>
 <li><a href="#2-type-deduction-rules-for-auto">Type Deduction Rules for Auto</a></li>
@@ -16484,7 +17198,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-type-deduction-rules-for-auto"><a class="header" href="#2-type-deduction-rules-for-auto">2. Type Deduction Rules for Auto</a></h2>
 <p>The type deduction for <code>auto</code> follows rules similar to template argument deduction. Understanding these rules is crucial for using <code>auto</code> correctly.</p>
@@ -16574,7 +17288,7 @@ void demonstrateDeduction() {
     auto&amp;&amp; u2 = 42;      // int&amp;&amp; (universal reference to rvalue)
 }
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-benefits-of-using-auto"><a class="header" href="#3-benefits-of-using-auto">3. Benefits of Using Auto</a></h2>
 <h3 id="reduces-code-verbosity"><a class="header" href="#reduces-code-verbosity">Reduces Code Verbosity</a></h3>
@@ -16608,7 +17322,7 @@ void multiply(T1 a, T2 b) {
     std::cout &lt;&lt; result &lt;&lt; std::endl;
 }
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-restrictions-where-auto-cannot-be-used"><a class="header" href="#4-restrictions-where-auto-cannot-be-used">4. Restrictions: Where Auto Cannot Be Used</a></h2>
 <h3 id="restriction-1-function-parameters-until-c20"><a class="header" href="#restriction-1-function-parameters-until-c20">Restriction 1: Function Parameters (until C++20)</a></h3>
@@ -16667,7 +17381,7 @@ std::vector&lt;int&gt; vec;   // OK
     virtual int getValue() { return 42; }   // OK
 };
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-common-compilation-errors-with-auto"><a class="header" href="#5-common-compilation-errors-with-auto">5. Common Compilation Errors with Auto</a></h2>
 <h3 id="error-1-using-auto-without-initialization"><a class="header" href="#error-1-using-auto-without-initialization">Error 1: Using Auto Without Initialization</a></h3>
@@ -16743,7 +17457,7 @@ auto str = std::string("Hello");
 using namespace std::string_literals;
 auto str = "Hello"s;
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="best-practices-summary-1"><a class="header" href="#best-practices-summary-1">Best Practices Summary</a></h2>
 <ol>
@@ -16755,11 +17469,11 @@ auto str = "Hello"s;
 <li><strong>Always initialize</strong> <code>auto</code> variables at declaration</li>
 <li><strong>Use trailing return types</strong> in C++11 for complex return type deduction</li>
 </ol>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 
                     </main>
 
