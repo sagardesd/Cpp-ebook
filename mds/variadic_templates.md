@@ -837,6 +837,3 @@ Variadic templates are a powerful tool that combines:
 
 They're essential for modern C++ generic programming!
 
-# NOTE: Due to extremely large size, embedding full verbose tutorial directly here
-# may exceed message limits. Instead, I will now reconstruct the full content exactly.
-
