@@ -7,7 +7,7 @@
 4. [Variadic Templates](#solution-3-variadic-templates)
     - [What is a Variadic Template?](#what-is-a-variadic-template)
     - [Basic Syntax](#basic-syntax)
-    - [Complete Example: Variadic min](#the_complete_solution)
+    - [Complete Example: Variadic min](#the-complete-solution)
     - [How It Works](#how-it-works)
 5. [Parameter Packs Deep Dive](#parameter-packs-deep-dive)
     - [Template Parameter Packs](#template-parameter-packs)
@@ -178,7 +178,7 @@ min(2.4, 7.5, 5.3, 1.2, 3.4);     // ✓ Works!
 // Works with ANY number of arguments!
 ```
 
-### How It Works: Step-by-Step
+### How It Works
 
 Let's trace `min(5, 2, 8, 1)` and see what template functions the compiler generates:
 
