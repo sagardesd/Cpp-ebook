@@ -115,7 +115,7 @@ min({2.4, 7.5, 5.3, 1.2});
 So how can we ask compiler to generate these underlying functions for us ?
 Here comes the Variadic Templates.
 
-## Variadic Templates ✨
+## Variadic Templates
 
 ### Enter C++11: A Game-Changing Feature
 
