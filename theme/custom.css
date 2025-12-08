@@ -1,0 +1,9 @@
+/* Hide all the TOC subsections in the left sidebar */
+nav.sidebar ol.section li > ol {
+    display: none !important;
+}
+
+/* Alternative: hide the divs that contain subsections */
+nav.sidebar .chapter-item > div {
+    display: none !important;
+}
