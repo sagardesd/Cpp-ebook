@@ -8,9 +8,8 @@ build-dir = "docs"
 
 [output.html]
 default-theme = "navy"
-fold.enable = false
+no-section-label = false
+additional-css = ["theme/custom.css"]
+fold.enable = true
+fold.level = 0
 site-url = "/cpp-ebook-by-sagar/"
-
-[output.html.fold]
-enable = true
-level = 0  # Only show chapters, not any subheadings
