@@ -8,4 +8,5 @@ build-dir = "docs"
 
 [output.html]
 default-theme = "navy"
+fold.enable = false
 site-url = "/cpp-ebook-by-sagar/"
