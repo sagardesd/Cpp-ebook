@@ -7,7 +7,7 @@
 4. [Variadic Templates](#solution-3-variadic-templates)
     - [What is a Variadic Template?](#what-is-a-variadic-template)
     - [Basic Syntax](#basic-syntax)
-    - [Complete Example: Variadic min](#complete-example-variadic-min)
+    - [Complete Example: Variadic min](#the_complete_solution)
     - [How It Works](#how-it-works)
 5. [Parameter Packs Deep Dive](#parameter-packs-deep-dive)
     - [Template Parameter Packs](#template-parameter-packs)
