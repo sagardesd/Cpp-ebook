@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6c5964ac.js";
+            window.path_to_searchindex_js = "searchindex-b86885f5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-19e42789.js"></script>
+        <script src="toc-1e56232f.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -17578,8 +17578,293 @@ clang++ -std=c++20 program.cpp -o program
 </code></pre>
 <p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
+<h1 id="template-metaprogramming-tmp"><a class="header" href="#template-metaprogramming-tmp">Template Metaprogramming (TMP)</a></h1>
 <h2 id="table-of-contents-24"><a class="header" href="#table-of-contents-24">Table of Contents</a></h2>
+<ol>
+<li><a href="#from-variadic-templates-to-template-metaprogramming">From Variadic Templates to Template Metaprogramming</a></li>
+<li><a href="#introducing-template-metaprogramming-tmp">Introducing Template Metaprogramming (TMP)</a>
+(#compile-time-computation-factorial-example)
+<ul>
+<li><a href="#traditional-runtime-factorial">Traditional Runtime Factorial</a></li>
+<li><a href="#template-metaprogramming-factorial">Template Metaprogramming Factorial</a></li>
+<li><a href="#understanding-the-recursion">Understanding the Recursion</a></li>
+<li><a href="#verification-compile-time-vs-runtime">Verification: Compile-Time vs Runtime</a></li>
+</ul>
+</li>
+<li><a href="#more-tmp-examples">More TMP Examples</a>
+<ul>
+<li><a href="#compile-time-power-calculation">Compile-Time Power Calculation</a></li>
+<li><a href="#compile-time-fibonacci">Compile-Time Fibonacci</a></li>
+</ul>
+</li>
+<li><a href="#tmp-is-turing-complete">TMP is Turing Complete</a></li>
+<li><a href="#benefits-and-drawbacks">Benefits and Drawbacks</a></li>
+<li><a href="#best-practices-6">Best Practices</a></li>
+</ol>
+<hr>
+<h2 id="from-variadic-templates-to-template-metaprogramming"><a class="header" href="#from-variadic-templates-to-template-metaprogramming">From Variadic Templates to Template Metaprogramming</a></h2>
+<p>We’ve learned that with <strong>variadic templates</strong>:</p>
+<ul>
+<li>The compiler generates any number of overloads using recursion</li>
+<li>This allows us to support any number of function parameters</li>
+<li>Instantiation happens at <strong>compile time</strong></li>
+</ul>
+<p>This leads us to an important question…</p>
+<h3 id="templates-work-at-compile-time"><a class="header" href="#templates-work-at-compile-time">Templates Work at Compile Time</a></h3>
+<p>Since templates are instantiated during compilation, all the work of generating different versions of functions and classes happens before the program even runs.</p>
+<p><strong>Key Observation:</strong> The compiler is doing work for us at compile time!</p>
+<h3 id="can-we-use-this-to-our-advantage"><a class="header" href="#can-we-use-this-to-our-advantage">Can We Use This to Our Advantage?</a></h3>
+<p>If templates do work at compile time, can we leverage this to:</p>
+<ul>
+<li>Perform calculations during compilation?</li>
+<li>Generate optimized code automatically?</li>
+<li>Move computations from runtime to compile time?</li>
+</ul>
+<p><strong>The answer is YES!</strong> This is exactly what <strong>Template Metaprogramming</strong> allows us to do.</p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="introducing-template-metaprogramming-tmp"><a class="header" href="#introducing-template-metaprogramming-tmp">Introducing Template Metaprogramming (TMP)</a></h2>
+<p><strong>Template Metaprogramming</strong> is a technique where we use C++ templates to perform computations and make decisions at <strong>compile time</strong> instead of runtime.</p>
+<p>Instead of computing values when the program runs, we compute them when the program is being compiled. The results are then embedded directly into the executable.</p>
+<p><strong>Template Metaprogramming</strong> is:</p>
+<ul>
+<li>A technique for performing computations at compile time using C++ templates</li>
+<li>Based on template recursion and specialization</li>
+<li>A form of functional programming within C++’s type system</li>
+<li>A way to generate optimized code automatically</li>
+</ul>
+<p><strong>Core Principles:</strong></p>
+<ol>
+<li>Use templates to represent computations</li>
+<li>Use recursion for iteration</li>
+<li>Use template specialization for base cases</li>
+<li>Store results in enum or static const values</li>
+</ol>
+<h3 id="compile-time-computation-factorial-example"><a class="header" href="#compile-time-computation-factorial-example">Compile-Time Computation: Factorial Example</a></h3>
+<p>Let’s see a concrete example of moving computation from runtime to compile time.</p>
+<h4 id="traditional-runtime-factorial"><a class="header" href="#traditional-runtime-factorial">Traditional Runtime Factorial</a></h4>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Runtime factorial - computation happens when program runs
+int factorial(int n) {
+    if (n == 0) return 1;
+    return n * factorial(n - 1);
+}
+
+int main() {
+    std::cout &lt;&lt; factorial(7) &lt;&lt; std::endl;  // Computed at runtime
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong> <code>5040</code></p>
+<p><strong>What happens:</strong> Every time you run this program, the CPU calculates 7! = 5040.</p>
+<hr>
+<h4 id="template-metaprogramming-factorial"><a class="header" href="#template-metaprogramming-factorial">Template Metaprogramming Factorial</a></h4>
+<p>Now let’s do the same computation at <strong>compile time</strong>:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Recursive case: Factorial&lt;N&gt; = N * Factorial&lt;N-1&gt;
+template &lt;size_t N&gt;
+struct Factorial {
+    enum { value = N * Factorial&lt;N - 1&gt;::value };
+};
+
+// Base case: Factorial&lt;0&gt; = 1
+// This is a template specialization for N=0
+template &lt;&gt;
+struct Factorial&lt;0&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; Factorial&lt;7&gt;::value &lt;&lt; std::endl;  // Computed at compile time!
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong> <code>5040</code></p>
+<p><strong>What happens:</strong> The compiler calculates 7! = 5040 during compilation. The value <code>5040</code> is directly embedded in the executable. Zero runtime computation!</p>
+<p><strong>Key Components:</strong></p>
+<ol>
+<li>
+<p><strong>Recursive case</strong>: <code>template &lt;size_t N&gt; struct Factorial</code></p>
+<ul>
+<li>Defines the general rule: N! = N × (N-1)!</li>
+<li>Uses <code>enum</code> to store compile-time constant</li>
+</ul>
+</li>
+<li>
+<p><strong>Base case</strong>: <code>template &lt;&gt; struct Factorial&lt;0&gt;</code></p>
+<ul>
+<li>This is a template specialization for N=0</li>
+<li>Defines 0! = 1</li>
+<li>Stops the recursion</li>
+</ul>
+</li>
+<li>
+<p><strong>Compile-time recursion</strong>: The compiler recursively instantiates templates until it hits the base case</p>
+</li>
+</ol>
+<hr>
+<h3 id="understanding-the-recursion"><a class="header" href="#understanding-the-recursion">Understanding the Recursion</a></h3>
+<p>Let’s trace how <code>Factorial&lt;7&gt;::value</code> is computed at compile time:</p>
+<pre><code>Factorial&lt;7&gt;::value = 7 * Factorial&lt;6&gt;::value
+                    = 7 * (6 * Factorial&lt;5&gt;::value)
+                    = 7 * (6 * (5 * Factorial&lt;4&gt;::value))
+                    = 7 * (6 * (5 * (4 * Factorial&lt;3&gt;::value)))
+                    = 7 * (6 * (5 * (4 * (3 * Factorial&lt;2&gt;::value))))
+                    = 7 * (6 * (5 * (4 * (3 * (2 * Factorial&lt;1&gt;::value)))))
+                    = 7 * (6 * (5 * (4 * (3 * (2 * (1 * Factorial&lt;0&gt;::value))))))
+                    = 7 * (6 * (5 * (4 * (3 * (2 * (1 * 1))))))  ← Base case hit!
+                    = 5040
+</code></pre>
+<p><strong>Important:</strong> This entire calculation happens during compilation, not when the program runs!</p>
+<hr>
+<h3 id="verification-compile-time-vs-runtime"><a class="header" href="#verification-compile-time-vs-runtime">Verification: Compile-Time vs Runtime</a></h3>
+<p>You can verify that the computation happens at compile time by looking at the assembly code:</p>
+<pre><code class="language-cpp">// Runtime version
+int result = factorial(7);  
+// Generates function call instructions
+
+// Compile-time version  
+int result = Factorial&lt;7&gt;::value;  
+// Becomes: int result = 5040;
+// No function call, just a constant!
+</code></pre>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="more-tmp-examples"><a class="header" href="#more-tmp-examples">More TMP Examples</a></h2>
+<h3 id="compile-time-power-calculation"><a class="header" href="#compile-time-power-calculation">Compile-Time Power Calculation</a></h3>
+<p>Calculate X^N at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Recursive case: Power&lt;X, N&gt; = X * Power&lt;X, N-1&gt;
+template &lt;size_t X, size_t N&gt;
+struct Power {
+    enum { value = X * Power&lt;X, N - 1&gt;::value };
+};
+
+// Base case: Power&lt;X, 0&gt; = 1
+template &lt;size_t X&gt;
+struct Power&lt;X, 0&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; "2^10 = " &lt;&lt; Power&lt;2, 10&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "3^5 = " &lt;&lt; Power&lt;3, 5&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "5^4 = " &lt;&lt; Power&lt;5, 4&gt;::value &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>2^10 = 1024
+3^5 = 243
+5^4 = 625
+</code></pre>
+<p>All calculated at compile time!</p>
+<hr>
+<h3 id="compile-time-fibonacci"><a class="header" href="#compile-time-fibonacci">Compile-Time Fibonacci</a></h3>
+<p>Calculate Fibonacci numbers at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Recursive case: Fib&lt;N&gt; = Fib&lt;N-1&gt; + Fib&lt;N-2&gt;
+template &lt;size_t N&gt;
+struct Fibonacci {
+    enum { value = Fibonacci&lt;N - 1&gt;::value + Fibonacci&lt;N - 2&gt;::value };
+};
+
+// Base cases
+template &lt;&gt;
+struct Fibonacci&lt;0&gt; {
+    enum { value = 0 };
+};
+
+template &lt;&gt;
+struct Fibonacci&lt;1&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; "Fib(0) = " &lt;&lt; Fibonacci&lt;0&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fib(1) = " &lt;&lt; Fibonacci&lt;1&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fib(10) = " &lt;&lt; Fibonacci&lt;10&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fib(20) = " &lt;&lt; Fibonacci&lt;20&gt;::value &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Fib(0) = 0
+Fib(1) = 1
+Fib(10) = 55
+Fib(20) = 6765
+</code></pre>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="tmp-is-turing-complete"><a class="header" href="#tmp-is-turing-complete">TMP is Turing Complete</a></h2>
+<p>Template Metaprogramming in C++ is <strong>Turing complete</strong>, meaning it can theoretically compute anything that any other programming language can compute (given enough compile time and memory).</p>
+<p>This was accidentally discovered and not originally intended! It means you can:</p>
+<ul>
+<li>Perform any calculation at compile time</li>
+<li>Implement any algorithm using templates</li>
+<li>Make complex compile-time decisions</li>
+</ul>
+<p><strong>Examples of what’s possible:</strong></p>
+<ul>
+<li>Compile-time sorting</li>
+<li>Compile-time prime number generation</li>
+<li>Compile-time parsers</li>
+<li>Complex type manipulations</li>
+<li>Compile-time unit conversions</li>
+</ul>
+<p>However, just because you can doesn’t always mean you should. TMP should be used judiciously where it provides real benefits.</p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="benefits-and-drawbacks"><a class="header" href="#benefits-and-drawbacks">Benefits and Drawbacks</a></h2>
+<h3 id="benefits"><a class="header" href="#benefits">Benefits</a></h3>
+<ol>
+<li><strong>Zero Runtime Cost</strong>: Computations are done during compilation</li>
+<li><strong>Performance</strong>: Results are embedded as constants in the executable</li>
+<li><strong>Type Safety</strong>: Errors caught at compile time</li>
+<li><strong>Optimization</strong>: Compiler can optimize better with known constant values</li>
+<li><strong>Code Generation</strong>: Generate specialized code automatically</li>
+</ol>
+<h3 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h3>
+<ol>
+<li><strong>Compilation Time</strong>: Can significantly increase compile times</li>
+<li><strong>Complexity</strong>: Code is harder to read and debug</li>
+<li><strong>Error Messages</strong>: Compiler errors can be cryptic and long</li>
+<li><strong>Limited Debugging</strong>: Can’t debug compile-time code easily</li>
+<li><strong>Compiler Limits</strong>: Recursion depth limits may be hit</li>
+</ol>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="best-practices-6"><a class="header" href="#best-practices-6">Best Practices</a></h2>
+<ol>
+<li><strong>Use TMP when it provides clear benefits</strong>: Don’t use it just because you can</li>
+<li><strong>Prefer <code>constexpr</code> for modern C++</strong>: C++11’s <code>constexpr</code> is often simpler and clearer(Will be covered in detail in a separate chatpter)</li>
+<li><strong>Document well</strong>: TMP code needs good comments</li>
+<li><strong>Keep it simple</strong>: Complex TMP can be unmaintainable</li>
+<li><strong>Consider compile time</strong>: Balance compile-time vs runtime performance</li>
+<li><strong>Use static_assert</strong>: Validate template parameters at compile time</li>
+</ol>
+<p><strong>Modern Alternative with constexpr:</strong></p>
+<pre><code class="language-cpp">// Modern C++11+ approach
+constexpr size_t factorial(size_t n) {
+    return (n == 0) ? 1 : n * factorial(n - 1);
+}
+
+int main() {
+    constexpr size_t result = factorial(7);  // Computed at compile time
+    std::cout &lt;&lt; result &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p>This achieves the same result with much cleaner syntax!
+Will be covered in detail in separate chapter.</p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<hr><div style="break-before: page; page-break-before: always;"></div>
+<h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
+<h2 id="table-of-contents-25"><a class="header" href="#table-of-contents-25">Table of Contents</a></h2>
 <ol>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></li>
@@ -17605,7 +17890,7 @@ clang++ -std=c++20 program.cpp -o program
 <li><strong>glvalue</strong> = lvalue or xvalue</li>
 <li><strong>rvalue</strong> = xvalue or prvalue</li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="value-category-hierarchy-diagram"><a class="header" href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></h2>
 <pre><code>                    expression
@@ -17626,7 +17911,7 @@ clang++ -std=c++20 program.cpp -o program
 <li><strong>xvalue</strong>: Has identity AND can be moved from</li>
 <li><strong>prvalue</strong>: No identity, temporary value</li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="prvalue-pure-rvalue"><a class="header" href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></h2>
 <p>A <em>prvalue</em> is a temporary value that does not refer to an existing object.</p>
@@ -17641,7 +17926,7 @@ std::string s("hi"); // temporary std::string → prvalue
 <li>Creates a new temporary object</li>
 <li>Result of most operators and literals</li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="lvalue"><a class="header" href="#lvalue">lvalue</a></h2>
 <p>An <em>lvalue</em> refers to an identifiable, persistent object in memory.</p>
@@ -17658,7 +17943,7 @@ s.m = 5;     // s.m is an lvalue
 <li>Persists beyond a single expression</li>
 <li>Can appear on the left side of assignment</li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="xvalue-expiring-value"><a class="header" href="#xvalue-expiring-value">xvalue (expiring value)</a></h2>
 <p>An <em>xvalue</em> is a special glvalue that refers to an object whose resources can be reused (i.e., movable).</p>
@@ -17676,7 +17961,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 <li>About to expire (resources can be moved)</li>
 <li>Result of <code>std::move()</code> or member access on rvalue</li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="summary-table-1"><a class="header" href="#summary-table-1">Summary Table</a></h2>
 <div class="table-wrapper">
@@ -17693,7 +17978,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
 <pre><code class="language-cpp">int a = 10;        // a → lvalue  
@@ -17710,7 +17995,7 @@ struct S { int m; };
 S get();
 get().m = 1;        // get() → prvalue, .m → xvalue
 </code></pre>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="intuition"><a class="header" href="#intuition">Intuition</a></h2>
 <ul>
@@ -17720,7 +18005,7 @@ get().m = 1;        // get() → prvalue, .m → xvalue
 <li><strong>glvalue</strong> → has identity</li>
 <li><strong>rvalue</strong> → temporary or movable</li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="visual-relationships"><a class="header" href="#visual-relationships">Visual Relationships</a></h2>
 <pre><code>Properties Matrix:
@@ -17747,10 +18032,10 @@ rvalue  = { xvalue, prvalue } ← Things you can move from
 </ol>
 </li>
 </ul>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-auto-keyword"><a class="header" href="#c11-auto-keyword">C++11 auto Keyword</a></h1>
-<h2 id="table-of-contents-25"><a class="header" href="#table-of-contents-25">Table of Contents</a></h2>
+<h2 id="table-of-contents-26"><a class="header" href="#table-of-contents-26">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-what-is-the-auto-keyword">What is the Auto Keyword?</a></li>
 <li><a href="#2-type-deduction-rules-for-auto">Type Deduction Rules for Auto</a></li>
@@ -17801,7 +18086,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-type-deduction-rules-for-auto"><a class="header" href="#2-type-deduction-rules-for-auto">2. Type Deduction Rules for Auto</a></h2>
 <p>The type deduction for <code>auto</code> follows rules similar to template argument deduction. Understanding these rules is crucial for using <code>auto</code> correctly.</p>
@@ -17891,7 +18176,7 @@ void demonstrateDeduction() {
     auto&amp;&amp; u2 = 42;      // int&amp;&amp; (universal reference to rvalue)
 }
 </code></pre>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-benefits-of-using-auto"><a class="header" href="#3-benefits-of-using-auto">3. Benefits of Using Auto</a></h2>
 <h3 id="reduces-code-verbosity"><a class="header" href="#reduces-code-verbosity">Reduces Code Verbosity</a></h3>
@@ -17925,7 +18210,7 @@ void multiply(T1 a, T2 b) {
     std::cout &lt;&lt; result &lt;&lt; std::endl;
 }
 </code></pre>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-restrictions-where-auto-cannot-be-used"><a class="header" href="#4-restrictions-where-auto-cannot-be-used">4. Restrictions: Where Auto Cannot Be Used</a></h2>
 <h3 id="restriction-1-function-parameters-until-c20"><a class="header" href="#restriction-1-function-parameters-until-c20">Restriction 1: Function Parameters (until C++20)</a></h3>
@@ -17984,7 +18269,7 @@ std::vector&lt;int&gt; vec;   // OK
     virtual int getValue() { return 42; }   // OK
 };
 </code></pre>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-common-compilation-errors-with-auto"><a class="header" href="#5-common-compilation-errors-with-auto">5. Common Compilation Errors with Auto</a></h2>
 <h3 id="error-1-using-auto-without-initialization"><a class="header" href="#error-1-using-auto-without-initialization">Error 1: Using Auto Without Initialization</a></h3>
@@ -18060,7 +18345,7 @@ auto str = std::string("Hello");
 using namespace std::string_literals;
 auto str = "Hello"s;
 </code></pre>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="best-practices-summary-1"><a class="header" href="#best-practices-summary-1">Best Practices Summary</a></h2>
 <ol>
@@ -18072,11 +18357,11 @@ auto str = "Hello"s;
 <li><strong>Always initialize</strong> <code>auto</code> variables at declaration</li>
 <li><strong>Use trailing return types</strong> in C++11 for complex return type deduction</li>
 </ol>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
-<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 
                     </main>
 

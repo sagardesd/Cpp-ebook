@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Storage Classes</title>
+        <title>Template Meta Programming</title>
 
 
         <!-- Custom HTML head -->
@@ -175,273 +175,300 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="understanding-memory-layout-and-storage-classes-in-c"><a class="header" href="#understanding-memory-layout-and-storage-classes-in-c">Understanding Memory Layout and Storage Classes in C++</a></h1>
-<p>C++ programs are organized in memory into several <strong>sections</strong> or
-<strong>segments</strong>. Understanding these helps us know where variables are
-stored, how they persist, and their lifetimes.</p>
+                        <h1 id="template-metaprogramming-tmp"><a class="header" href="#template-metaprogramming-tmp">Template Metaprogramming (TMP)</a></h1>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#from-variadic-templates-to-template-metaprogramming">From Variadic Templates to Template Metaprogramming</a></li>
+<li><a href="#introducing-template-metaprogramming-tmp">Introducing Template Metaprogramming (TMP)</a>
+(#compile-time-computation-factorial-example)
+<ul>
+<li><a href="#traditional-runtime-factorial">Traditional Runtime Factorial</a></li>
+<li><a href="#template-metaprogramming-factorial">Template Metaprogramming Factorial</a></li>
+<li><a href="#understanding-the-recursion">Understanding the Recursion</a></li>
+<li><a href="#verification-compile-time-vs-runtime">Verification: Compile-Time vs Runtime</a></li>
+</ul>
+</li>
+<li><a href="#more-tmp-examples">More TMP Examples</a>
+<ul>
+<li><a href="#compile-time-power-calculation">Compile-Time Power Calculation</a></li>
+<li><a href="#compile-time-fibonacci">Compile-Time Fibonacci</a></li>
+</ul>
+</li>
+<li><a href="#tmp-is-turing-complete">TMP is Turing Complete</a></li>
+<li><a href="#benefits-and-drawbacks">Benefits and Drawbacks</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+</ol>
 <hr>
-<h2 id="sections-of-a-c-program-in-memory"><a class="header" href="#sections-of-a-c-program-in-memory">Sections of a C++ Program in Memory</a></h2>
-<p>A typical C++ program’s memory layout looks like this:</p>
-<pre><code>+---------------------------+
-|        Stack              |
-|   (local variables)       |
-+---------------------------+
-|        Heap               |
-| (dynamic allocations)     |
-+---------------------------+
-|   Uninitialized Data (.bss)|
-| (global/static = 0)       |
-+---------------------------+
-|   Initialized Data (.data) |
-| (global/static ≠ 0)       |
-+---------------------------+
-|         Code (.text)       |
-| (compiled instructions)    |
-+---------------------------+
-</code></pre>
-<h3 id="1-code-section-text"><a class="header" href="#1-code-section-text">1. <strong>Code Section (.text)</strong></a></h3>
+<h2 id="from-variadic-templates-to-template-metaprogramming"><a class="header" href="#from-variadic-templates-to-template-metaprogramming">From Variadic Templates to Template Metaprogramming</a></h2>
+<p>We’ve learned that with <strong>variadic templates</strong>:</p>
 <ul>
-<li>Contains the <strong>compiled instructions</strong> of your program.</li>
-<li>Read-only to prevent accidental modification of executable code.</li>
-<li>Example: function bodies.</li>
+<li>The compiler generates any number of overloads using recursion</li>
+<li>This allows us to support any number of function parameters</li>
+<li>Instantiation happens at <strong>compile time</strong></li>
 </ul>
-<pre><code class="language-cpp">void greet() { 
-    std::cout &lt;&lt; "Hello, World!"; 
-}
-</code></pre>
-<h3 id="2-initialized-data-section-data"><a class="header" href="#2-initialized-data-section-data">2. <strong>Initialized Data Section (.data)</strong></a></h3>
+<p>This leads us to an important question…</p>
+<h3 id="templates-work-at-compile-time"><a class="header" href="#templates-work-at-compile-time">Templates Work at Compile Time</a></h3>
+<p>Since templates are instantiated during compilation, all the work of generating different versions of functions and classes happens before the program even runs.</p>
+<p><strong>Key Observation:</strong> The compiler is doing work for us at compile time!</p>
+<h3 id="can-we-use-this-to-our-advantage"><a class="header" href="#can-we-use-this-to-our-advantage">Can We Use This to Our Advantage?</a></h3>
+<p>If templates do work at compile time, can we leverage this to:</p>
 <ul>
-<li>Stores <strong>global</strong> and <strong>static</strong> variables <strong>initialized</strong> with a
-non-zero value.</li>
-<li>Exists throughout the program lifetime.</li>
+<li>Perform calculations during compilation?</li>
+<li>Generate optimized code automatically?</li>
+<li>Move computations from runtime to compile time?</li>
 </ul>
-<pre><code class="language-cpp">int global_var = 10;  // Stored in .data
-</code></pre>
-<h3 id="3-uninitialized-data-section-bss"><a class="header" href="#3-uninitialized-data-section-bss">3. <strong>Uninitialized Data Section (.bss)</strong></a></h3>
-<ul>
-<li>Stores <strong>global</strong> and <strong>static</strong> variables <strong>initialized to zero</strong>
-or <strong>not initialized</strong>.</li>
-<li>Allocated at runtime, initialized to zero automatically.</li>
-</ul>
-<pre><code class="language-cpp">static int counter;   // Stored in .bss (default 0)
-</code></pre>
-<h3 id="4-heap-section"><a class="header" href="#4-heap-section">4. <strong>Heap Section</strong></a></h3>
-<ul>
-<li>Used for <strong>dynamic memory allocation</strong> via <code>new</code>, <code>malloc</code>, etc.</li>
-<li>Managed manually by the programmer.</li>
-<li>Grows upward.</li>
-</ul>
-<pre><code class="language-cpp">int* ptr = new int(5); // Stored in heap
-</code></pre>
-<h3 id="5-stack-section"><a class="header" href="#5-stack-section">5. <strong>Stack Section</strong></a></h3>
-<ul>
-<li>Used for <strong>function calls</strong> and <strong>local variables</strong>.</li>
-<li>Memory is automatically managed (pushed and popped).</li>
-<li>Grows downward.</li>
-</ul>
-<pre><code class="language-cpp">void foo() {
-    int local = 42; // Stored in stack
-}
-</code></pre>
+<p><strong>The answer is YES!</strong> This is exactly what <strong>Template Metaprogramming</strong> allows us to do.</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="storage-classes-in-c"><a class="header" href="#storage-classes-in-c">Storage Classes in C++</a></h2>
-<p>Storage classes define the <strong>scope</strong>, <strong>lifetime</strong>, and <strong>visibility</strong>
-of variables.</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Storage Class</th><th>Keyword</th><th>Default Value</th><th>Scope</th><th>Lifetime</th><th>Memory Section</th></tr>
-</thead>
-<tbody>
-<tr><td>Automatic</td><td><code>auto</code> (default)</td><td>Garbage</td><td>Local</td><td>Until function returns</td><td>Stack</td></tr>
-<tr><td>Register</td><td><code>register</code></td><td>Garbage</td><td>Local</td><td>Until function returns</td><td>CPU Register / Stack</td></tr>
-<tr><td>Static (local)</td><td><code>static</code></td><td>Zero</td><td>Local</td><td>Entire program</td><td><code>.data</code> or <code>.bss</code></td></tr>
-<tr><td>Static (global)</td><td><code>static</code></td><td>Zero</td><td>Global</td><td>Entire program</td><td><code>.data</code> or <code>.bss</code></td></tr>
-<tr><td>Extern</td><td><code>extern</code></td><td>Depends</td><td>Global</td><td>Entire program</td><td><code>.data</code> or <code>.bss</code></td></tr>
-<tr><td>Mutable</td><td><code>mutable</code></td><td>Depends</td><td>Class member</td><td>Until object destroyed</td><td>Heap/Stack depending on object</td></tr>
-</tbody>
-</table>
-</div>
-<hr>
-<h2 id="mapping-storage-classes-to-memory-sections"><a class="header" href="#mapping-storage-classes-to-memory-sections">Mapping Storage Classes to Memory Sections</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Example</th><th>Storage Class</th><th>Memory Section</th></tr>
-</thead>
-<tbody>
-<tr><td><code>int x = 5;</code> (inside main)</td><td>auto</td><td>Stack</td></tr>
-<tr><td><code>static int count;</code></td><td>static</td><td>.bss</td></tr>
-<tr><td><code>int global = 10;</code></td><td>extern/global</td><td>.data</td></tr>
-<tr><td><code>int* p = new int(3);</code></td><td>auto + heap allocation</td><td>Heap</td></tr>
-<tr><td><code>register int r = 5;</code></td><td>register</td><td>Register / Stack</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="example-program"><a class="header" href="#example-program">Example Program</a></h2>
+<h2 id="introducing-template-metaprogramming-tmp"><a class="header" href="#introducing-template-metaprogramming-tmp">Introducing Template Metaprogramming (TMP)</a></h2>
+<p><strong>Template Metaprogramming</strong> is a technique where we use C++ templates to perform computations and make decisions at <strong>compile time</strong> instead of runtime.</p>
+<p>Instead of computing values when the program runs, we compute them when the program is being compiled. The results are then embedded directly into the executable.</p>
+<p><strong>Template Metaprogramming</strong> is:</p>
+<ul>
+<li>A technique for performing computations at compile time using C++ templates</li>
+<li>Based on template recursion and specialization</li>
+<li>A form of functional programming within C++’s type system</li>
+<li>A way to generate optimized code automatically</li>
+</ul>
+<p><strong>Core Principles:</strong></p>
+<ol>
+<li>Use templates to represent computations</li>
+<li>Use recursion for iteration</li>
+<li>Use template specialization for base cases</li>
+<li>Store results in enum or static const values</li>
+</ol>
+<h3 id="compile-time-computation-factorial-example"><a class="header" href="#compile-time-computation-factorial-example">Compile-Time Computation: Factorial Example</a></h3>
+<p>Let’s see a concrete example of moving computation from runtime to compile time.</p>
+<h4 id="traditional-runtime-factorial"><a class="header" href="#traditional-runtime-factorial">Traditional Runtime Factorial</a></h4>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
 
-int global_var = 10;        // .data
-static int static_global;   // .bss
-
-void demo() {
-    int local = 5;          // stack
-    static int static_local = 7; // .data
-    int* heap_ptr = new int(42); // heap
-    cout &lt;&lt; "Local: " &lt;&lt; local &lt;&lt; ", Heap: " &lt;&lt; *heap_ptr &lt;&lt; endl;
-    delete heap_ptr;
+// Runtime factorial - computation happens when program runs
+int factorial(int n) {
+    if (n == 0) return 1;
+    return n * factorial(n - 1);
 }
 
 int main() {
-    demo();
+    std::cout &lt;&lt; factorial(7) &lt;&lt; std::endl;  // Computed at runtime
     return 0;
 }
 </code></pre>
+<p><strong>Output:</strong> <code>5040</code></p>
+<p><strong>What happens:</strong> Every time you run this program, the CPU calculates 7! = 5040.</p>
 <hr>
-<h2 id="diagram-complete-memory-layout"><a class="header" href="#diagram-complete-memory-layout">Diagram: Complete Memory Layout</a></h2>
-<pre><code>        +----------------------------------+
-        |           Stack                  |
-        |   - Function call frames         |
-        |   - Local variables              |
-        +----------------------------------+
-        |           Heap                   |
-        |   - Dynamic memory               |
-        +----------------------------------+
-        |   Uninitialized (.bss)           |
-        |   - static int x;                |
-        |   - int global_uninit;           |
-        +----------------------------------+
-        |   Initialized (.data)            |
-        |   - int global_init = 5;         |
-        |   - static int local_init = 7;   |
-        +----------------------------------+
-        |           Code (.text)           |
-        |   - main(), demo(), etc.         |
-        +----------------------------------+
-</code></pre>
-<hr>
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
-<ul>
-<li><strong>Stack:</strong> Local and temporary data.</li>
-<li><strong>Heap:</strong> Dynamic runtime allocations.</li>
-<li><strong>.data:</strong> Initialized globals/statics.</li>
-<li><strong>.bss:</strong> Zero-initialized globals/statics.</li>
-<li><strong>.text:</strong> Program instructions.</li>
-</ul>
-<hr>
-<h2 id="understanding-static-variables-in-depth"><a class="header" href="#understanding-static-variables-in-depth">Understanding Static Variables in Depth</a></h2>
-<h3 id="what-makes-static-special"><a class="header" href="#what-makes-static-special">What Makes <code>static</code> Special?</a></h3>
-<ul>
-<li>A <strong>static variable</strong> inside a function is <strong>initialized only
-once</strong>, not every time the function is called.</li>
-<li>It <strong>retains its value</strong> between function calls.</li>
-<li>It has <strong>local scope</strong> (not visible outside the function) but
-<strong>global lifetime</strong>.</li>
-</ul>
-<h3 id="key-points"><a class="header" href="#key-points">Key Points:</a></h3>
-<ul>
-<li>Initialized only once at program startup (if not explicitly
-initialized, it defaults to zero).</li>
-<li>Memory is allocated in the <strong>.data</strong> (if initialized) or <strong>.bss</strong>
-(if uninitialized) section.</li>
-<li>Value persists across multiple calls to the same function.</li>
-</ul>
-<h3 id="example"><a class="header" href="#example">Example:</a></h3>
+<h4 id="template-metaprogramming-factorial"><a class="header" href="#template-metaprogramming-factorial">Template Metaprogramming Factorial</a></h4>
+<p>Now let’s do the same computation at <strong>compile time</strong>:</p>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
 
-void counterFunction() {
-    static int count = 0; // initialized once
-    count++;
-    cout &lt;&lt; "Count = " &lt;&lt; count &lt;&lt; endl;
+// Recursive case: Factorial&lt;N&gt; = N * Factorial&lt;N-1&gt;
+template &lt;size_t N&gt;
+struct Factorial {
+    enum { value = N * Factorial&lt;N - 1&gt;::value };
+};
+
+// Base case: Factorial&lt;0&gt; = 1
+// This is a template specialization for N=0
+template &lt;&gt;
+struct Factorial&lt;0&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; Factorial&lt;7&gt;::value &lt;&lt; std::endl;  // Computed at compile time!
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong> <code>5040</code></p>
+<p><strong>What happens:</strong> The compiler calculates 7! = 5040 during compilation. The value <code>5040</code> is directly embedded in the executable. Zero runtime computation!</p>
+<p><strong>Key Components:</strong></p>
+<ol>
+<li>
+<p><strong>Recursive case</strong>: <code>template &lt;size_t N&gt; struct Factorial</code></p>
+<ul>
+<li>Defines the general rule: N! = N × (N-1)!</li>
+<li>Uses <code>enum</code> to store compile-time constant</li>
+</ul>
+</li>
+<li>
+<p><strong>Base case</strong>: <code>template &lt;&gt; struct Factorial&lt;0&gt;</code></p>
+<ul>
+<li>This is a template specialization for N=0</li>
+<li>Defines 0! = 1</li>
+<li>Stops the recursion</li>
+</ul>
+</li>
+<li>
+<p><strong>Compile-time recursion</strong>: The compiler recursively instantiates templates until it hits the base case</p>
+</li>
+</ol>
+<hr>
+<h3 id="understanding-the-recursion"><a class="header" href="#understanding-the-recursion">Understanding the Recursion</a></h3>
+<p>Let’s trace how <code>Factorial&lt;7&gt;::value</code> is computed at compile time:</p>
+<pre><code>Factorial&lt;7&gt;::value = 7 * Factorial&lt;6&gt;::value
+                    = 7 * (6 * Factorial&lt;5&gt;::value)
+                    = 7 * (6 * (5 * Factorial&lt;4&gt;::value))
+                    = 7 * (6 * (5 * (4 * Factorial&lt;3&gt;::value)))
+                    = 7 * (6 * (5 * (4 * (3 * Factorial&lt;2&gt;::value))))
+                    = 7 * (6 * (5 * (4 * (3 * (2 * Factorial&lt;1&gt;::value)))))
+                    = 7 * (6 * (5 * (4 * (3 * (2 * (1 * Factorial&lt;0&gt;::value))))))
+                    = 7 * (6 * (5 * (4 * (3 * (2 * (1 * 1))))))  ← Base case hit!
+                    = 5040
+</code></pre>
+<p><strong>Important:</strong> This entire calculation happens during compilation, not when the program runs!</p>
+<hr>
+<h3 id="verification-compile-time-vs-runtime"><a class="header" href="#verification-compile-time-vs-runtime">Verification: Compile-Time vs Runtime</a></h3>
+<p>You can verify that the computation happens at compile time by looking at the assembly code:</p>
+<pre><code class="language-cpp">// Runtime version
+int result = factorial(7);  
+// Generates function call instructions
+
+// Compile-time version  
+int result = Factorial&lt;7&gt;::value;  
+// Becomes: int result = 5040;
+// No function call, just a constant!
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="more-tmp-examples"><a class="header" href="#more-tmp-examples">More TMP Examples</a></h2>
+<h3 id="compile-time-power-calculation"><a class="header" href="#compile-time-power-calculation">Compile-Time Power Calculation</a></h3>
+<p>Calculate X^N at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Recursive case: Power&lt;X, N&gt; = X * Power&lt;X, N-1&gt;
+template &lt;size_t X, size_t N&gt;
+struct Power {
+    enum { value = X * Power&lt;X, N - 1&gt;::value };
+};
+
+// Base case: Power&lt;X, 0&gt; = 1
+template &lt;size_t X&gt;
+struct Power&lt;X, 0&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; "2^10 = " &lt;&lt; Power&lt;2, 10&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "3^5 = " &lt;&lt; Power&lt;3, 5&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "5^4 = " &lt;&lt; Power&lt;5, 4&gt;::value &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>2^10 = 1024
+3^5 = 243
+5^4 = 625
+</code></pre>
+<p>All calculated at compile time!</p>
+<hr>
+<h3 id="compile-time-fibonacci"><a class="header" href="#compile-time-fibonacci">Compile-Time Fibonacci</a></h3>
+<p>Calculate Fibonacci numbers at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Recursive case: Fib&lt;N&gt; = Fib&lt;N-1&gt; + Fib&lt;N-2&gt;
+template &lt;size_t N&gt;
+struct Fibonacci {
+    enum { value = Fibonacci&lt;N - 1&gt;::value + Fibonacci&lt;N - 2&gt;::value };
+};
+
+// Base cases
+template &lt;&gt;
+struct Fibonacci&lt;0&gt; {
+    enum { value = 0 };
+};
+
+template &lt;&gt;
+struct Fibonacci&lt;1&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; "Fib(0) = " &lt;&lt; Fibonacci&lt;0&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fib(1) = " &lt;&lt; Fibonacci&lt;1&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fib(10) = " &lt;&lt; Fibonacci&lt;10&gt;::value &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fib(20) = " &lt;&lt; Fibonacci&lt;20&gt;::value &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Fib(0) = 0
+Fib(1) = 1
+Fib(10) = 55
+Fib(20) = 6765
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="tmp-is-turing-complete"><a class="header" href="#tmp-is-turing-complete">TMP is Turing Complete</a></h2>
+<p>Template Metaprogramming in C++ is <strong>Turing complete</strong>, meaning it can theoretically compute anything that any other programming language can compute (given enough compile time and memory).</p>
+<p>This was accidentally discovered and not originally intended! It means you can:</p>
+<ul>
+<li>Perform any calculation at compile time</li>
+<li>Implement any algorithm using templates</li>
+<li>Make complex compile-time decisions</li>
+</ul>
+<p><strong>Examples of what’s possible:</strong></p>
+<ul>
+<li>Compile-time sorting</li>
+<li>Compile-time prime number generation</li>
+<li>Compile-time parsers</li>
+<li>Complex type manipulations</li>
+<li>Compile-time unit conversions</li>
+</ul>
+<p>However, just because you can doesn’t always mean you should. TMP should be used judiciously where it provides real benefits.</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="benefits-and-drawbacks"><a class="header" href="#benefits-and-drawbacks">Benefits and Drawbacks</a></h2>
+<h3 id="benefits"><a class="header" href="#benefits">Benefits</a></h3>
+<ol>
+<li><strong>Zero Runtime Cost</strong>: Computations are done during compilation</li>
+<li><strong>Performance</strong>: Results are embedded as constants in the executable</li>
+<li><strong>Type Safety</strong>: Errors caught at compile time</li>
+<li><strong>Optimization</strong>: Compiler can optimize better with known constant values</li>
+<li><strong>Code Generation</strong>: Generate specialized code automatically</li>
+</ol>
+<h3 id="drawbacks"><a class="header" href="#drawbacks">Drawbacks</a></h3>
+<ol>
+<li><strong>Compilation Time</strong>: Can significantly increase compile times</li>
+<li><strong>Complexity</strong>: Code is harder to read and debug</li>
+<li><strong>Error Messages</strong>: Compiler errors can be cryptic and long</li>
+<li><strong>Limited Debugging</strong>: Can’t debug compile-time code easily</li>
+<li><strong>Compiler Limits</strong>: Recursion depth limits may be hit</li>
+</ol>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Use TMP when it provides clear benefits</strong>: Don’t use it just because you can</li>
+<li><strong>Prefer <code>constexpr</code> for modern C++</strong>: C++11’s <code>constexpr</code> is often simpler and clearer(Will be covered in detail in a separate chatpter)</li>
+<li><strong>Document well</strong>: TMP code needs good comments</li>
+<li><strong>Keep it simple</strong>: Complex TMP can be unmaintainable</li>
+<li><strong>Consider compile time</strong>: Balance compile-time vs runtime performance</li>
+<li><strong>Use static_assert</strong>: Validate template parameters at compile time</li>
+</ol>
+<p><strong>Modern Alternative with constexpr:</strong></p>
+<pre><code class="language-cpp">// Modern C++11+ approach
+constexpr size_t factorial(size_t n) {
+    return (n == 0) ? 1 : n * factorial(n - 1);
 }
 
 int main() {
-    counterFunction();  // Output: Count = 1
-    counterFunction();  // Output: Count = 2
-    counterFunction();  // Output: Count = 3
+    constexpr size_t result = factorial(7);  // Computed at compile time
+    std::cout &lt;&lt; result &lt;&lt; std::endl;
     return 0;
 }
 </code></pre>
-<h3 id="how-it-works-internally"><a class="header" href="#how-it-works-internally">How It Works Internally:</a></h3>
-<ol>
-<li>The first time <code>counterFunction()</code> is called, <code>count</code> is initialized
-to <code>0</code>.</li>
-<li>On subsequent calls, <code>count</code> retains its last value instead of
-reinitializing.</li>
-<li>This behavior makes static variables ideal for maintaining <strong>state</strong>
-between function calls.</li>
-</ol>
-<h3 id="visual-representation"><a class="header" href="#visual-representation">Visual Representation:</a></h3>
-<pre><code>+---------------------------------------------+
-| Function Call Stack                         |
-|   local variables -&gt; destroyed after return  |
-+---------------------------------------------+
-| .data section                               |
-|   static int count = 0;  ← persists forever |
-+---------------------------------------------+
-</code></pre>
-<p>This shows that even though <code>count</code> is declared inside a function, its
-memory <strong>does not live on the stack</strong>.<br>Instead, it resides in the <strong>data segment</strong>, making it available
-throughout the program’s execution.</p>
+<p>This achieves the same result with much cleaner syntax!
+Will be covered in detail in separate chapter.</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 <hr>
-<h3 id="summary-table-for-static"><a class="header" href="#summary-table-for-static">Summary Table for <code>static</code></a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Property</th><th>Local Static</th><th>Global Static</th></tr>
-</thead>
-<tbody>
-<tr><td>Scope</td><td>Within function</td><td>Within translation unit (.cpp file)</td></tr>
-<tr><td>Lifetime</td><td>Entire program</td><td>Entire program</td></tr>
-<tr><td>Initialization</td><td>Once only</td><td>Once only</td></tr>
-<tr><td>Memory Section</td><td>.data / .bss</td><td>.data / .bss</td></tr>
-<tr><td>Typical Use</td><td>Retain value between function calls</td><td>Hide variable/function from other files</td></tr>
-</tbody>
-</table>
-</div>
-<hr>
-<p>Static variables are often misunderstood in C++, but mastering them
-helps in writing efficient and predictable code that maintains internal
-state without global exposure.</p>
-<h1 id="note-on-register-variables-in-c"><a class="header" href="#note-on-register-variables-in-c">Note on <code>register</code> Variables in C++</a></h1>
-<ul>
-<li>Declaring a variable with the <code>register</code> keyword:</li>
-</ul>
-<pre><code class="language-cpp">register int counter = 0;
-</code></pre>
-<ul>
-<li>
-<p><strong>Does NOT guarantee</strong> that the variable will reside in a CPU register.</p>
-</li>
-<li>
-<p>It is only a <strong>compiler optimization hint</strong>.</p>
-</li>
-<li>
-<p>Modern compilers often ignore this keyword and manage registers automatically.</p>
-</li>
-<li>
-<p>Reasons it might not be placed in a register:</p>
-<ol>
-<li>Limited number of CPU registers.</li>
-<li>Compiler optimization strategies determine better storage location.</li>
-</ol>
-</li>
-<li>
-<p>Therefore, <code>register</code> mainly serves as historical or readability guidance rather than a strict directive.</p>
-</li>
-</ul>
-
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="control_flow.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="c++20_abbreviated_templates.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="cpp_pointers_tutorial_detail.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="value_categories.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -451,11 +478,11 @@ state without global exposure.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="control_flow.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="c++20_abbreviated_templates.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="cpp_pointers_tutorial_detail.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="value_categories.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
