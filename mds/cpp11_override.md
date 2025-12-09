@@ -2,28 +2,21 @@
 
 ## Table of Contents
 1. [What is the Override Keyword?](#what-is-the-override-keyword)
-2. [Definition](#definition)
-3. [The Problem Without Override](#the-problem-without-override)
+2. [The Problem Without Override](#the-problem-without-override)
    - [Example 1: Typo in Function Name](#example-1-typo-in-function-name)
    - [Example 2: Wrong Parameter Types](#example-2-wrong-parameter-types)
    - [Example 3: Missing const Qualifier](#example-3-missing-const-qualifier)
-4. [The Solution: Using Override Keyword](#the-solution-using-override-keyword)
+3. [The Solution: Using Override Keyword](#the-solution-using-override-keyword)
    - [Correct Usage](#correct-usage)
    - [Catching Errors at Compile Time](#catching-errors-at-compile-time)
-5. [Benefits of Override Keyword](#benefits-of-override-keyword)
-6. [Best Practices](#best-practices)
+4. [Benefits of Override Keyword](#benefits-of-override-keyword)
+5. [Best Practices](#best-practices)
 
 ---
 
 ## What is the Override Keyword?
 
 The **override** keyword is a C++11 feature that explicitly indicates that a member function in a derived class is intended to override a virtual function from the base class. It provides compile-time checking to ensure the override is valid.
-
-[↑ Back to Table of Contents](#table-of-contents)
-
----
-
-## Definition
 
 The `override` keyword is placed after the function signature in a derived class to explicitly declare that the function overrides a virtual function from the base class.
 
