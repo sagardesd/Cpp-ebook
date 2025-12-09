@@ -1,0 +1,926 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>constexpr (&gt;&#x3D; C++11), consteval and constinit (&gt;&#x3D; c++20)</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-e94ba0a7.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-b539b506.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="constexpr--c11-consteval-c20-and-constinit-c20"><a class="header" href="#constexpr--c11-consteval-c20-and-constinit-c20">constexpr (&gt;= C++11), consteval (C++20) and constinit (C++20)</a></h1>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#c11-introduction-of-constexpr">C++11: Introduction of constexpr</a>
+<ul>
+<li><a href="#what-is-constexpr">What is constexpr?</a></li>
+<li><a href="#constexpr-vs-template-metaprogramming">constexpr vs Template Metaprogramming</a></li>
+</ul>
+</li>
+<li><a href="#c11-limitations-the-single-return-statement-rule">C++11 Limitations: The Single Return Statement Rule</a>
+<ul>
+<li><a href="#the-problem">The Problem</a></li>
+<li><a href="#workarounds-in-c11">Workarounds in C++11</a></li>
+</ul>
+</li>
+<li><a href="#c14-relaxed-constexpr">C++14: Relaxed constexpr</a>
+<ul>
+<li><a href="#what-changed-in-c14">What Changed in C++14?</a></li>
+<li><a href="#multiple-statements-allowed">Multiple Statements Allowed</a></li>
+<li><a href="#loops-in-constexpr">Loops in constexpr</a></li>
+<li><a href="#comparison-c11-vs-c14">Comparison: C++11 vs C++14</a></li>
+</ul>
+</li>
+<li><a href="#c20-enhanced-compile-time-programming">C++20: Enhanced Compile-Time Programming</a></li>
+<li><a href="#c20-introduction-of-consteval">C++20: Introduction of consteval</a>
+<ul>
+<li><a href="#what-is-consteval">What is consteval?</a></li>
+<li><a href="#constexpr-vs-consteval">constexpr vs consteval</a></li>
+<li><a href="#when-to-use-consteval">When to Use consteval</a></li>
+</ul>
+</li>
+<li><a href="#c20-constinit">C++20: constinit</a></li>
+<li><a href="#practical-examples">Practical Examples</a></li>
+<li><a href="#benefits-of-modern-compile-time-programming">Benefits of Modern Compile-Time Programming</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+</ol>
+<hr>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>Modern C++ has progressively enhanced compile-time programming capabilities. What started with template metaprogramming (TMP) evolved into more readable and powerful features with <code>constexpr</code> (C++11), relaxed <code>constexpr</code> (C++14), and <code>consteval</code> (C++20).</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="c11-introduction-of-constexpr"><a class="header" href="#c11-introduction-of-constexpr">C++11: Introduction of constexpr</a></h2>
+<h3 id="what-is-constexpr"><a class="header" href="#what-is-constexpr">What is constexpr?</a></h3>
+<p>C++11 introduced the <code>constexpr</code> keyword to enable compile-time computation in a more readable way than template metaprogramming.</p>
+<p><strong>Key Features:</strong></p>
+<ul>
+<li>Functions marked <code>constexpr</code> can be evaluated at compile time</li>
+<li>Can also be used at runtime (unlike template metaprogramming)</li>
+<li>More readable than template metaprogramming</li>
+<li>Better error messages</li>
+</ul>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-cpp">constexpr return_type function_name(parameters) {
+    return expression;
+}
+</code></pre>
+<p>Let’s compare factorial using TMP vs constexpr:</p>
+<p><strong>Template Metaprogramming (Pre-C++11):</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+template &lt;size_t N&gt;
+struct Factorial {
+    enum { value = N * Factorial&lt;N - 1&gt;::value };
+};
+
+template &lt;&gt;
+struct Factorial&lt;0&gt; {
+    enum { value = 1 };
+};
+
+int main() {
+    std::cout &lt;&lt; Factorial&lt;7&gt;::value &lt;&lt; std::endl;  // Only compile-time
+    return 0;
+}
+</code></pre>
+<p><strong>C++11 constexpr:</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+constexpr int factorial(int n) {
+    return (n == 0) ? 1 : n * factorial(n - 1);
+}
+
+int main() {
+    // Compile-time evaluation
+    constexpr int result1 = factorial(7);
+    std::cout &lt;&lt; result1 &lt;&lt; std::endl;
+    
+    // Can also be used at runtime!
+    int n;
+    std::cin &gt;&gt; n;
+    std::cout &lt;&lt; factorial(n) &lt;&lt; std::endl;  // Runtime evaluation
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>5040
+</code></pre>
+<hr>
+<h3 id="constexpr-vs-template-metaprogramming"><a class="header" href="#constexpr-vs-template-metaprogramming">constexpr vs Template Metaprogramming</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Template Metaprogramming</th><th>constexpr</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Readability</strong></td><td>Complex, hard to read</td><td>Clean, looks like normal code</td></tr>
+<tr><td><strong>Flexibility</strong></td><td>Only compile-time</td><td>Both compile-time and runtime</td></tr>
+<tr><td><strong>Error Messages</strong></td><td>Cryptic and long</td><td>Clear and concise</td></tr>
+<tr><td><strong>Debugging</strong></td><td>Very difficult</td><td>Easier to debug</td></tr>
+<tr><td><strong>Syntax</strong></td><td>Requires templates and specialization</td><td>Simple function syntax</td></tr>
+</tbody>
+</table>
+</div>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="c11-limitations-the-single-return-statement-rule"><a class="header" href="#c11-limitations-the-single-return-statement-rule">C++11 Limitations: The Single Return Statement Rule</a></h2>
+<h3 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h3>
+<p>In C++11, <code>constexpr</code> functions were severely limited:</p>
+<p><strong>Restrictions:</strong></p>
+<ol>
+<li>Must contain only a <strong>single return statement</strong></li>
+<li>No local variables allowed</li>
+<li>No loops (for, while)</li>
+<li>No if statements (only ternary operator <code>?:</code>)</li>
+<li>Function body must be a single expression</li>
+</ol>
+<p><strong>Example of the Limitation:</strong></p>
+<pre><code class="language-cpp">// ❌ This does NOT work in C++11
+constexpr int fibonacci(int n) {
+    if (n &lt;= 1) return n;           // Error: multiple return statements
+    return fibonacci(n-1) + fibonacci(n-2);
+}
+
+// ❌ This does NOT work in C++11
+constexpr int sum_to_n(int n) {
+    int sum = 0;                    // Error: local variable
+    for (int i = 1; i &lt;= n; ++i) {  // Error: loop
+        sum += i;
+    }
+    return sum;
+}
+</code></pre>
+<hr>
+<h3 id="workarounds-in-c11"><a class="header" href="#workarounds-in-c11">Workarounds in C++11</a></h3>
+<p>To work around the single return statement limitation, you had to use recursion and ternary operators:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// ✅ C++11 compliant - using ternary operator
+constexpr int fibonacci(int n) {
+    return (n &lt;= 1) ? n : (fibonacci(n-1) + fibonacci(n-2));
+}
+
+// ✅ C++11 compliant - using recursion for sum
+constexpr int sum_to_n_helper(int n, int sum) {
+    return (n == 0) ? sum : sum_to_n_helper(n - 1, sum + n);
+}
+
+constexpr int sum_to_n(int n) {
+    return sum_to_n_helper(n, 0);
+}
+
+int main() {
+    constexpr int fib10 = fibonacci(10);
+    constexpr int sum = sum_to_n(100);
+    
+    std::cout &lt;&lt; "Fibonacci(10) = " &lt;&lt; fib10 &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Sum(1..100) = " &lt;&lt; sum &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Fibonacci(10) = 55
+Sum(1..100) = 5050
+</code></pre>
+<p><strong>Problem:</strong> This is awkward and hard to read. Simple iterative algorithms require complex recursive solutions.</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="c14-relaxed-constexpr"><a class="header" href="#c14-relaxed-constexpr">C++14: Relaxed constexpr</a></h2>
+<h3 id="what-changed-in-c14"><a class="header" href="#what-changed-in-c14">What Changed in C++14?</a></h3>
+<p>C++14 <strong>relaxed</strong> the restrictions on <code>constexpr</code> functions, making them much more practical:</p>
+<p><strong>New Capabilities:</strong></p>
+<ol>
+<li>✅ Multiple statements allowed</li>
+<li>✅ Local variables allowed</li>
+<li>✅ Loops (for, while, do-while)</li>
+<li>✅ If-else statements</li>
+<li>✅ Multiple return statements</li>
+<li>✅ switch statements</li>
+<li>✅ Modify local variables</li>
+</ol>
+<hr>
+<h3 id="multiple-statements-allowed"><a class="header" href="#multiple-statements-allowed">Multiple Statements Allowed</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// ✅ C++14: Multiple statements and local variables
+constexpr int sum_to_n(int n) {
+    int sum = 0;  // Local variable allowed!
+    
+    for (int i = 1; i &lt;= n; ++i) {  // Loop allowed!
+        sum += i;
+    }
+    
+    return sum;  // Multiple statements allowed!
+}
+
+int main() {
+    constexpr int result = sum_to_n(100);
+    std::cout &lt;&lt; "Sum(1..100) = " &lt;&lt; result &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Sum(1..100) = 5050
+</code></pre>
+<hr>
+<h3 id="loops-in-constexpr"><a class="header" href="#loops-in-constexpr">Loops in constexpr</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// C++14: Factorial with loop instead of recursion
+constexpr int factorial(int n) {
+    int result = 1;
+    for (int i = 2; i &lt;= n; ++i) {
+        result *= i;
+    }
+    return result;
+}
+
+// C++14: Fibonacci with loop
+constexpr int fibonacci(int n) {
+    if (n &lt;= 1) return n;
+    
+    int prev = 0, curr = 1;
+    for (int i = 2; i &lt;= n; ++i) {
+        int next = prev + curr;
+        prev = curr;
+        curr = next;
+    }
+    return curr;
+}
+
+int main() {
+    constexpr int fact7 = factorial(7);
+    constexpr int fib10 = fibonacci(10);
+    
+    std::cout &lt;&lt; "7! = " &lt;&lt; fact7 &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Fibonacci(10) = " &lt;&lt; fib10 &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>7! = 5040
+Fibonacci(10) = 55
+</code></pre>
+<hr>
+<h3 id="comparison-c11-vs-c14"><a class="header" href="#comparison-c11-vs-c14">Comparison: C++11 vs C++14</a></h3>
+<p><strong>Finding the maximum in an array:</strong></p>
+<p><strong>C++11 (Complex recursion):</strong></p>
+<pre><code class="language-cpp">constexpr int max_helper(const int* arr, int size, int current_max, int index) {
+    return (index == size) ? current_max :
+           max_helper(arr, size, 
+                     (arr[index] &gt; current_max ? arr[index] : current_max),
+                     index + 1);
+}
+
+constexpr int find_max(const int* arr, int size) {
+    return max_helper(arr, size, arr[0], 1);
+}
+</code></pre>
+<p><strong>C++14 (Simple loop):</strong></p>
+<pre><code class="language-cpp">constexpr int find_max(const int* arr, int size) {
+    int max_val = arr[0];
+    for (int i = 1; i &lt; size; ++i) {
+        if (arr[i] &gt; max_val) {
+            max_val = arr[i];
+        }
+    }
+    return max_val;
+}
+</code></pre>
+<p>Much cleaner and more readable!</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="c20-enhanced-compile-time-programming"><a class="header" href="#c20-enhanced-compile-time-programming">C++20: Enhanced Compile-Time Programming</a></h2>
+<p>C++20 significantly expanded what can be done at compile time, bringing <code>constexpr</code> closer to being as powerful as regular runtime code.</p>
+<h3 id="constexpr-enhancements"><a class="header" href="#constexpr-enhancements">constexpr Enhancements</a></h3>
+<p><strong>New C++20 Features:</strong></p>
+<ol>
+<li>✅ <code>constexpr</code> destructors</li>
+<li>✅ <code>constexpr</code> dynamic memory allocation (new/delete)</li>
+<li>✅ <code>constexpr</code> virtual functions</li>
+<li>✅ <code>constexpr</code> try-catch blocks</li>
+<li>✅ <code>constexpr</code> standard library containers</li>
+<li>✅ <code>constexpr</code> algorithms</li>
+</ol>
+<hr>
+<h3 id="1-constexpr-destructors"><a class="header" href="#1-constexpr-destructors">1. constexpr Destructors</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+struct ConstexprResource {
+    constexpr ConstexprResource() {}
+    constexpr ~ConstexprResource() {
+        // Cleanup operations that must run at compile time
+    }
+};
+
+constexpr void manage_resource() {
+    ConstexprResource r; // Constructor and destructor called at compile time
+}
+
+int main() {
+    constexpr auto result = manage_resource();
+    return 0;
+}
+</code></pre>
+<p><strong>Use Case:</strong> Enables user-defined types (UDTs) with specific cleanup requirements to participate in <code>constexpr</code> contexts, supporting the creation of other <code>constexpr</code> features like containers.</p>
+<hr>
+<h3 id="2-constexpr-dynamic-memory-allocation-newdelete"><a class="header" href="#2-constexpr-dynamic-memory-allocation-newdelete">2. constexpr Dynamic Memory Allocation (new/delete)</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+constexpr int sum_array_elements() {
+    int* arr = new int[4]{1, 2, 3, 4}; // Allocate at compile time
+    int sum = 0;
+    for (int i = 0; i &lt; 4; ++i) {
+        sum += arr[i];
+    }
+    delete[] arr; // Deallocate at compile time
+    return sum;
+}
+
+int main() {
+    constexpr int result = sum_array_elements();
+    static_assert(result == 10);
+    std::cout &lt;&lt; "Sum: " &lt;&lt; result &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Sum: 10
+</code></pre>
+<p><strong>Use Case:</strong> Vital for making standard library containers (<code>std::vector</code>, <code>std::string</code>) fully <code>constexpr</code>, allowing complex data structures to be built and processed entirely at compile time.</p>
+<hr>
+<h3 id="3-constexpr-virtual-functions"><a class="header" href="#3-constexpr-virtual-functions">3. constexpr Virtual Functions</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+struct Memory {
+    constexpr virtual unsigned int capacity() const = 0; 
+    constexpr virtual ~Memory() = default; 
+};
+
+struct EEPROM_25LC160C : Memory {
+    constexpr unsigned int capacity() const override {
+        return 2048; // A compile-time constant
+    }
+};
+
+constexpr unsigned int get_eeprom_capacity() {
+    EEPROM_25LC160C chip;
+    return chip.capacity(); // Virtual dispatch happens at compile time
+}
+
+int main() {
+    constexpr unsigned int cap = get_eeprom_capacity();
+    static_assert(cap == 2048);
+    std::cout &lt;&lt; "EEPROM Capacity: " &lt;&lt; cap &lt;&lt; " bytes" &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>EEPROM Capacity: 2048 bytes
+</code></pre>
+<p><strong>Use Case:</strong> Enables compile-time polymorphism for scenarios like hardware abstraction layers (HALs) where component properties can be determined during compilation. This was <strong>impossible</strong> before C++20!</p>
+<hr>
+<h3 id="4-constexpr-try-catch-blocks"><a class="header" href="#4-constexpr-try-catch-blocks">4. constexpr try-catch Blocks</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;stdexcept&gt;
+
+constexpr int safe_divide(int a, int b) {
+    if (b == 0) {
+        throw std::runtime_error("Division by zero!");
+    }
+    return a / b;
+}
+
+constexpr int compute_quotient(int x) {
+    try {
+        return safe_divide(100, x);
+    } catch (const std::runtime_error&amp;) {
+        return -1; 
+    }
+}
+
+int main() {
+    constexpr int result1 = compute_quotient(25);
+    constexpr int result2 = compute_quotient(0);
+    
+    static_assert(result1 == 4);
+    static_assert(result2 == -1);
+    
+    std::cout &lt;&lt; "100 / 25 = " &lt;&lt; result1 &lt;&lt; std::endl;
+    std::cout &lt;&lt; "100 / 0 = " &lt;&lt; result2 &lt;&lt; " (error handled)" &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>100 / 25 = 4
+100 / 0 = -1 (error handled)
+</code></pre>
+<p><strong>Use Case:</strong> Allows library writers to maintain exception safety guarantees while still permitting their code to be used in <code>constexpr</code> contexts.</p>
+<hr>
+<h3 id="5-constexpr-standard-library-containers"><a class="header" href="#5-constexpr-standard-library-containers">5. constexpr Standard Library Containers</a></h3>
+<p>C++20 allows dynamic containers at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+constexpr auto get_sorted_vector_back() {
+    std::vector&lt;int&gt; my_vec = {1, 4, 2, 3}; // Works at compile time
+    std::sort(my_vec.begin(), my_vec.end()); // Works at compile time
+    return my_vec.back(); 
+}
+
+constexpr std::vector&lt;int&gt; create_squares(int n) {
+    std::vector&lt;int&gt; squares;
+    for (int i = 1; i &lt;= n; ++i) {
+        squares.push_back(i * i);
+    }
+    return squares;
+}
+
+int main() {
+    constexpr int max_val = get_sorted_vector_back();
+    static_assert(max_val == 4);
+    
+    std::cout &lt;&lt; "Max value: " &lt;&lt; max_val &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Max value: 4
+</code></pre>
+<p><strong>Use Case:</strong> Enables the preparation of complex, pre-processed data structures entirely at compile time, eliminating runtime initialization overhead.</p>
+<hr>
+<h3 id="6-constexpr-algorithms"><a class="header" href="#6-constexpr-algorithms">6. constexpr Algorithms</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;array&gt;
+
+constexpr std::array&lt;int, 4&gt; get_sorted_array() {
+    std::array&lt;int, 4&gt; arr = {3, 1, 4, 2};
+    std::sort(arr.begin(), arr.end()); // std::sort is constexpr in C++20
+    return arr;
+}
+
+constexpr int find_max_with_algorithm() {
+    std::array&lt;int, 10&gt; arr = {5, 2, 8, 1, 9, 3, 7, 4, 6, 10};
+    
+    // Use std::max_element at compile time!
+    auto max_it = std::max_element(arr.begin(), arr.end());
+    return *max_it;
+}
+
+int main() {
+    constexpr auto sorted_arr = get_sorted_array();
+    constexpr int max_val = find_max_with_algorithm();
+    
+    static_assert(sorted_arr[0] == 1 &amp;&amp; sorted_arr[3] == 4);
+    static_assert(max_val == 10);
+    
+    std::cout &lt;&lt; "Sorted array: ";
+    for (int val : sorted_arr) {
+        std::cout &lt;&lt; val &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    std::cout &lt;&lt; "Max value: " &lt;&lt; max_val &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Sorted array: 1 2 3 4
+Max value: 10
+</code></pre>
+<p><strong>Use Case:</strong> Permits utility functions that rely on common algorithms (sorting, searching, transforming data) to be evaluated at compile time to produce final, optimized results embedded directly into the executable.</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="c20-introduction-of-consteval"><a class="header" href="#c20-introduction-of-consteval">C++20: Introduction of consteval</a></h2>
+<h3 id="what-is-consteval"><a class="header" href="#what-is-consteval">What is consteval?</a></h3>
+<p>C++20 introduced <code>consteval</code> for <strong>immediate functions</strong> - functions that <strong>must</strong> be evaluated at compile time.</p>
+<p><strong>Key Difference:</strong></p>
+<ul>
+<li><code>constexpr</code>: <strong>Can</strong> be evaluated at compile time, but may be evaluated at runtime</li>
+<li><code>consteval</code>: <strong>Must</strong> be evaluated at compile time, never at runtime</li>
+</ul>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-cpp">consteval return_type function_name(parameters) {
+    // function body
+}
+</code></pre>
+<hr>
+<h3 id="constexpr-vs-consteval"><a class="header" href="#constexpr-vs-consteval">constexpr vs consteval</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+constexpr int square_constexpr(int x) {
+    return x * x;
+}
+
+consteval int square_consteval(int x) {
+    return x * x;
+}
+
+int main() {
+    // constexpr: Can use at compile time
+    constexpr int a = square_constexpr(5);  // ✅ OK: Compile time
+    
+    // constexpr: Can also use at runtime
+    int n = 10;
+    int b = square_constexpr(n);  // ✅ OK: Runtime
+    
+    // consteval: Must use at compile time
+    constexpr int c = square_consteval(7);  // ✅ OK: Compile time
+    
+    // consteval: CANNOT use at runtime
+    // int d = square_consteval(n);  // ❌ Error: n is not a constant
+    
+    std::cout &lt;&lt; "a = " &lt;&lt; a &lt;&lt; std::endl;
+    std::cout &lt;&lt; "b = " &lt;&lt; b &lt;&lt; std::endl;
+    std::cout &lt;&lt; "c = " &lt;&lt; c &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<hr>
+<h3 id="when-to-use-consteval"><a class="header" href="#when-to-use-consteval">When to Use consteval</a></h3>
+<p>Use <code>consteval</code> when:</p>
+<ol>
+<li>You want to <strong>guarantee</strong> compile-time evaluation</li>
+<li>You want to prevent accidental runtime usage</li>
+<li>You’re generating compile-time constants</li>
+<li>You want to catch errors if non-constant arguments are passed</li>
+</ol>
+<p><strong>Example: Compile-Time String Hashing</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string_view&gt;
+
+// Must be evaluated at compile time
+consteval size_t hash_string(std::string_view str) {
+    size_t hash = 0;
+    for (char c : str) {
+        hash = hash * 31 + c;
+    }
+    return hash;
+}
+
+int main() {
+    // ✅ Compile time - string literal
+    constexpr auto hash1 = hash_string("Hello");
+    constexpr auto hash2 = hash_string("World");
+    
+    std::cout &lt;&lt; "Hash of 'Hello': " &lt;&lt; hash1 &lt;&lt; std::endl;
+    std::cout &lt;&lt; "Hash of 'World': " &lt;&lt; hash2 &lt;&lt; std::endl;
+    
+    // ❌ This would be a compile error:
+    // std::string s = "Runtime";
+    // auto hash3 = hash_string(s);  // Error: s is not compile-time constant
+    
+    return 0;
+}
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="c20-constinit"><a class="header" href="#c20-constinit">C++20: constinit</a></h2>
+<p>C++20 also introduced <code>constinit</code> for variables that must be initialized at compile time but can be modified at runtime.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// Must be initialized at compile time
+constinit int global_value = 42;
+
+constexpr int compute_value() {
+    return 100;
+}
+
+constinit int computed_global = compute_value();
+
+int main() {
+    std::cout &lt;&lt; "Global value: " &lt;&lt; global_value &lt;&lt; std::endl;
+    
+    // Can be modified at runtime (unlike constexpr variables)
+    global_value = 100;
+    std::cout &lt;&lt; "Modified value: " &lt;&lt; global_value &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Key Points:</strong></p>
+<ul>
+<li><code>constinit</code>: Initialization must be at compile time, but value can change at runtime</li>
+<li><code>constexpr</code>: Must be compile-time constant, cannot be modified</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
+<h3 id="compile-time-prime-checker"><a class="header" href="#compile-time-prime-checker">Compile-Time Prime Checker</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+consteval bool is_prime(int n) {
+    if (n &lt;= 1) return false;
+    if (n &lt;= 3) return true;
+    if (n % 2 == 0 || n % 3 == 0) return false;
+    
+    for (int i = 5; i * i &lt;= n; i += 6) {
+        if (n % i == 0 || n % (i + 2) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() {
+    constexpr bool result1 = is_prime(17);  // ✅ Compile time
+    constexpr bool result2 = is_prime(100); // ✅ Compile time
+    
+    std::cout &lt;&lt; "17 is prime: " &lt;&lt; result1 &lt;&lt; std::endl;
+    std::cout &lt;&lt; "100 is prime: " &lt;&lt; result2 &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<hr>
+<h3 id="compile-time-string-length"><a class="header" href="#compile-time-string-length">Compile-Time String Length</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string_view&gt;
+
+consteval size_t string_length(std::string_view str) {
+    return str.length();
+}
+
+int main() {
+    constexpr auto len = string_length("Hello, World!");
+    std::cout &lt;&lt; "Length: " &lt;&lt; len &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="benefits-of-modern-compile-time-programming"><a class="header" href="#benefits-of-modern-compile-time-programming">Benefits of Modern Compile-Time Programming</a></h2>
+<ol>
+<li><strong>Performance</strong>: Zero runtime overhead - calculations done during compilation</li>
+<li><strong>Type Safety</strong>: Errors caught at compile time</li>
+<li><strong>Readability</strong>: Modern syntax is much cleaner than TMP</li>
+<li><strong>Flexibility</strong>: <code>constexpr</code> works at both compile-time and runtime</li>
+<li><strong>Powerful</strong>: C++20 allows almost any code to run at compile time</li>
+<li><strong>Guarantees</strong>: <code>consteval</code> ensures compile-time evaluation</li>
+</ol>
+<p><strong>Evolution Summary:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>C++11</th><th>C++14</th><th>C++20</th></tr>
+</thead>
+<tbody>
+<tr><td>Single return only</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Multiple statements</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>Loops</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>Virtual functions</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Dynamic memory</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>STL containers</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>consteval</td><td>❌</td><td>❌</td><td>✅</td></tr>
+</tbody>
+</table>
+</div>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Use <code>constexpr</code> by default</strong> for functions that can be compile-time</li>
+<li><strong>Use <code>consteval</code></strong> when you want to guarantee compile-time evaluation</li>
+<li><strong>Prefer <code>constexpr</code> over TMP</strong> for readability</li>
+<li><strong>Use <code>constinit</code></strong> for globals that need compile-time initialization</li>
+<li><strong>Test both paths</strong>: If using <code>constexpr</code>, test both compile-time and runtime paths</li>
+<li><strong>Be aware of compile times</strong>: Complex <code>constexpr</code> can increase compilation time</li>
+<li><strong>Use <code>if constexpr</code></strong> for compile-time branching (C++17)</li>
+</ol>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="TMP.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="value_categories.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="TMP.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="value_categories.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
