@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-800be0ce.js";
+            window.path_to_searchindex_js = "searchindex-fca4a8e5.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-065edb2c.js"></script>
+        <script src="toc-db4c6b30.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -16973,10 +16973,334 @@ func(1, 2, 3); // sizeof...(args) = 3
 </ul>
 <p>They’re essential for modern C++ generic programming!</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="abbreviated-function-templates--c20"><a href="#abbreviated-function-templates--c20" class="header">Abbreviated Function Templates (&gt;= C++20)</a></h1>
+<h1 id="c20-abbreviated-function-templates"><a class="header" href="#c20-abbreviated-function-templates">C++20 Abbreviated Function Templates</a></h1>
+<h2 id="table-of-contents-22"><a class="header" href="#table-of-contents-22">Table of Contents</a></h2>
+<ol>
+<li><a href="#what-is-an-abbreviated-function-template">What is an Abbreviated Function Template?</a></li>
+<li><a href="#traditional-template-vs-abbreviated-template">Traditional Template vs Abbreviated Template</a>
+<ul>
+<li><a href="#traditional-template-function">Traditional Template Function</a></li>
+<li><a href="#c20-abbreviated-template-function">C++20 Abbreviated Template Function</a></li>
+</ul>
+</li>
+<li><a href="#key-differences-1">Key Differences</a></li>
+<li><a href="#constrained-auto-abbreviated-functions">Constrained Auto Abbreviated Functions</a>
+<ul>
+<li><a href="#the-problem-with-unconstrained-auto">The Problem with Unconstrained Auto</a></li>
+<li><a href="#solution-using-concepts-with-constrained-auto">Solution: Using Concepts with Constrained Auto</a></li>
+<li><a href="#equivalent-traditional-syntax-1">Equivalent Traditional Syntax</a></li>
+<li><a href="#benefits-of-constrained-auto">Benefits of Constrained Auto</a></li>
+</ul>
+</li>
+<li><a href="#important-limitation-no-abbreviated-class-templates">Important Limitation: No Abbreviated Class Templates</a></li>
+<li><a href="#advantages-of-abbreviated-function-templates">Advantages of Abbreviated Function Templates</a></li>
+<li><a href="#when-to-use">When to Use</a></li>
+<li><a href="#compilation">Compilation</a></li>
+</ol>
+<hr>
+<h2 id="what-is-an-abbreviated-function-template"><a class="header" href="#what-is-an-abbreviated-function-template">What is an Abbreviated Function Template?</a></h2>
+<p>An <strong>abbreviated function template</strong> is a C++20 feature that allows you to write template functions using <code>auto</code> as a parameter type instead of explicitly declaring template parameters. This provides a more concise and readable syntax for function templates.</p>
+<p>In C++20, when you use <code>auto</code> (or a constrained <code>auto</code> with concepts) as a function parameter type, the compiler automatically treats it as a template parameter. Each <code>auto</code> parameter introduces an independent template type parameter.</p>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-cpp">// Unconstrained auto
+auto functionName(auto param1, auto param2) {
+    // function body
+}
+
+// Constrained auto with concepts
+auto functionName(ConceptName auto param1, ConceptName auto param2) {
+    // function body
+}
+</code></pre>
+<p>This is equivalent to:</p>
+<pre><code class="language-cpp">// Unconstrained equivalent
+template&lt;typename T1, typename T2&gt;
+auto functionName(T1 param1, T2 param2) {
+    // function body
+}
+
+// Constrained equivalent
+template&lt;ConceptName T1, ConceptName T2&gt;
+auto functionName(T1 param1, T2 param2) {
+    // function body
+}
+</code></pre>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="traditional-template-vs-abbreviated-template"><a class="header" href="#traditional-template-vs-abbreviated-template">Traditional Template vs Abbreviated Template</a></h2>
+<h3 id="traditional-template-function"><a class="header" href="#traditional-template-function">Traditional Template Function</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;typeinfo&gt;
+
+template &lt;typename T&gt;
+T min(const T&amp; a, const T&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+
+int main() {
+    std::cout &lt;&lt; min(1, 2) &lt;&lt; std::endl;
+    std::cout &lt;&lt; min(2.7, 2.5) &lt;&lt; std::endl;
+    std::cout &lt;&lt; min('a', 'b') &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Type of a: i Type of b: i Min: 1
+Type of a: d Type of b: d Min: 2.5
+Type of a: c Type of b: c Min: a
+</code></pre>
+<p><strong>Template Expansion (using <code>clang++ -std=c++20 -Xclang -ast-print -fsyntax-only</code>):</strong></p>
+<pre><code class="language-cpp">template &lt;typename T&gt; T min(const T &amp;a, const T &amp;b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+
+template&lt;&gt; int min&lt;int&gt;(const int &amp;a, const int &amp;b) { /* ... */ }
+template&lt;&gt; double min&lt;double&gt;(const double &amp;a, const double &amp;b) { /* ... */ }
+template&lt;&gt; char min&lt;char&gt;(const char &amp;a, const char &amp;b) { /* ... */ }
+</code></pre>
+<hr>
+<h3 id="c20-abbreviated-template-function"><a class="header" href="#c20-abbreviated-template-function">C++20 Abbreviated Template Function</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;typeinfo&gt;
+
+auto min(const auto&amp; a, const auto&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+
+int main() {
+    std::cout &lt;&lt; min(1, 2) &lt;&lt; std::endl;
+    std::cout &lt;&lt; min(2.7, 2.5) &lt;&lt; std::endl;
+    std::cout &lt;&lt; min('a', 'b') &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Type of a: i Type of b: i Min: 1
+Type of a: d Type of b: d Min: 2.5
+Type of a: c Type of b: c Min: a
+</code></pre>
+<p><strong>Template Expansion (using <code>clang++ -std=c++20 -Xclang -ast-print -fsyntax-only</code>):</strong></p>
+<pre><code class="language-cpp">auto min(const auto &amp;a, const auto &amp;b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+
+template&lt;&gt; int min&lt;int, int&gt;(const int &amp;a, const int &amp;b) { /* ... */ }
+template&lt;&gt; double min&lt;double, double&gt;(const double &amp;a, const double &amp;b) { /* ... */ }
+template&lt;&gt; char min&lt;char, char&gt;(const char &amp;a, const char &amp;b) { /* ... */ }
+</code></pre>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="key-differences-1"><a class="header" href="#key-differences-1">Key Differences</a></h2>
+<ol>
+<li><strong>Syntax</strong>: The abbreviated form uses <code>auto</code> instead of explicit <code>template&lt;typename T&gt;</code> declaration</li>
+<li><strong>Each <code>auto</code> is independent</strong>: Notice in the expansion that the abbreviated version creates <code>min&lt;int, int&gt;</code>, <code>min&lt;double, double&gt;</code>, etc., meaning each <code>auto</code> parameter is a separate template parameter</li>
+<li><strong>Readability</strong>: The abbreviated syntax is more concise and resembles regular function syntax</li>
+</ol>
+<h3 id="equivalent-template-syntax"><a class="header" href="#equivalent-template-syntax">Equivalent Template Syntax</a></h3>
+<p>The abbreviated function:</p>
+<pre><code class="language-cpp">auto min(const auto&amp; a, const auto&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<p>Is exactly equivalent to:</p>
+<pre><code class="language-cpp">template&lt;typename T1, typename T2&gt;
+auto min(const T1&amp; a, const T2&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<p><strong>Important:</strong> Each <code>auto</code> parameter becomes an independent template parameter (<code>T1</code>, <code>T2</code>). This means the function can accept two different types, such as <code>min(5, 3.14)</code> where <code>a</code> is <code>int</code> and <code>b</code> is <code>double</code>.</p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="constrained-auto-abbreviated-functions"><a class="header" href="#constrained-auto-abbreviated-functions">Constrained Auto Abbreviated Functions</a></h2>
+<p>C++20 also allows you to add <strong>constraints</strong> to abbreviated function templates using concepts. This ensures that the template parameters meet certain requirements.</p>
+<h3 id="the-problem-with-unconstrained-auto"><a class="header" href="#the-problem-with-unconstrained-auto">The Problem with Unconstrained Auto</a></h3>
+<p>Consider this example with a custom type:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;typeinfo&gt;
+#include &lt;string&gt;
+
+struct StudentId {
+    std::string name;
+    std::string id;
+};
+
+auto min(const auto&amp; a, const auto&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;  // Error! StudentId doesn't have operator&lt;
+}
+
+int main() {
+    StudentId s1{"Alice", "001"};
+    StudentId s2{"Bob", "002"};
+    
+    std::cout &lt;&lt; min(1, 2) &lt;&lt; std::endl;           // Works
+    std::cout &lt;&lt; min(s1, s2) &lt;&lt; std::endl;         // Compilation Error!
+    return 0;
+}
+</code></pre>
+<p><strong>Error:</strong> <code>StudentId</code> doesn’t have <code>operator&lt;</code> defined, so the comparison <code>a &lt; b</code> fails.</p>
+<hr>
+<h3 id="solution-using-concepts-with-constrained-auto"><a class="header" href="#solution-using-concepts-with-constrained-auto">Solution: Using Concepts with Constrained Auto</a></h3>
+<p>We can create a custom concept to constrain our function:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;typeinfo&gt;
+#include &lt;string&gt;
+#include &lt;concepts&gt;
+
+struct StudentId {
+    std::string name;
+    std::string id;
+    
+    // Define comparison operator
+    bool operator&lt;(const StudentId&amp; other) const {
+        return name &lt; other.name;
+    }
+};
+
+// Custom concept for types that support &lt; operator
+template&lt;typename T&gt;
+concept Comparable = requires(T a, T b) {
+    { a &lt; b } -&gt; std::convertible_to&lt;bool&gt;;
+};
+
+auto min(const Comparable auto&amp; a, const Comparable auto&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+
+int main() {
+    StudentId s1{"Alice", "001"};
+    StudentId s2{"Bob", "002"};
+    
+    std::cout &lt;&lt; min(1, 2) &lt;&lt; std::endl;
+    std::cout &lt;&lt; min(2.7, 2.5) &lt;&lt; std::endl;
+    std::cout &lt;&lt; min('a', 'b') &lt;&lt; std::endl;
+    
+    auto result = min(s1, s2);
+    std::cout &lt;&lt; result.name &lt;&lt; " (ID: " &lt;&lt; result.id &lt;&lt; ")" &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Type of a: i Type of b: i Min: 1
+Type of a: d Type of b: d Min: 2.5
+Type of a: c Type of b: c Min: a
+Type of a: 9StudentId Type of b: 9StudentId Min: Alice (ID: 001)
+</code></pre>
+<p>The <code>Comparable</code> concept checks if a type supports the <code>&lt;</code> operator:</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+concept Comparable = requires(T a, T b) {
+    { a &lt; b } -&gt; std::convertible_to&lt;bool&gt;;
+};
+</code></pre>
+<p>This requires that for type <code>T</code>, the expression <code>a &lt; b</code> must be valid and convertible to <code>bool</code>.</p>
+<h3 id="equivalent-traditional-syntax"><a class="header" href="#equivalent-traditional-syntax">Equivalent Traditional Syntax</a></h3>
+<p>The constrained abbreviated function is equivalent to:</p>
+<pre><code class="language-cpp">template&lt;Comparable T1, Comparable T2&gt;
+auto min(const T1&amp; a, const T2&amp; b) {
+    std::cout &lt;&lt; "Type of a: " &lt;&lt; typeid(a).name() 
+              &lt;&lt; " Type of b: " &lt;&lt; typeid(b).name() &lt;&lt; " Min: ";
+    return a &lt; b ? a : b;
+}
+</code></pre>
+<h3 id="benefits-of-constrained-auto"><a class="header" href="#benefits-of-constrained-auto">Benefits of Constrained Auto</a></h3>
+<ol>
+<li><strong>Compile-time error checking</strong>: Catch type errors early with clear error messages</li>
+<li><strong>Self-documenting code</strong>: The constraint explains what types are acceptable</li>
+<li><strong>Better IDE support</strong>: IDEs can provide better autocomplete and hints</li>
+<li><strong>Type safety</strong>: Prevents misuse of generic functions</li>
+</ol>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="important-limitation-no-abbreviated-class-templates"><a class="header" href="#important-limitation-no-abbreviated-class-templates">Important Limitation: No Abbreviated Class Templates</a></h2>
+<p><strong>C++20 does NOT support abbreviated class templates.</strong> You cannot write:</p>
+<pre><code class="language-cpp">// ❌ This is NOT valid C++20
+class MyClass&lt;auto T&gt; {  // Error!
+    T value;
+};
+</code></pre>
+<p><strong>Reason:</strong> Abbreviated function templates work because the compiler can deduce template parameters from function arguments at the call site. Class templates require explicit instantiation (e.g., <code>MyClass&lt;int&gt;</code>), so there’s no argument deduction context for <code>auto</code> to work with.</p>
+<p>You must still use traditional template syntax for classes:</p>
+<pre><code class="language-cpp">// ✅ Correct way for class templates
+template&lt;typename T&gt;
+class MyClass {
+    T value;
+public:
+    MyClass(T v) : value(v) {}
+    
+    // ✅ But member functions CAN use abbreviated templates!
+    auto add(auto other) {
+        return value + other;
+    }
+    
+    auto compare(const auto&amp; other) const {
+        return value &lt; other;
+    }
+};
+</code></pre>
+<p><strong>Example Usage:</strong></p>
+<pre><code class="language-cpp">int main() {
+    MyClass&lt;int&gt; obj(10);           // Class needs explicit type
+    
+    std::cout &lt;&lt; obj.add(5) &lt;&lt; std::endl;      // Member function: auto deduces int
+    std::cout &lt;&lt; obj.add(3.14) &lt;&lt; std::endl;   // Member function: auto deduces double
+    std::cout &lt;&lt; obj.compare(20) &lt;&lt; std::endl; // Member function: auto deduces int
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>15
+13.14
+1
+</code></pre>
+<p>This demonstrates that while class templates must use traditional syntax, their member functions can freely use abbreviated function template syntax.</p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="advantages-of-abbreviated-function-templates"><a class="header" href="#advantages-of-abbreviated-function-templates">Advantages of Abbreviated Function Templates</a></h2>
+<ol>
+<li><strong>Conciseness</strong>: Less boilerplate code</li>
+<li><strong>Readability</strong>: Easier to read and understand at a glance</li>
+<li><strong>Flexibility</strong>: Each <code>auto</code> can deduce to a different type</li>
+<li><strong>Modern</strong>: Aligns with modern C++ practices</li>
+</ol>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="when-to-use"><a class="header" href="#when-to-use">When to Use</a></h2>
+<p>Abbreviated function templates are ideal for:</p>
+<ul>
+<li>Simple generic functions</li>
+<li>Lambda expressions</li>
+<li>Functions where the template nature is obvious from context</li>
+<li>Reducing syntactic noise in template-heavy code</li>
+</ul>
+<p>For complex templates with constraints, explicit template syntax or C++20 concepts may be more appropriate for clarity.</p>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="compilation"><a class="header" href="#compilation">Compilation</a></h2>
+<p>To compile code using abbreviated function templates:</p>
+<pre><code class="language-bash">g++ -std=c++20 program.cpp -o program
+clang++ -std=c++20 program.cpp -o program
+</code></pre>
+<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
-<h2 id="table-of-contents-22"><a class="header" href="#table-of-contents-22">Table of Contents</a></h2>
+<h2 id="table-of-contents-23"><a class="header" href="#table-of-contents-23">Table of Contents</a></h2>
 <ol>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></li>
@@ -17002,7 +17326,7 @@ func(1, 2, 3); // sizeof...(args) = 3
 <li><strong>glvalue</strong> = lvalue or xvalue</li>
 <li><strong>rvalue</strong> = xvalue or prvalue</li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="value-category-hierarchy-diagram"><a class="header" href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></h2>
 <pre><code>                    expression
@@ -17023,7 +17347,7 @@ func(1, 2, 3); // sizeof...(args) = 3
 <li><strong>xvalue</strong>: Has identity AND can be moved from</li>
 <li><strong>prvalue</strong>: No identity, temporary value</li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="prvalue-pure-rvalue"><a class="header" href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></h2>
 <p>A <em>prvalue</em> is a temporary value that does not refer to an existing object.</p>
@@ -17038,7 +17362,7 @@ std::string s("hi"); // temporary std::string → prvalue
 <li>Creates a new temporary object</li>
 <li>Result of most operators and literals</li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="lvalue"><a class="header" href="#lvalue">lvalue</a></h2>
 <p>An <em>lvalue</em> refers to an identifiable, persistent object in memory.</p>
@@ -17055,7 +17379,7 @@ s.m = 5;     // s.m is an lvalue
 <li>Persists beyond a single expression</li>
 <li>Can appear on the left side of assignment</li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="xvalue-expiring-value"><a class="header" href="#xvalue-expiring-value">xvalue (expiring value)</a></h2>
 <p>An <em>xvalue</em> is a special glvalue that refers to an object whose resources can be reused (i.e., movable).</p>
@@ -17073,7 +17397,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 <li>About to expire (resources can be moved)</li>
 <li>Result of <code>std::move()</code> or member access on rvalue</li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="summary-table-1"><a class="header" href="#summary-table-1">Summary Table</a></h2>
 <div class="table-wrapper">
@@ -17090,7 +17414,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
 <pre><code class="language-cpp">int a = 10;        // a → lvalue  
@@ -17107,7 +17431,7 @@ struct S { int m; };
 S get();
 get().m = 1;        // get() → prvalue, .m → xvalue
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="intuition"><a class="header" href="#intuition">Intuition</a></h2>
 <ul>
@@ -17117,7 +17441,7 @@ get().m = 1;        // get() → prvalue, .m → xvalue
 <li><strong>glvalue</strong> → has identity</li>
 <li><strong>rvalue</strong> → temporary or movable</li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="visual-relationships"><a class="header" href="#visual-relationships">Visual Relationships</a></h2>
 <pre><code>Properties Matrix:
@@ -17144,10 +17468,10 @@ rvalue  = { xvalue, prvalue } ← Things you can move from
 </ol>
 </li>
 </ul>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-auto-keyword"><a class="header" href="#c11-auto-keyword">C++11 auto Keyword</a></h1>
-<h2 id="table-of-contents-23"><a class="header" href="#table-of-contents-23">Table of Contents</a></h2>
+<h2 id="table-of-contents-24"><a class="header" href="#table-of-contents-24">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-what-is-the-auto-keyword">What is the Auto Keyword?</a></li>
 <li><a href="#2-type-deduction-rules-for-auto">Type Deduction Rules for Auto</a></li>
@@ -17198,7 +17522,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-type-deduction-rules-for-auto"><a class="header" href="#2-type-deduction-rules-for-auto">2. Type Deduction Rules for Auto</a></h2>
 <p>The type deduction for <code>auto</code> follows rules similar to template argument deduction. Understanding these rules is crucial for using <code>auto</code> correctly.</p>
@@ -17288,7 +17612,7 @@ void demonstrateDeduction() {
     auto&amp;&amp; u2 = 42;      // int&amp;&amp; (universal reference to rvalue)
 }
 </code></pre>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-benefits-of-using-auto"><a class="header" href="#3-benefits-of-using-auto">3. Benefits of Using Auto</a></h2>
 <h3 id="reduces-code-verbosity"><a class="header" href="#reduces-code-verbosity">Reduces Code Verbosity</a></h3>
@@ -17322,7 +17646,7 @@ void multiply(T1 a, T2 b) {
     std::cout &lt;&lt; result &lt;&lt; std::endl;
 }
 </code></pre>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-restrictions-where-auto-cannot-be-used"><a class="header" href="#4-restrictions-where-auto-cannot-be-used">4. Restrictions: Where Auto Cannot Be Used</a></h2>
 <h3 id="restriction-1-function-parameters-until-c20"><a class="header" href="#restriction-1-function-parameters-until-c20">Restriction 1: Function Parameters (until C++20)</a></h3>
@@ -17381,7 +17705,7 @@ std::vector&lt;int&gt; vec;   // OK
     virtual int getValue() { return 42; }   // OK
 };
 </code></pre>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-common-compilation-errors-with-auto"><a class="header" href="#5-common-compilation-errors-with-auto">5. Common Compilation Errors with Auto</a></h2>
 <h3 id="error-1-using-auto-without-initialization"><a class="header" href="#error-1-using-auto-without-initialization">Error 1: Using Auto Without Initialization</a></h3>
@@ -17457,7 +17781,7 @@ auto str = std::string("Hello");
 using namespace std::string_literals;
 auto str = "Hello"s;
 </code></pre>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="best-practices-summary-1"><a class="header" href="#best-practices-summary-1">Best Practices Summary</a></h2>
 <ol>
@@ -17469,11 +17793,11 @@ auto str = "Hello"s;
 <li><strong>Always initialize</strong> <code>auto</code> variables at declaration</li>
 <li><strong>Use trailing return types</strong> in C++11 for complex return type deduction</li>
 </ol>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 
                     </main>
 
