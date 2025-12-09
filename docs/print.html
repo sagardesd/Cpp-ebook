@@ -17681,7 +17681,8 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><strong>Output:</strong> <code>5040</code></p>
+<p><img src="images/TMP_factor.png" alt="TMP Factorial">
+<strong>Output:</strong> <code>5040</code></p>
 <p><strong>What happens:</strong> The compiler calculates 7! = 5040 during compilation. The value <code>5040</code> is directly embedded in the executable. Zero runtime computation!</p>
 <p><strong>Key Components:</strong></p>
 <ol>
@@ -17717,7 +17718,9 @@ int main() {
                     = 7 * (6 * (5 * (4 * (3 * (2 * (1 * 1))))))  ← Base case hit!
                     = 5040
 </code></pre>
-<p><strong>Important:</strong> This entire calculation happens during compilation, not when the program runs!</p>
+<p><img src="images/tmp_instant.png" alt="Flow">
+<strong>Important:</strong> This entire calculation happens during compilation, not when the program runs!
+<img src="images/TMP_assembly.png" alt="Assembly"></p>
 <hr>
 <h3 id="verification-compile-time-vs-runtime"><a class="header" href="#verification-compile-time-vs-runtime">Verification: Compile-Time vs Runtime</a></h3>
 <p>You can verify that the computation happens at compile time by looking at the assembly code:</p>
