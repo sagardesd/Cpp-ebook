@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Templates</title>
+        <title>Override keyword (&gt;&#x3D; C++11)</title>
 
 
         <!-- Custom HTML head -->
@@ -175,20 +175,294 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h2 id="what-are-templates"><a class="header" href="#what-are-templates">What Are Templates?</a></h2>
-<p><strong>Templates are C++’s way of writing generic code that can work on any data type (built-in and user-defined).</strong></p>
-<p>In essence, templates automate code generation. You write the function logic once, and the compiler generates the necessary versions for each data type you use.</p>
-<p>Eventhough template itself needs a separate book to understand each and every aspect of it, here we will cover all the basic things about template.</p>
+                        <h1 id="c11-override-keyword"><a class="header" href="#c11-override-keyword">C++11 Override Keyword</a></h1>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#what-is-the-override-keyword">What is the Override Keyword?</a></li>
+<li><a href="#the-problem-without-override">The Problem Without Override</a>
+<ul>
+<li><a href="#example-1-typo-in-function-name">Example 1: Typo in Function Name</a></li>
+<li><a href="#example-2-wrong-parameter-types">Example 2: Wrong Parameter Types</a></li>
+<li><a href="#example-3-missing-const-qualifier">Example 3: Missing const Qualifier</a></li>
+</ul>
+</li>
+<li><a href="#the-solution-using-override-keyword">The Solution: Using Override Keyword</a>
+<ul>
+<li><a href="#correct-usage">Correct Usage</a></li>
+<li><a href="#catching-errors-at-compile-time">Catching Errors at Compile Time</a></li>
+</ul>
+</li>
+<li><a href="#benefits-of-override-keyword">Benefits of Override Keyword</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+</ol>
+<hr>
+<h2 id="what-is-the-override-keyword"><a class="header" href="#what-is-the-override-keyword">What is the Override Keyword?</a></h2>
+<p>The <strong>override</strong> keyword is a C++11 feature that explicitly indicates that a member function in a derived class is intended to override a virtual function from the base class. It provides compile-time checking to ensure the override is valid.</p>
+<p>The <code>override</code> keyword is placed after the function signature in a derived class to explicitly declare that the function overrides a virtual function from the base class.</p>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void functionName() {
+        // base implementation
+    }
+};
+
+class Derived : public Base {
+public:
+    void functionName() override {  // Explicitly marks as override
+        // derived implementation
+    }
+};
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="the-problem-without-override"><a class="header" href="#the-problem-without-override">The Problem Without Override</a></h2>
+<p>Without the <code>override</code> keyword, subtle mistakes in function signatures can lead to bugs that are difficult to detect. The compiler won’t warn you if you accidentally create a new function instead of overriding the base class function.</p>
+<h3 id="example-1-typo-in-function-name"><a class="header" href="#example-1-typo-in-function-name">Example 1: Typo in Function Name</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Shape {
+public:
+    virtual void draw() {
+        std::cout &lt;&lt; "Drawing a shape" &lt;&lt; std::endl;
+    }
+    
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+public:
+    void darw() {  // Typo: 'darw' instead of 'draw'
+        std::cout &lt;&lt; "Drawing a circle" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Shape* shape = new Circle();
+    shape-&gt;draw();  // Calls Shape::draw(), not Circle::darw()
+    delete shape;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Drawing a shape
+</code></pre>
+<p><strong>Problem:</strong> The typo <code>darw()</code> creates a new function instead of overriding <code>draw()</code>. The compiler doesn’t warn you, and the base class function is called instead of the derived class function.</p>
+<hr>
+<h3 id="example-2-wrong-parameter-types"><a class="header" href="#example-2-wrong-parameter-types">Example 2: Wrong Parameter Types</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Animal {
+public:
+    virtual void makeSound(int volume) {
+        std::cout &lt;&lt; "Animal sound at volume " &lt;&lt; volume &lt;&lt; std::endl;
+    }
+    
+    virtual ~Animal() = default;
+};
+
+class Dog : public Animal {
+public:
+    void makeSound(double volume) {  // Wrong parameter type: double instead of int
+        std::cout &lt;&lt; "Woof at volume " &lt;&lt; volume &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Animal* animal = new Dog();
+    animal-&gt;makeSound(5);  // Calls Animal::makeSound(int), not Dog::makeSound(double)
+    delete animal;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Animal sound at volume 5
+</code></pre>
+<p><strong>Problem:</strong> The parameter type doesn’t match (<code>double</code> vs <code>int</code>), so this creates a new function instead of overriding. The base class function is called.</p>
+<hr>
+<h3 id="example-3-missing-const-qualifier"><a class="header" href="#example-3-missing-const-qualifier">Example 3: Missing const Qualifier</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Vehicle {
+public:
+    virtual void getInfo() const {
+        std::cout &lt;&lt; "Vehicle info" &lt;&lt; std::endl;
+    }
+    
+    virtual ~Vehicle() = default;
+};
+
+class Car : public Vehicle {
+public:
+    void getInfo() {  // Missing 'const' qualifier
+        std::cout &lt;&lt; "Car info" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Vehicle* vehicle = new Car();
+    vehicle-&gt;getInfo();  // Calls Vehicle::getInfo(), not Car::getInfo()
+    delete vehicle;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Vehicle info
+</code></pre>
+<p><strong>Problem:</strong> Missing <code>const</code> qualifier means the signature doesn’t match, creating a new function instead of overriding.</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="the-solution-using-override-keyword"><a class="header" href="#the-solution-using-override-keyword">The Solution: Using Override Keyword</a></h2>
+<h3 id="correct-usage"><a class="header" href="#correct-usage">Correct Usage</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Shape {
+public:
+    virtual void draw() {
+        std::cout &lt;&lt; "Drawing a shape" &lt;&lt; std::endl;
+    }
+    
+    virtual void area() const {
+        std::cout &lt;&lt; "Calculating shape area" &lt;&lt; std::endl;
+    }
+    
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+public:
+    void draw() override {  // Correctly overrides Shape::draw()
+        std::cout &lt;&lt; "Drawing a circle" &lt;&lt; std::endl;
+    }
+    
+    void area() const override {  // Correctly overrides Shape::area()
+        std::cout &lt;&lt; "Calculating circle area" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Shape* shape = new Circle();
+    shape-&gt;draw();   // Calls Circle::draw()
+    shape-&gt;area();   // Calls Circle::area()
+    delete shape;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Drawing a circle
+Calculating circle area
+</code></pre>
+<p><strong>Success:</strong> The derived class functions are correctly called because they properly override the base class functions.</p>
+<hr>
+<h3 id="catching-errors-at-compile-time"><a class="header" href="#catching-errors-at-compile-time">Catching Errors at Compile Time</a></h3>
+<p><strong>Example 1: Typo Caught by Override</strong></p>
+<pre><code class="language-cpp">class Shape {
+public:
+    virtual void draw() {
+        std::cout &lt;&lt; "Drawing a shape" &lt;&lt; std::endl;
+    }
+};
+
+class Circle : public Shape {
+public:
+    void darw() override {  // Compilation Error!
+        std::cout &lt;&lt; "Drawing a circle" &lt;&lt; std::endl;
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Circle::darw()' marked 'override', but does not override
+</code></pre>
+<hr>
+<p><strong>Example 2: Wrong Parameter Type Caught</strong></p>
+<pre><code class="language-cpp">class Animal {
+public:
+    virtual void makeSound(int volume) {
+        std::cout &lt;&lt; "Animal sound" &lt;&lt; std::endl;
+    }
+};
+
+class Dog : public Animal {
+public:
+    void makeSound(double volume) override {  // Compilation Error!
+        std::cout &lt;&lt; "Woof" &lt;&lt; std::endl;
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Dog::makeSound(double)' marked 'override', but does not override
+</code></pre>
+<hr>
+<p><strong>Example 3: Missing const Caught</strong></p>
+<pre><code class="language-cpp">class Vehicle {
+public:
+    virtual void getInfo() const {
+        std::cout &lt;&lt; "Vehicle info" &lt;&lt; std::endl;
+    }
+};
+
+class Car : public Vehicle {
+public:
+    void getInfo() override {  // Compilation Error!
+        std::cout &lt;&lt; "Car info" &lt;&lt; std::endl;
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Car::getInfo()' marked 'override', but does not override
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="benefits-of-override-keyword"><a class="header" href="#benefits-of-override-keyword">Benefits of Override Keyword</a></h2>
+<ol>
+<li><strong>Compile-time Error Detection</strong>: Catches mistakes early when the function signature doesn’t match the base class</li>
+<li><strong>Self-documenting Code</strong>: Makes it clear that a function is intended to override a base class function</li>
+<li><strong>Refactoring Safety</strong>: If the base class function signature changes, the compiler will catch all derived classes that need updating</li>
+<li><strong>Prevents Silent Bugs</strong>: Eliminates bugs caused by accidentally creating new functions instead of overriding</li>
+<li><strong>Better Code Maintenance</strong>: Easier to understand class hierarchies and relationships</li>
+<li><strong>No Runtime Overhead</strong>: It’s a compile-time feature with zero runtime cost</li>
+</ol>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Always use <code>override</code></strong> when you intend to override a virtual function</li>
+<li><strong>Use <code>virtual</code> only in base classes</strong> for the initial declaration</li>
+<li><strong>Don’t use both <code>virtual</code> and <code>override</code></strong> in derived classes (redundant)</li>
+<li><strong>Mark base class destructors as <code>virtual</code></strong> when using inheritance</li>
+<li><strong>Consider using <code>final</code></strong> to prevent further overriding if needed</li>
+</ol>
+<p><strong>Example of Best Practices:</strong></p>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void foo() { }
+    virtual void bar() { }
+    virtual ~Base() = default;  // Virtual destructor
+};
+
+class Derived : public Base {
+public:
+    void foo() override { }      // Good: uses override
+    void bar() override final { } // Good: override and prevent further overriding
+};
+
+class FurtherDerived : public Derived {
+public:
+    void foo() override { }      // Good: overrides Derived::foo()
+    // void bar() override { }   // Error: bar is final in Derived
+};
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="operator_overload.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="cpp11_final_keyword.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="template_function.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="abstract_class.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -198,11 +472,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="operator_overload.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="cpp11_final_keyword.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="template_function.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="abstract_class.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

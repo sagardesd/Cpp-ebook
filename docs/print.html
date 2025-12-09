@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-fca4a8e5.js";
+            window.path_to_searchindex_js = "searchindex-6c5964ac.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-db4c6b30.js"></script>
+        <script src="toc-19e42789.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -11350,8 +11350,287 @@ public:
 </ol>
 <p><a href="#table-of-contents-10">⬆ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="abstract-classes-and-pure-virtual-functions"><a class="header" href="#abstract-classes-and-pure-virtual-functions">Abstract Classes and Pure Virtual Functions</a></h1>
+<h1 id="c11-override-keyword"><a class="header" href="#c11-override-keyword">C++11 Override Keyword</a></h1>
 <h2 id="table-of-contents-11"><a class="header" href="#table-of-contents-11">Table of Contents</a></h2>
+<ol>
+<li><a href="#what-is-the-override-keyword">What is the Override Keyword?</a></li>
+<li><a href="#the-problem-without-override">The Problem Without Override</a>
+<ul>
+<li><a href="#example-1-typo-in-function-name">Example 1: Typo in Function Name</a></li>
+<li><a href="#example-2-wrong-parameter-types">Example 2: Wrong Parameter Types</a></li>
+<li><a href="#example-3-missing-const-qualifier">Example 3: Missing const Qualifier</a></li>
+</ul>
+</li>
+<li><a href="#the-solution-using-override-keyword">The Solution: Using Override Keyword</a>
+<ul>
+<li><a href="#correct-usage-1">Correct Usage</a></li>
+<li><a href="#catching-errors-at-compile-time">Catching Errors at Compile Time</a></li>
+</ul>
+</li>
+<li><a href="#benefits-of-override-keyword">Benefits of Override Keyword</a></li>
+<li><a href="#best-practices-3">Best Practices</a></li>
+</ol>
+<hr>
+<h2 id="what-is-the-override-keyword"><a class="header" href="#what-is-the-override-keyword">What is the Override Keyword?</a></h2>
+<p>The <strong>override</strong> keyword is a C++11 feature that explicitly indicates that a member function in a derived class is intended to override a virtual function from the base class. It provides compile-time checking to ensure the override is valid.</p>
+<p>The <code>override</code> keyword is placed after the function signature in a derived class to explicitly declare that the function overrides a virtual function from the base class.</p>
+<p><strong>Syntax:</strong></p>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void functionName() {
+        // base implementation
+    }
+};
+
+class Derived : public Base {
+public:
+    void functionName() override {  // Explicitly marks as override
+        // derived implementation
+    }
+};
+</code></pre>
+<p><a href="#table-of-contents-11">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="the-problem-without-override"><a class="header" href="#the-problem-without-override">The Problem Without Override</a></h2>
+<p>Without the <code>override</code> keyword, subtle mistakes in function signatures can lead to bugs that are difficult to detect. The compiler won’t warn you if you accidentally create a new function instead of overriding the base class function.</p>
+<h3 id="example-1-typo-in-function-name"><a class="header" href="#example-1-typo-in-function-name">Example 1: Typo in Function Name</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Shape {
+public:
+    virtual void draw() {
+        std::cout &lt;&lt; "Drawing a shape" &lt;&lt; std::endl;
+    }
+    
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+public:
+    void darw() {  // Typo: 'darw' instead of 'draw'
+        std::cout &lt;&lt; "Drawing a circle" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Shape* shape = new Circle();
+    shape-&gt;draw();  // Calls Shape::draw(), not Circle::darw()
+    delete shape;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Drawing a shape
+</code></pre>
+<p><strong>Problem:</strong> The typo <code>darw()</code> creates a new function instead of overriding <code>draw()</code>. The compiler doesn’t warn you, and the base class function is called instead of the derived class function.</p>
+<hr>
+<h3 id="example-2-wrong-parameter-types"><a class="header" href="#example-2-wrong-parameter-types">Example 2: Wrong Parameter Types</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Animal {
+public:
+    virtual void makeSound(int volume) {
+        std::cout &lt;&lt; "Animal sound at volume " &lt;&lt; volume &lt;&lt; std::endl;
+    }
+    
+    virtual ~Animal() = default;
+};
+
+class Dog : public Animal {
+public:
+    void makeSound(double volume) {  // Wrong parameter type: double instead of int
+        std::cout &lt;&lt; "Woof at volume " &lt;&lt; volume &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Animal* animal = new Dog();
+    animal-&gt;makeSound(5);  // Calls Animal::makeSound(int), not Dog::makeSound(double)
+    delete animal;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Animal sound at volume 5
+</code></pre>
+<p><strong>Problem:</strong> The parameter type doesn’t match (<code>double</code> vs <code>int</code>), so this creates a new function instead of overriding. The base class function is called.</p>
+<hr>
+<h3 id="example-3-missing-const-qualifier"><a class="header" href="#example-3-missing-const-qualifier">Example 3: Missing const Qualifier</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Vehicle {
+public:
+    virtual void getInfo() const {
+        std::cout &lt;&lt; "Vehicle info" &lt;&lt; std::endl;
+    }
+    
+    virtual ~Vehicle() = default;
+};
+
+class Car : public Vehicle {
+public:
+    void getInfo() {  // Missing 'const' qualifier
+        std::cout &lt;&lt; "Car info" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Vehicle* vehicle = new Car();
+    vehicle-&gt;getInfo();  // Calls Vehicle::getInfo(), not Car::getInfo()
+    delete vehicle;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Vehicle info
+</code></pre>
+<p><strong>Problem:</strong> Missing <code>const</code> qualifier means the signature doesn’t match, creating a new function instead of overriding.</p>
+<p><a href="#table-of-contents-11">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="the-solution-using-override-keyword"><a class="header" href="#the-solution-using-override-keyword">The Solution: Using Override Keyword</a></h2>
+<h3 id="correct-usage-1"><a class="header" href="#correct-usage-1">Correct Usage</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Shape {
+public:
+    virtual void draw() {
+        std::cout &lt;&lt; "Drawing a shape" &lt;&lt; std::endl;
+    }
+    
+    virtual void area() const {
+        std::cout &lt;&lt; "Calculating shape area" &lt;&lt; std::endl;
+    }
+    
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+public:
+    void draw() override {  // Correctly overrides Shape::draw()
+        std::cout &lt;&lt; "Drawing a circle" &lt;&lt; std::endl;
+    }
+    
+    void area() const override {  // Correctly overrides Shape::area()
+        std::cout &lt;&lt; "Calculating circle area" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    Shape* shape = new Circle();
+    shape-&gt;draw();   // Calls Circle::draw()
+    shape-&gt;area();   // Calls Circle::area()
+    delete shape;
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Drawing a circle
+Calculating circle area
+</code></pre>
+<p><strong>Success:</strong> The derived class functions are correctly called because they properly override the base class functions.</p>
+<hr>
+<h3 id="catching-errors-at-compile-time"><a class="header" href="#catching-errors-at-compile-time">Catching Errors at Compile Time</a></h3>
+<p><strong>Example 1: Typo Caught by Override</strong></p>
+<pre><code class="language-cpp">class Shape {
+public:
+    virtual void draw() {
+        std::cout &lt;&lt; "Drawing a shape" &lt;&lt; std::endl;
+    }
+};
+
+class Circle : public Shape {
+public:
+    void darw() override {  // Compilation Error!
+        std::cout &lt;&lt; "Drawing a circle" &lt;&lt; std::endl;
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Circle::darw()' marked 'override', but does not override
+</code></pre>
+<hr>
+<p><strong>Example 2: Wrong Parameter Type Caught</strong></p>
+<pre><code class="language-cpp">class Animal {
+public:
+    virtual void makeSound(int volume) {
+        std::cout &lt;&lt; "Animal sound" &lt;&lt; std::endl;
+    }
+};
+
+class Dog : public Animal {
+public:
+    void makeSound(double volume) override {  // Compilation Error!
+        std::cout &lt;&lt; "Woof" &lt;&lt; std::endl;
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Dog::makeSound(double)' marked 'override', but does not override
+</code></pre>
+<hr>
+<p><strong>Example 3: Missing const Caught</strong></p>
+<pre><code class="language-cpp">class Vehicle {
+public:
+    virtual void getInfo() const {
+        std::cout &lt;&lt; "Vehicle info" &lt;&lt; std::endl;
+    }
+};
+
+class Car : public Vehicle {
+public:
+    void getInfo() override {  // Compilation Error!
+        std::cout &lt;&lt; "Car info" &lt;&lt; std::endl;
+    }
+};
+</code></pre>
+<p><strong>Compiler Error:</strong></p>
+<pre><code>error: 'void Car::getInfo()' marked 'override', but does not override
+</code></pre>
+<p><a href="#table-of-contents-11">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="benefits-of-override-keyword"><a class="header" href="#benefits-of-override-keyword">Benefits of Override Keyword</a></h2>
+<ol>
+<li><strong>Compile-time Error Detection</strong>: Catches mistakes early when the function signature doesn’t match the base class</li>
+<li><strong>Self-documenting Code</strong>: Makes it clear that a function is intended to override a base class function</li>
+<li><strong>Refactoring Safety</strong>: If the base class function signature changes, the compiler will catch all derived classes that need updating</li>
+<li><strong>Prevents Silent Bugs</strong>: Eliminates bugs caused by accidentally creating new functions instead of overriding</li>
+<li><strong>Better Code Maintenance</strong>: Easier to understand class hierarchies and relationships</li>
+<li><strong>No Runtime Overhead</strong>: It’s a compile-time feature with zero runtime cost</li>
+</ol>
+<p><a href="#table-of-contents-11">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="best-practices-3"><a class="header" href="#best-practices-3">Best Practices</a></h2>
+<ol>
+<li><strong>Always use <code>override</code></strong> when you intend to override a virtual function</li>
+<li><strong>Use <code>virtual</code> only in base classes</strong> for the initial declaration</li>
+<li><strong>Don’t use both <code>virtual</code> and <code>override</code></strong> in derived classes (redundant)</li>
+<li><strong>Mark base class destructors as <code>virtual</code></strong> when using inheritance</li>
+<li><strong>Consider using <code>final</code></strong> to prevent further overriding if needed</li>
+</ol>
+<p><strong>Example of Best Practices:</strong></p>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void foo() { }
+    virtual void bar() { }
+    virtual ~Base() = default;  // Virtual destructor
+};
+
+class Derived : public Base {
+public:
+    void foo() override { }      // Good: uses override
+    void bar() override final { } // Good: override and prevent further overriding
+};
+
+class FurtherDerived : public Derived {
+public:
+    void foo() override { }      // Good: overrides Derived::foo()
+    // void bar() override { }   // Error: bar is final in Derived
+};
+</code></pre>
+<p><a href="#table-of-contents-11">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="abstract-classes-and-pure-virtual-functions"><a class="header" href="#abstract-classes-and-pure-virtual-functions">Abstract Classes and Pure Virtual Functions</a></h1>
+<h2 id="table-of-contents-12"><a class="header" href="#table-of-contents-12">Table of Contents</a></h2>
 <ul>
 <li><a href="#what-is-an-abstract-class">What is an Abstract Class?</a>
 <ul>
@@ -11491,7 +11770,7 @@ Drawing a blue circle
 Area: 24
 Drawing a green rectangle
 </code></pre>
-<p><a href="#table-of-contents-11">⬆ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-12">⬆ Back to Table of Contents</a></p>
 <hr>
 <h2 id="benefits-and-use-cases"><a class="header" href="#benefits-and-use-cases">Benefits and Use Cases</a></h2>
 <h3 id="1-enforcing-a-contract-interface"><a class="header" href="#1-enforcing-a-contract-interface">1. Enforcing a Contract (Interface)</a></h3>
@@ -11714,7 +11993,7 @@ void checkout(PaymentProcessor* processor, double amount) {
 }
 </code></pre>
 <p>The client code using <code>checkout()</code> doesn’t need to know whether it’s processing a credit card or PayPal payment - it just knows it can process payments. This is abstraction in action.</p>
-<p><a href="#table-of-contents-11">⬆ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-12">⬆ Back to Table of Contents</a></p>
 <hr>
 <h2 id="special-notes-non-pure-virtual-functions-in-abstract-classes"><a class="header" href="#special-notes-non-pure-virtual-functions-in-abstract-classes">Special Notes: Non-Pure Virtual Functions in Abstract Classes</a></h2>
 <p>An abstract class can have a mix of pure virtual functions and regular (non-pure) virtual or non-virtual functions. This is useful for providing default behavior while still enforcing implementation of critical methods.</p>
@@ -11900,10 +12179,10 @@ public:
 <li>Mixing pure and non-pure virtual functions provides flexibility: enforce critical implementations while sharing common code</li>
 </ol>
 <p>Abstract classes are powerful tools for designing extensible, maintainable systems where you want to define clear interfaces while allowing flexibility in implementation.</p>
-<p><a href="#table-of-contents-11">⬆ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-12">⬆ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="friend-functions-and-friend-classes-in-c"><a class="header" href="#friend-functions-and-friend-classes-in-c">Friend Functions and Friend Classes in C++</a></h1>
-<h2 id="table-of-contents-12"><a class="header" href="#table-of-contents-12">Table of Contents</a></h2>
+<h2 id="table-of-contents-13"><a class="header" href="#table-of-contents-13">Table of Contents</a></h2>
 <ol>
 <li><a href="#what-is-a-friend-function">What is a Friend Function</a>
 <ul>
@@ -12005,7 +12284,7 @@ int main() {
 <li>They don’t have a <code>this</code> pointer</li>
 <li>They are found via argument-dependent lookup (ADL) when called</li>
 </ul>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="what-is-a-friend-class"><a class="header" href="#what-is-a-friend-class">What is a Friend Class</a></h2>
 <p>A friend class is a class whose all member functions have access to the private and protected members of another class. It is declared using the <code>friend</code> keyword.</p>
@@ -12104,7 +12383,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="friend-functions-and-encapsulation"><a class="header" href="#friend-functions-and-encapsulation">Friend Functions and Encapsulation</a></h2>
 <p>While friend functions allow access to private and protected data members, which technically breaks encapsulation, they are still useful in certain scenarios:</p>
@@ -12131,7 +12410,7 @@ int main() {
 <p><strong>Symmetric Operations</strong>: When operations need to treat multiple objects equally (like comparing two objects).</p>
 </li>
 </ol>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="why-friend-functions-cannot-be-const"><a class="header" href="#why-friend-functions-cannot-be-const">Why Friend Functions Cannot Be Const</a></h2>
 <p>A friend function cannot be declared as <code>const</code> because:</p>
@@ -12165,7 +12444,7 @@ void display(const Box&amp; b) {
     // b.width = 10;  // Error: cannot modify const object
 }
 </code></pre>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="friend-functions-and-inheritance"><a class="header" href="#friend-functions-and-inheritance">Friend Functions and Inheritance</a></h2>
 <p>Friend functions are <strong>not inherited</strong> by derived classes. Friendship must be explicitly granted by each class.</p>
@@ -12209,7 +12488,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Key Point</strong>: If you want a friend function to access derived class members, you must explicitly declare it as a friend in the derived class as well.</p>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="accessing-static-private-members"><a class="header" href="#accessing-static-private-members">Accessing Static Private Members</a></h2>
 <p>Friend functions can access static private data members just like instance members.</p>
@@ -12253,7 +12532,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="scope-of-friend-functions"><a class="header" href="#scope-of-friend-functions">Scope of Friend Functions</a></h2>
 <p>The scope of a friend function depends on where it is defined:</p>
@@ -12301,7 +12580,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Important</strong>: Friend functions are called directly by their name (with appropriate namespace qualification if needed), not as member functions through an object.</p>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="useful-cases-for-friend-functions"><a class="header" href="#useful-cases-for-friend-functions">Useful Cases for Friend Functions</a></h2>
 <p>Friend functions are particularly useful in the following scenarios:</p>
@@ -12411,7 +12690,7 @@ int main() {
 <li>Conditional compilation keeps test access separate from production code</li>
 <li>Maintains encapsulation while enabling comprehensive testing</li>
 </ul>
-<p><a href="#table-of-contents-12">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="summary-9"><a class="header" href="#summary-9">Summary</a></h2>
 <p>Friend functions and friend classes provide controlled access to private members when:</p>
@@ -12424,7 +12703,7 @@ int main() {
 <p>Use them judiciously to maintain good object-oriented design principles while solving practical problems that arise in real-world programming.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="operator-overloading"><a class="header" href="#operator-overloading">Operator Overloading</a></h1>
-<h2 id="table-of-contents-13"><a class="header" href="#table-of-contents-13">Table of Contents</a></h2>
+<h2 id="table-of-contents-14"><a class="header" href="#table-of-contents-14">Table of Contents</a></h2>
 <ul>
 <li><a href="#what-is-operator-overloading">What is Operator Overloading?</a></li>
 <li><a href="#overloadable-vs-non-overloadable-operators">Overloadable vs Non-Overloadable Operators</a></li>
@@ -12437,7 +12716,7 @@ int main() {
 </li>
 <li><a href="#binary-vs-unary-operators">Binary vs Unary Operators</a></li>
 <li><a href="#more-operator-overloading-examples">More Operator Overloading Examples</a></li>
-<li><a href="#best-practices-3">Best Practices</a></li>
+<li><a href="#best-practices-4">Best Practices</a></li>
 </ul>
 <hr>
 <h2 id="what-is-operator-overloading"><a class="header" href="#what-is-operator-overloading">What is Operator Overloading?</a></h2>
@@ -12474,7 +12753,7 @@ ostream&amp; operator&lt;&lt;(ostream&amp; out, const MyClass&amp; obj);
 <li>Stream: <code>&lt;&lt;</code>, <code>&gt;&gt;</code></li>
 <li>And many more!</li>
 </ul>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="overloadable-vs-non-overloadable-operators"><a class="header" href="#overloadable-vs-non-overloadable-operators">Overloadable vs Non-Overloadable Operators</a></h2>
 <p>Not all operators in C++ can be overloaded. Here’s a comprehensive table:</p>
@@ -12517,7 +12796,7 @@ ostream&amp; operator&lt;&lt;(ostream&amp; out, const MyClass&amp; obj);
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="why-use-operator-overloading"><a class="header" href="#why-use-operator-overloading">Why Use Operator Overloading?</a></h2>
 <p>Let’s say we have a simple <code>Number</code> class that wraps an integer value. Without operator overloading, adding two numbers looks awkward:</p>
@@ -12569,7 +12848,7 @@ cout &lt;&lt; c.getValue() &lt;&lt; endl;  // Output: 8
 <li>Makes custom classes behave like built-in types</li>
 <li>Follows the principle of least surprise for users of your class</li>
 </ul>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="ways-to-overload-operators"><a class="header" href="#ways-to-overload-operators">Ways to Overload Operators</a></h2>
 <p>There are two primary ways to overload operators in C++:</p>
@@ -12639,7 +12918,7 @@ Time result = morning + duration;  // Calls morning.operator+(duration)
 <li>Left-hand side must be an instance of your class</li>
 <li>Cannot overload operators where your class is on the right-hand side with a built-in type on the left</li>
 </ul>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
 <h3 id="non-member-function-overloading"><a class="header" href="#non-member-function-overloading">Non-Member Function Overloading</a></h3>
 <p>When you overload an operator as a non-member function, it’s declared outside the class. Both the left-hand side and right-hand side are passed as parameters.</p>
@@ -12727,7 +13006,7 @@ cout &lt;&lt; "The time is " &lt;&lt; myTime &lt;&lt; " right now" &lt;&lt; endl
 <li>Needs <code>friend</code> declaration to access private members</li>
 <li>Or must use public getters if not declared as friend</li>
 </ul>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="binary-vs-unary-operators"><a class="header" href="#binary-vs-unary-operators">Binary vs Unary Operators</a></h2>
 <p>Understanding the difference between binary and unary operators is crucial for proper operator overloading.</p>
@@ -12836,7 +13115,7 @@ c++;  // c.operator++(0)   → returns 6, c becomes 7
 <li><strong>Postfix (<code>c++</code>)</strong>: Returns copy of original value, then increments</li>
 <li>The dummy <code>int</code> parameter distinguishes postfix from prefix</li>
 </ul>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="more-operator-overloading-examples"><a class="header" href="#more-operator-overloading-examples">More Operator Overloading Examples</a></h2>
 <p>Let’s explore various operators and how to overload them in real-world scenarios.</p>
@@ -12950,9 +13229,9 @@ if (a || b) {
     cout &lt;&lt; "At least one is true" &lt;&lt; endl;
 }
 </code></pre>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-3"><a class="header" href="#best-practices-3">Best Practices</a></h2>
+<h2 id="best-practices-4"><a class="header" href="#best-practices-4">Best Practices</a></h2>
 <h3 id="1-make-operators-obvious"><a class="header" href="#1-make-operators-obvious">1. Make Operators Obvious</a></h3>
 <p>The operation should be intuitive when reading the code. If someone sees <code>a + b</code>, they should have a good idea what it means.</p>
 <h3 id="2-stay-consistent-with-built-in-types"><a class="header" href="#2-stay-consistent-with-built-in-types">2. Stay Consistent with Built-in Types</a></h3>
@@ -12991,7 +13270,7 @@ MyString c = a.charsInCommon(b);  // Much better!
 <li>Arithmetic operators (<code>+</code>, <code>-</code>, etc.) should return a new object</li>
 <li>Assignment operators (<code>=</code>, <code>+=</code>, etc.) should return a reference to <code>*this</code></li>
 </ul>
-<p><a href="#table-of-contents-13">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="templates"><a href="#templates" class="header">Templates</a></h1>
 <h2 id="what-are-templates"><a class="header" href="#what-are-templates">What Are Templates?</a></h2>
@@ -13000,7 +13279,7 @@ MyString c = a.charsInCommon(b);  // Much better!
 <p>Eventhough template itself needs a separate book to understand each and every aspect of it, here we will cover all the basic things about template.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="function-template"><a class="header" href="#function-template">Function Template</a></h1>
-<h2 id="table-of-contents-14"><a class="header" href="#table-of-contents-14">Table of Contents</a></h2>
+<h2 id="table-of-contents-15"><a class="header" href="#table-of-contents-15">Table of Contents</a></h2>
 <ol>
 <li><a href="#visualize-the-problem">Visualize the Problem</a></li>
 <li><a href="#function-templates">Function Templates</a></li>
@@ -13041,7 +13320,7 @@ std::string min(std::string a, std::string b) {
 </code></pre>
 <p><strong>Problem:</strong> The function logic doesn’t change, but we keep duplicating code. What if we need to support more types in the future, including custom classes? We can’t keep adding functions manually.</p>
 <p><strong>This problem can be solved using function templates.</strong></p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="function-templates"><a class="header" href="#function-templates">Function Templates</a></h2>
 <p>Templates let us write the function once and let the compiler generate the necessary versions automatically:</p>
@@ -13057,7 +13336,7 @@ return-type functionName(T parameter1, T parameter2, ...) {
 }
 </code></pre>
 <p><strong>Note:</strong> <code>typename</code> and <code>class</code> are interchangeable in template declarations. Using <code>typename</code> is generally preferred and will make more sense when exploring advanced C++20 features.</p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="how-function-templates-work"><a class="header" href="#how-function-templates-work">How Function Templates Work</a></h2>
 <p>When you call a template function, the compiler generates the specific version of the code for the type you’re using:</p>
@@ -13075,7 +13354,7 @@ double min(double a, double b) {
 }
 </code></pre>
 <p>This happens at <strong>compile-time</strong>, so there’s no runtime overhead.</p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="how-to-call-template-functions"><a class="header" href="#how-to-call-template-functions">How to Call Template Functions</a></h2>
 <h3 id="option-1-implicit-instantiation"><a class="header" href="#option-1-implicit-instantiation">Option 1: Implicit Instantiation</a></h3>
@@ -13103,7 +13382,7 @@ min("Thomas", "Rachel");  // Dangerous!
 <pre><code class="language-cpp">min(106, 3.14);  // int and double - doesn't compile!
 </code></pre>
 <p>Since the parameters are different types (<code>int</code> and <code>double</code>), the compiler cannot deduce a single type <code>T</code>. Implicit instantiation fails.</p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <hr>
 <h3 id="option-2-explicit-instantiation"><a class="header" href="#option-2-explicit-instantiation">Option 2: Explicit Instantiation</a></h3>
 <p>Explicitly specify the type to avoid ambiguity:</p>
@@ -13125,7 +13404,7 @@ min&lt;std::string&gt;("Thomas", "Rachel");  // ✅ Correct!
 min&lt;int&gt;(106, 3.14);     // ✅ Converts 3.14 to int, returns 3
 </code></pre>
 <p>The compiler will perform necessary type conversions based on your explicit type specification.</p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="templates-vs-functions"><a class="header" href="#templates-vs-functions">Templates vs Functions</a></h2>
 <p>It’s important to understand the distinction:</p>
@@ -13141,7 +13420,7 @@ min&lt;int&gt;(106, 3.14);     // ✅ Converts 3.14 to int, returns 3
 </table>
 </div>
 <p><strong>Key Point:</strong> When you write a template, you’re creating a pattern. When the compiler instantiates it with a specific type (like <code>min&lt;int&gt;</code>), that’s when an actual function is generated.</p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="key-takeaways-and-summary"><a class="header" href="#key-takeaways-and-summary">Key Takeaways and Summary</a></h2>
 <h3 id="key-takeaways-4"><a class="header" href="#key-takeaways-4">Key Takeaways</a></h3>
@@ -13161,10 +13440,10 @@ min&lt;int&gt;(106, 3.14);     // ✅ Converts 3.14 to int, returns 3
 <li><strong>Maintain type safety without code duplication</strong> - No manual overloading needed</li>
 </ol>
 <p><strong>Think of it as:</strong> You provide the blueprint (template), the compiler builds the specific versions you need!</p>
-<p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="class-templates"><a class="header" href="#class-templates">Class Templates</a></h1>
-<h2 id="table-of-contents-15"><a class="header" href="#table-of-contents-15">Table of Contents</a></h2>
+<h2 id="table-of-contents-16"><a class="header" href="#table-of-contents-16">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-what-is-a-class-template">What is a Class Template?</a></li>
 <li><a href="#2-syntax-for-class-templates">Syntax for Class Templates</a></li>
@@ -13201,7 +13480,7 @@ class Box {
     T value;  // Works with ANY type!
 };
 </code></pre>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-syntax-for-class-templates"><a class="header" href="#2-syntax-for-class-templates">2. Syntax for Class Templates</a></h2>
 <h3 id="basic-syntax-4"><a class="header" href="#basic-syntax-4">Basic Syntax</a></h3>
@@ -13247,7 +13526,7 @@ class Array {
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-a-simple-class-template-example"><a class="header" href="#3-a-simple-class-template-example">3. A Simple Class Template Example</a></h2>
 <p>Let’s create a <code>Box</code> class that can hold any type of value.</p>
@@ -13303,7 +13582,7 @@ cout &lt;&lt; doubleBox.getValue();  // Output: 3.14
 Box&lt;string&gt; stringBox("Hello");
 cout &lt;&lt; stringBox.getValue();  // Output: Hello
 </code></pre>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-defining-member-functions-outside-the-class"><a class="header" href="#4-defining-member-functions-outside-the-class">4. Defining Member Functions Outside the Class</a></h2>
 <p>For better code organization, you can define member functions outside the class body.</p>
@@ -13418,7 +13697,7 @@ T Box::retrieve() const { }
 template&lt;typename T&gt;
 T Box&lt;T&gt;::retrieve() const { }
 </code></pre>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-instantiating-class-templates"><a class="header" href="#5-instantiating-class-templates">5. Instantiating Class Templates</a></h2>
 <h3 id="basic-instantiation"><a class="header" href="#basic-instantiation">Basic Instantiation</a></h3>
@@ -13523,7 +13802,7 @@ for (int i = 0; i &lt; 3; i++) {
     cout &lt;&lt; "Score " &lt;&lt; i &lt;&lt; ": " &lt;&lt; scores[i].retrieve() &lt;&lt; endl;
 }
 </code></pre>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="6-understanding-template-vs-type"><a class="header" href="#6-understanding-template-vs-type">6. Understanding Template vs Type</a></h2>
 <p>Now that you’ve seen how to create and use class templates, it’s important to understand the distinction between a <strong>template</strong> and a <strong>type</strong>.</p>
@@ -13594,7 +13873,7 @@ Box&lt;double&gt; b2;   // Generates Box code for double
 </code></pre>
 </li>
 </ol>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="summary-11"><a class="header" href="#summary-11">Summary</a></h2>
 <h3 id="what-youve-learned"><a class="header" href="#what-youve-learned">What You’ve Learned</a></h3>
@@ -13631,10 +13910,10 @@ T Container&lt;T&gt;::get() const { return data; }
 Container&lt;int&gt; c1(42);
 Container&lt;string&gt; c2("Hello");
 </code></pre>
-<p><a href="#table-of-contents-15">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="why-c-templates-must-be-in-headers"><a class="header" href="#why-c-templates-must-be-in-headers">Why C++ Templates Must Be in Headers</a></h1>
-<h2 id="table-of-contents-16"><a class="header" href="#table-of-contents-16">Table of Contents</a></h2>
+<h2 id="table-of-contents-17"><a class="header" href="#table-of-contents-17">Table of Contents</a></h2>
 <ol>
 <li><a href="#the-problem">The Problem</a></li>
 <li><a href="#understanding-two-phase-translation">Understanding Two-Phase Translation</a></li>
@@ -13642,7 +13921,7 @@ Container&lt;string&gt; c2("Hello");
 <li><a href="#the-solution">The Solution</a></li>
 <li><a href="#alternative-solutions">Alternative Solutions</a></li>
 <li><a href="#common-errors-and-how-to-fix-them">Common Errors and How to Fix Them</a></li>
-<li><a href="#best-practices-4">Best Practices</a></li>
+<li><a href="#best-practices-5">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
@@ -13679,7 +13958,7 @@ main.cpp:(.text+0x28): undefined reference to `vector&lt;int&gt;::at(int)'
 collect2: error: ld returned 1 exit status
 </code></pre>
 <p><strong>Why does this happen?</strong> The answer lies in how C++ compiles templates.</p>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="understanding-two-phase-translation"><a class="header" href="#understanding-two-phase-translation">Understanding Two-Phase Translation</a></h2>
 <p>C++ templates use a <strong>two-phase translation model</strong>. Understanding this is crucial to understanding why templates must be in headers.</p>
@@ -13760,7 +14039,7 @@ a.at(5);
          ▼
     ❌ ERROR!
 </code></pre>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="why-the-linker-error-occurs"><a class="header" href="#why-the-linker-error-occurs">Why the Linker Error Occurs</a></h2>
 <p>Let’s trace exactly what happens during compilation:</p>
@@ -13875,7 +14154,7 @@ T&amp; vector&lt;T&gt;::at(int i) {  // ← This is INVISIBLE
 <li>The compiler cannot “look ahead” to see what’s in other files</li>
 <li>When compiling <code>main.cpp</code>, the compiler has <strong>no idea</strong> that <code>vector.cpp</code> exists</li>
 </ul>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="the-solution"><a class="header" href="#the-solution">The Solution</a></h2>
 <p>The solution is simple: <strong>Put the template definition in the header file.</strong></p>
@@ -13944,7 +14223,7 @@ int main() {
 <p><strong>Template definitions must be visible at the point of instantiation.</strong></p>
 </blockquote>
 <p>Since instantiation happens wherever the template is <strong>used</strong> (not where it’s <strong>defined</strong>), the definition must be in a header file that can be included everywhere.</p>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="alternative-solutions"><a class="header" href="#alternative-solutions">Alternative Solutions</a></h2>
 <p>While putting definitions in headers is the standard approach, there are alternatives:</p>
@@ -14020,7 +14299,7 @@ T&amp; vector&lt;T&gt;::at(int i) {
 <li>More files to manage</li>
 <li>Not commonly used in practice</li>
 </ul>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="common-errors-and-how-to-fix-them"><a class="header" href="#common-errors-and-how-to-fix-them">Common Errors and How to Fix Them</a></h2>
 <h3 id="error-1-undefined-reference-most-common"><a class="header" href="#error-1-undefined-reference-most-common">Error 1: Undefined Reference (Most Common)</a></h3>
@@ -14080,9 +14359,9 @@ class A {
     B&lt;T&gt;* b;  // Pointer instead of value
 };
 </code></pre>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-4"><a class="header" href="#best-practices-4">Best Practices</a></h2>
+<h2 id="best-practices-5"><a class="header" href="#best-practices-5">Best Practices</a></h2>
 <h3 id="-do"><a class="header" href="#-do">✅ DO</a></h3>
 <ol>
 <li>
@@ -14148,10 +14427,10 @@ Is compilation time a major concern?
 <p><strong>Template code must be visible where it’s instantiated, not where it’s defined.</strong></p>
 </blockquote>
 <p>Since instantiation happens at the <strong>point of use</strong>, and <code>.cpp</code> files are compiled separately, template definitions must be in <strong>headers</strong> that can be included wherever needed.</p>
-<p><a href="#table-of-contents-16">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c-class-template-specialization"><a class="header" href="#c-class-template-specialization">C++ Class Template Specialization</a></h1>
-<h2 id="table-of-contents-17"><a class="header" href="#table-of-contents-17">Table of Contents</a></h2>
+<h2 id="table-of-contents-18"><a class="header" href="#table-of-contents-18">Table of Contents</a></h2>
 <ol>
 <li><a href="#what-is-class-template-specialization">What is Class Template Specialization?</a></li>
 <li><a href="#full-template-specialization">Full Template Specialization</a></li>
@@ -14171,7 +14450,7 @@ Is compilation time a major concern?
 <li><strong>Full (Explicit) Specialization</strong>: Specialize for all template parameters</li>
 <li><strong>Partial Specialization</strong>: Specialize for some template parameters or patterns</li>
 </ul>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="full-template-specialization"><a class="header" href="#full-template-specialization">Full Template Specialization</a></h2>
 <h3 id="what-is-full-template-specialization"><a class="header" href="#what-is-full-template-specialization">What is Full Template Specialization?</a></h3>
@@ -14209,7 +14488,7 @@ private:
 <li>Can have a completely different implementation from the primary template</li>
 </ul>
 <p><strong>Important Note:</strong> Because full specialization creates a regular (non-template) class, it behaves like any other regular class definition. This has implications for the One Definition Rule, which we’ll explore next.</p>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="partial-template-specialization"><a class="header" href="#partial-template-specialization">Partial Template Specialization</a></h2>
 <h3 id="what-is-partial-template-specialization"><a class="header" href="#what-is-partial-template-specialization">What is Partial Template Specialization?</a></h3>
@@ -14292,7 +14571,7 @@ class Container&lt;const T, U, N&gt; { };
 <li>Gets instantiated by the compiler like any template</li>
 </ul>
 <p><strong>Important Note:</strong> Because partial specialization is still a template, it behaves like regular templates and doesn’t have the same ODR concerns as full specialization.</p>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="understanding-odr-one-definition-rule"><a class="header" href="#understanding-odr-one-definition-rule">Understanding ODR (One Definition Rule)</a></h2>
 <p>Now that we’ve seen what full and partial template specializations are, let’s understand the <strong>One Definition Rule (ODR)</strong>. This rule is the foundation for why full specializations require special handling with <code>inline</code> while partial specializations don’t.</p>
@@ -14477,7 +14756,7 @@ void Storage&lt;bool&gt;::store(bool value) {
 }
 </code></pre>
 <p><strong>No ODR violation:</strong> Only one translation unit has the definition.</p>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="inline-requirements-summary"><a class="header" href="#inline-requirements-summary">Inline Requirements Summary</a></h2>
 <p>Now that we understand ODR and how it applies to template specializations, here’s a quick reference for when <code>inline</code> is required:</p>
@@ -14520,7 +14799,7 @@ void Storage&lt;bool&gt;::store(bool value) {
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="specializing-a-single-member-function"><a class="header" href="#specializing-a-single-member-function">Specializing a Single Member Function</a></h2>
 <p>You can specialize individual member functions without specializing the entire class. However, <strong>you must fully specialize the class first</strong>, then specialize the member.</p>
@@ -14552,7 +14831,7 @@ std::string Calculator&lt;std::string&gt;::add(std::string a, std::string b) {
 // multiply() still uses the generic implementation
 </code></pre>
 <p><strong>Important:</strong> You cannot partially specialize individual member functions. You can only fully specialize them for a specific type.</p>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
 <h3 id="example-1-full-specialization-in-header-methods-outside"><a class="header" href="#example-1-full-specialization-in-header-methods-outside">Example 1: Full Specialization in Header (Methods Outside)</a></h3>
@@ -14677,7 +14956,7 @@ inline const char* Config&lt;const char*&gt;::getDefault() const {
     return defaultValue.c_str();
 }
 </code></pre>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="common-mistakes-to-avoid"><a class="header" href="#common-mistakes-to-avoid">Common Mistakes to Avoid</a></h2>
 <pre><code class="language-cpp">// ❌ WRONG: Partial specialization in CPP file
@@ -14704,7 +14983,7 @@ inline void MyClass&lt;int&gt;::method() { } // OK
 template &lt;typename T&gt;
 void MyClass&lt;T*&gt;::method() { } // OK - still a template
 </code></pre>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="key-takeaways-5"><a class="header" href="#key-takeaways-5">Key Takeaways</a></h2>
 <ol>
@@ -14721,10 +15000,10 @@ void MyClass&lt;T*&gt;::method() { } // OK - still a template
 <li><strong>Member function specialization</strong>: Only full specialization possible, must specialize entire class type first</li>
 <li><strong>ODR is the reason</strong>: Full specializations create regular code that must follow ODR, while templates are ODR-exempt</li>
 </ol>
-<p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c-function-template-specialization"><a class="header" href="#c-function-template-specialization">C++ Function Template Specialization</a></h1>
-<h2 id="table-of-contents-18"><a class="header" href="#table-of-contents-18">Table of Contents</a></h2>
+<h2 id="table-of-contents-19"><a class="header" href="#table-of-contents-19">Table of Contents</a></h2>
 <ol>
 <li><a href="#what-is-function-template-specialization">What is Function Template Specialization?</a></li>
 <li><a href="#full-function-template-specialization">Full Function Template Specialization</a></li>
@@ -14744,7 +15023,7 @@ void MyClass&lt;T*&gt;::method() { } // OK - still a template
 <li><strong>Full specialization</strong>: Supported for function templates</li>
 <li><strong>Partial specialization</strong>: <strong>NOT supported</strong> for function templates (use overloading instead)</li>
 </ul>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="full-function-template-specialization"><a class="header" href="#full-function-template-specialization">Full Function Template Specialization</a></h2>
 <h3 id="what-is-full-function-template-specialization"><a class="header" href="#what-is-full-function-template-specialization">What is Full Function Template Specialization?</a></h3>
@@ -14803,7 +15082,7 @@ const char* max(const char* a, const char* b) {
 <li>Must match the primary template’s signature exactly (except for type substitution)</li>
 </ul>
 <p><strong>Important Note:</strong> Because full specialization creates a regular function, it behaves like any other regular function definition and is subject to ODR rules.</p>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="partial-function-template-specialization"><a class="header" href="#partial-function-template-specialization">Partial Function Template Specialization</a></h2>
 <h3 id="why-partial-specialization-is-not-supported"><a class="header" href="#why-partial-specialization-is-not-supported">Why Partial Specialization is NOT Supported</a></h3>
@@ -14874,7 +15153,7 @@ void processArray(T (&amp;arr)[N]) {
     std::cout &lt;&lt; "Array of size " &lt;&lt; N &lt;&lt; "\n";
 }
 </code></pre>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="understanding-odr-one-definition-rule-1"><a class="header" href="#understanding-odr-one-definition-rule-1">Understanding ODR (One Definition Rule)</a></h2>
 <p>Now that we’ve seen what function template specializations are, let’s understand the <strong>One Definition Rule (ODR)</strong>. This rule is the foundation for why full specializations require <code>inline</code> when defined in headers.</p>
@@ -15052,7 +15331,7 @@ inline void print(bool value) {
 }
 </code></pre>
 <p><strong>Note:</strong> This is not a specialization but an overload, which may have different resolution rules.</p>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="inline-requirements-summary-1"><a class="header" href="#inline-requirements-summary-1">Inline Requirements Summary</a></h2>
 <p>Now that we understand ODR and how it applies to function template specializations, here’s a quick reference for when <code>inline</code> is required:</p>
@@ -15094,7 +15373,7 @@ inline void print(bool value) {
 </table>
 </div>
 <p><strong>Key Difference from Class Templates:</strong> Function template specializations are always defined in one place (not split between declaration and definition), so the inline requirement is simpler.</p>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="function-template-overloading-vs-specialization"><a class="header" href="#function-template-overloading-vs-specialization">Function Template Overloading vs Specialization</a></h2>
 <p>Understanding when to use overloading versus specialization is crucial for function templates.</p>
@@ -15165,7 +15444,7 @@ inline void process(int* value) {
 <li>You want more predictable behavior</li>
 <li>You need “partial specialization” behavior (not supported for functions)</li>
 </ul>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="practical-examples-1"><a class="header" href="#practical-examples-1">Practical Examples</a></h2>
 <h3 id="example-1-string-handling-specialization"><a class="header" href="#example-1-string-handling-specialization">Example 1: String Handling Specialization</a></h3>
@@ -15292,7 +15571,7 @@ int square&lt;int&gt;(int value) {
 template double square&lt;double&gt;(double);
 template float square&lt;float&gt;(float);
 </code></pre>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="common-mistakes-to-avoid-1"><a class="header" href="#common-mistakes-to-avoid-1">Common Mistakes to Avoid</a></h2>
 <h3 id="mistake-1-forgetting-inline-in-header"><a class="header" href="#mistake-1-forgetting-inline-in-header">Mistake 1: Forgetting <code>inline</code> in Header</a></h3>
@@ -15365,7 +15644,7 @@ void func&lt;&gt;(int value) { }  // Ambiguous
 template &lt;&gt;
 void func&lt;int&gt;(int value) { }
 </code></pre>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="key-takeaways-6"><a class="header" href="#key-takeaways-6">Key Takeaways</a></h2>
 <ol>
@@ -15385,10 +15664,10 @@ void func&lt;int&gt;(int value) { }
 <li>Putting specialization in header? → <strong>Must use <code>inline</code></strong></li>
 <li>Want partial specialization behavior? → <strong>Use overloading (or a class template helper)</strong></li>
 </ul>
-<p><a href="#table-of-contents-18">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="the-disambiguation-type-vs-value"><a class="header" href="#the-disambiguation-type-vs-value">The Disambiguation: Type vs. Value</a></h1>
-<h2 id="table-of-contents-19"><a class="header" href="#table-of-contents-19">Table of Contents</a></h2>
+<h2 id="table-of-contents-20"><a class="header" href="#table-of-contents-20">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-introduction-the-dependent-name-problem">Introduction: The Dependent Name Problem</a></li>
 <li><a href="#2-why-is-typename-needed">Why is Typename Needed?</a></li>
@@ -15404,7 +15683,7 @@ void func&lt;int&gt;(int value) { }
 <h2 id="1-introduction-the-dependent-name-problem"><a class="header" href="#1-introduction-the-dependent-name-problem">1. Introduction: The Dependent Name Problem</a></h2>
 <p>When working with templates in C++, the compiler sometimes encounters names that depend on template parameters. These are called <strong>dependent names</strong>. The problem is that the compiler cannot always determine whether a dependent name refers to a type or a value until the template is instantiated.</p>
 <p>The <code>typename</code> keyword is used to explicitly tell the compiler that a dependent name refers to a <strong>type</strong>, not a value or other entity.</p>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-why-is-typename-needed"><a class="header" href="#2-why-is-typename-needed">2. Why is Typename Needed?</a></h2>
 <h3 id="the-ambiguity-problem"><a class="header" href="#the-ambiguity-problem">The Ambiguity Problem</a></h3>
@@ -15538,7 +15817,7 @@ void func() {
 <li><strong>Pointer declaration:</strong> <code>T::x* ptr</code> - declare <code>ptr</code> as pointer to type <code>T::x</code></li>
 </ul>
 <p>The C++ standard chose to default to the <strong>multiplication interpretation</strong> (value), requiring <code>typename</code> to explicitly indicate the <strong>type interpretation</strong>.</p>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-basic-rules-for-using-typename"><a class="header" href="#3-basic-rules-for-using-typename">3. Basic Rules for Using Typename</a></h2>
 <h3 id="rule-1-use-typename-for-dependent-type-names"><a class="header" href="#rule-1-use-typename-for-dependent-type-names">Rule 1: Use typename for Dependent Type Names</a></h3>
@@ -15575,7 +15854,7 @@ class Derived : public T::BaseClass {  // No typename here
     }
 };
 </code></pre>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-common-examples-and-use-cases"><a class="header" href="#4-common-examples-and-use-cases">4. Common Examples and Use Cases</a></h2>
 <h3 id="example-1-stl-container-iterators"><a class="header" href="#example-1-stl-container-iterators">Example 1: STL Container Iterators</a></h3>
@@ -15674,7 +15953,7 @@ int main() {
     std::string str = getFirst(svec);  // Returns std::string
 }
 </code></pre>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-c11-and-later-type-aliases"><a class="header" href="#5-c11-and-later-type-aliases">5. C++11 and Later: Type Aliases</a></h2>
 <p>With C++11’s <code>using</code> for type aliases, you still need <code>typename</code>:</p>
@@ -15693,7 +15972,7 @@ void func() {
     typename MyClass&lt;T&gt;::reference ref = val;
 }
 </code></pre>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="6-common-compilation-errors"><a class="header" href="#6-common-compilation-errors">6. Common Compilation Errors</a></h2>
 <h3 id="error-1-missing-typename"><a class="header" href="#error-1-missing-typename">Error 1: Missing typename</a></h3>
@@ -15733,7 +16012,7 @@ class Derived : public typename T::Base {  // ERROR: no typename in base class l
 class Derived : public T::Base {  // OK
 };
 </code></pre>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="7-practical-real-world-example"><a class="header" href="#7-practical-real-world-example">7. Practical Real-World Example</a></h2>
 <p>Here’s a complete example that shows typical usage:</p>
@@ -15794,7 +16073,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="8-c11-alternative-using-auto"><a class="header" href="#8-c11-alternative-using-auto">8. C++11 Alternative: Using auto</a></h2>
 <p>In C++11 and later, you can often use <code>auto</code> to avoid writing <code>typename</code>:</p>
@@ -15811,7 +16090,7 @@ void func(const Container&amp; c) {
 }
 </code></pre>
 <p>However, <code>auto</code> cannot be used everywhere (like function return types in C++11), so <code>typename</code> is still necessary in many cases. <code>auto</code> will be covered more in a separate chapter.</p>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="9-summary-and-best-practices"><a class="header" href="#9-summary-and-best-practices">9. Summary and Best Practices</a></h2>
 <h3 id="when-to-use-typename"><a class="header" href="#when-to-use-typename">When to Use typename:</a></h3>
@@ -15830,10 +16109,10 @@ void func(const Container&amp; c) {
 </ol>
 <h3 id="key-takeaway"><a class="header" href="#key-takeaway">Key Takeaway:</a></h3>
 <p>The <code>typename</code> keyword disambiguates dependent names in templates, explicitly telling the compiler that a nested name refers to a <strong>type</strong> rather than a value. Without it, the compiler defaults to interpreting dependent names as values, leading to compilation errors. While modern C++ features like <code>auto</code> can reduce the need for <code>typename</code> in some cases, understanding when and why to use it remains essential for template programming.</p>
-<p><a href="#table-of-contents-19">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c-concepts-constraining-templates-c20"><a class="header" href="#c-concepts-constraining-templates-c20">C++ Concepts: Constraining Templates (C++20)</a></h1>
-<h2 id="table-of-contents-20"><a class="header" href="#table-of-contents-20">Table of Contents</a></h2>
+<h2 id="table-of-contents-21"><a class="header" href="#table-of-contents-21">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-the-problem-unclear-template-requirements">The Problem: Unclear Template Requirements</a></li>
 <li><a href="#2-the-solution-c20-concepts">The Solution: C++20 Concepts</a></li>
@@ -15945,7 +16224,7 @@ min&lt;StudentId&gt;(thomas, rachel);  // NOW the error appears!
 </li>
 </ol>
 <p><strong>Big Question:</strong> How do we put constraints on templates so the compiler can check them BEFORE instantiation?</p>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-the-solution-c20-concepts"><a class="header" href="#2-the-solution-c20-concepts">2. The Solution: C++20 Concepts</a></h2>
 <h3 id="what-is-a-concept"><a class="header" href="#what-is-a-concept">What is a Concept?</a></h3>
@@ -16100,7 +16379,7 @@ note: because 'StudentId' does not satisfy 'Comparable'
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-more-concept-examples"><a class="header" href="#3-more-concept-examples">3. More Concept Examples</a></h2>
 <h3 id="example-1-requiring-multiple-operations"><a class="header" href="#example-1-requiring-multiple-operations">Example 1: Requiring Multiple Operations</a></h3>
@@ -16152,7 +16431,7 @@ void sort(std::vector&lt;T&gt;&amp; vec) {
     // Sort implementation
 }
 </code></pre>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-common-standard-library-concepts-c20"><a class="header" href="#4-common-standard-library-concepts-c20">4. Common Standard Library Concepts (C++20)</a></h2>
 <p>The STL provides many built-in concepts in <code>&lt;concepts&gt;</code>:</p>
@@ -16173,7 +16452,7 @@ void sort(std::vector&lt;T&gt;&amp; vec) {
 </table>
 </div>
 <p>All the built-in concepts can be found here: https://en.cppreference.com/w/cpp/concepts.html</p>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-concepts-with-iterators"><a class="header" href="#5-concepts-with-iterators">5. Concepts with Iterators</a></h2>
 <pre><code class="language-cpp">template &lt;typename It, typename T&gt;
@@ -16193,7 +16472,7 @@ It find(It begin, It end, const T&amp; value) {
     return end;
 }
 </code></pre>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="6-concepts-recap"><a class="header" href="#6-concepts-recap">6. Concepts Recap</a></h2>
 <h3 id="two-main-reasons-to-use-concepts"><a class="header" href="#two-main-reasons-to-use-concepts">Two Main Reasons to Use Concepts</a></h3>
@@ -16222,7 +16501,7 @@ It find(It begin, It end, const T&amp; value) {
 <li>Many older codebases still use older constraint techniques (SFINAE, <code>std::enable_if</code>)</li>
 <li>Compiler support is still maturing</li>
 </ul>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="7-quick-reference-concept-syntax"><a class="header" href="#7-quick-reference-concept-syntax">7. Quick Reference: Concept Syntax</a></h2>
 <pre><code class="language-cpp">// Define a concept
@@ -16242,7 +16521,7 @@ void function(T param);
 // Use concept with auto parameters (C++20)
 void function(ConceptName auto param);
 </code></pre>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="8-summary"><a class="header" href="#8-summary">8. Summary</a></h2>
 <div class="table-wrapper">
@@ -16260,10 +16539,10 @@ void function(ConceptName auto param);
 </table>
 </div>
 <p><strong>Key Takeaway:</strong> Concepts make templates safer, clearer, and much easier to use correctly!</p>
-<p><a href="#table-of-contents-20">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr><div style="break-before: page; page-break-before: always;"></div>
 <h1 id="variadic-templates"><a class="header" href="#variadic-templates">Variadic Templates</a></h1>
-<h2 id="table-of-contents-21"><a class="header" href="#table-of-contents-21">Table of Contents</a></h2>
+<h2 id="table-of-contents-22"><a class="header" href="#table-of-contents-22">Table of Contents</a></h2>
 <ol>
 <li><a href="#the-problem-variable-number-of-arguments">The Problem: Variable Number of Arguments</a></li>
 <li><a href="#solution-1-manual-function-overloading">Solution 1: Manual Function Overloading</a></li>
@@ -16974,7 +17253,7 @@ func(1, 2, 3); // sizeof...(args) = 3
 <p>They’re essential for modern C++ generic programming!</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c20-abbreviated-function-templates"><a class="header" href="#c20-abbreviated-function-templates">C++20 Abbreviated Function Templates</a></h1>
-<h2 id="table-of-contents-22"><a class="header" href="#table-of-contents-22">Table of Contents</a></h2>
+<h2 id="table-of-contents-23"><a class="header" href="#table-of-contents-23">Table of Contents</a></h2>
 <ol>
 <li><a href="#what-is-an-abbreviated-function-template">What is an Abbreviated Function Template?</a></li>
 <li><a href="#traditional-template-vs-abbreviated-template">Traditional Template vs Abbreviated Template</a>
@@ -17025,7 +17304,7 @@ auto functionName(T1 param1, T2 param2) {
     // function body
 }
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="traditional-template-vs-abbreviated-template"><a class="header" href="#traditional-template-vs-abbreviated-template">Traditional Template vs Abbreviated Template</a></h2>
 <h3 id="traditional-template-function"><a class="header" href="#traditional-template-function">Traditional Template Function</a></h3>
@@ -17096,7 +17375,7 @@ template&lt;&gt; int min&lt;int, int&gt;(const int &amp;a, const int &amp;b) { /
 template&lt;&gt; double min&lt;double, double&gt;(const double &amp;a, const double &amp;b) { /* ... */ }
 template&lt;&gt; char min&lt;char, char&gt;(const char &amp;a, const char &amp;b) { /* ... */ }
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="key-differences-1"><a class="header" href="#key-differences-1">Key Differences</a></h2>
 <ol>
@@ -17121,7 +17400,7 @@ auto min(const T1&amp; a, const T2&amp; b) {
 }
 </code></pre>
 <p><strong>Important:</strong> Each <code>auto</code> parameter becomes an independent template parameter (<code>T1</code>, <code>T2</code>). This means the function can accept two different types, such as <code>min(5, 3.14)</code> where <code>a</code> is <code>int</code> and <code>b</code> is <code>double</code>.</p>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="constrained-auto-abbreviated-functions"><a class="header" href="#constrained-auto-abbreviated-functions">Constrained Auto Abbreviated Functions</a></h2>
 <p>C++20 also allows you to add <strong>constraints</strong> to abbreviated function templates using concepts. This ensures that the template parameters meet certain requirements.</p>
@@ -17225,7 +17504,7 @@ auto min(const T1&amp; a, const T2&amp; b) {
 <li><strong>Better IDE support</strong>: IDEs can provide better autocomplete and hints</li>
 <li><strong>Type safety</strong>: Prevents misuse of generic functions</li>
 </ol>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="important-limitation-no-abbreviated-class-templates"><a class="header" href="#important-limitation-no-abbreviated-class-templates">Important Limitation: No Abbreviated Class Templates</a></h2>
 <p><strong>C++20 does NOT support abbreviated class templates.</strong> You cannot write:</p>
@@ -17270,7 +17549,7 @@ public:
 1
 </code></pre>
 <p>This demonstrates that while class templates must use traditional syntax, their member functions can freely use abbreviated function template syntax.</p>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="advantages-of-abbreviated-function-templates"><a class="header" href="#advantages-of-abbreviated-function-templates">Advantages of Abbreviated Function Templates</a></h2>
 <ol>
@@ -17279,7 +17558,7 @@ public:
 <li><strong>Flexibility</strong>: Each <code>auto</code> can deduce to a different type</li>
 <li><strong>Modern</strong>: Aligns with modern C++ practices</li>
 </ol>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="when-to-use"><a class="header" href="#when-to-use">When to Use</a></h2>
 <p>Abbreviated function templates are ideal for:</p>
@@ -17290,17 +17569,17 @@ public:
 <li>Reducing syntactic noise in template-heavy code</li>
 </ul>
 <p>For complex templates with constraints, explicit template syntax or C++20 concepts may be more appropriate for clarity.</p>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="compilation"><a class="header" href="#compilation">Compilation</a></h2>
 <p>To compile code using abbreviated function templates:</p>
 <pre><code class="language-bash">g++ -std=c++20 program.cpp -o program
 clang++ -std=c++20 program.cpp -o program
 </code></pre>
-<p><a href="#table-of-contents-22">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="value-categories-in-c"><a class="header" href="#value-categories-in-c">Value Categories in C++</a></h1>
-<h2 id="table-of-contents-23"><a class="header" href="#table-of-contents-23">Table of Contents</a></h2>
+<h2 id="table-of-contents-24"><a class="header" href="#table-of-contents-24">Table of Contents</a></h2>
 <ol>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></li>
@@ -17326,7 +17605,7 @@ clang++ -std=c++20 program.cpp -o program
 <li><strong>glvalue</strong> = lvalue or xvalue</li>
 <li><strong>rvalue</strong> = xvalue or prvalue</li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="value-category-hierarchy-diagram"><a class="header" href="#value-category-hierarchy-diagram">Value Category Hierarchy Diagram</a></h2>
 <pre><code>                    expression
@@ -17347,7 +17626,7 @@ clang++ -std=c++20 program.cpp -o program
 <li><strong>xvalue</strong>: Has identity AND can be moved from</li>
 <li><strong>prvalue</strong>: No identity, temporary value</li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="prvalue-pure-rvalue"><a class="header" href="#prvalue-pure-rvalue">prvalue (pure rvalue)</a></h2>
 <p>A <em>prvalue</em> is a temporary value that does not refer to an existing object.</p>
@@ -17362,7 +17641,7 @@ std::string s("hi"); // temporary std::string → prvalue
 <li>Creates a new temporary object</li>
 <li>Result of most operators and literals</li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="lvalue"><a class="header" href="#lvalue">lvalue</a></h2>
 <p>An <em>lvalue</em> refers to an identifiable, persistent object in memory.</p>
@@ -17379,7 +17658,7 @@ s.m = 5;     // s.m is an lvalue
 <li>Persists beyond a single expression</li>
 <li>Can appear on the left side of assignment</li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="xvalue-expiring-value"><a class="header" href="#xvalue-expiring-value">xvalue (expiring value)</a></h2>
 <p>An <em>xvalue</em> is a special glvalue that refers to an object whose resources can be reused (i.e., movable).</p>
@@ -17397,7 +17676,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 <li>About to expire (resources can be moved)</li>
 <li>Result of <code>std::move()</code> or member access on rvalue</li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="summary-table-1"><a class="header" href="#summary-table-1">Summary Table</a></h2>
 <div class="table-wrapper">
@@ -17414,7 +17693,7 @@ getS().name = "Alice"; // getS() is prvalue, getS().name is xvalue
 </tbody>
 </table>
 </div>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
 <pre><code class="language-cpp">int a = 10;        // a → lvalue  
@@ -17431,7 +17710,7 @@ struct S { int m; };
 S get();
 get().m = 1;        // get() → prvalue, .m → xvalue
 </code></pre>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="intuition"><a class="header" href="#intuition">Intuition</a></h2>
 <ul>
@@ -17441,7 +17720,7 @@ get().m = 1;        // get() → prvalue, .m → xvalue
 <li><strong>glvalue</strong> → has identity</li>
 <li><strong>rvalue</strong> → temporary or movable</li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="visual-relationships"><a class="header" href="#visual-relationships">Visual Relationships</a></h2>
 <pre><code>Properties Matrix:
@@ -17468,10 +17747,10 @@ rvalue  = { xvalue, prvalue } ← Things you can move from
 </ol>
 </li>
 </ul>
-<p><a href="#table-of-contents-23">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-auto-keyword"><a class="header" href="#c11-auto-keyword">C++11 auto Keyword</a></h1>
-<h2 id="table-of-contents-24"><a class="header" href="#table-of-contents-24">Table of Contents</a></h2>
+<h2 id="table-of-contents-25"><a class="header" href="#table-of-contents-25">Table of Contents</a></h2>
 <ol>
 <li><a href="#1-what-is-the-auto-keyword">What is the Auto Keyword?</a></li>
 <li><a href="#2-type-deduction-rules-for-auto">Type Deduction Rules for Auto</a></li>
@@ -17522,7 +17801,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="2-type-deduction-rules-for-auto"><a class="header" href="#2-type-deduction-rules-for-auto">2. Type Deduction Rules for Auto</a></h2>
 <p>The type deduction for <code>auto</code> follows rules similar to template argument deduction. Understanding these rules is crucial for using <code>auto</code> correctly.</p>
@@ -17612,7 +17891,7 @@ void demonstrateDeduction() {
     auto&amp;&amp; u2 = 42;      // int&amp;&amp; (universal reference to rvalue)
 }
 </code></pre>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-benefits-of-using-auto"><a class="header" href="#3-benefits-of-using-auto">3. Benefits of Using Auto</a></h2>
 <h3 id="reduces-code-verbosity"><a class="header" href="#reduces-code-verbosity">Reduces Code Verbosity</a></h3>
@@ -17646,7 +17925,7 @@ void multiply(T1 a, T2 b) {
     std::cout &lt;&lt; result &lt;&lt; std::endl;
 }
 </code></pre>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="4-restrictions-where-auto-cannot-be-used"><a class="header" href="#4-restrictions-where-auto-cannot-be-used">4. Restrictions: Where Auto Cannot Be Used</a></h2>
 <h3 id="restriction-1-function-parameters-until-c20"><a class="header" href="#restriction-1-function-parameters-until-c20">Restriction 1: Function Parameters (until C++20)</a></h3>
@@ -17705,7 +17984,7 @@ std::vector&lt;int&gt; vec;   // OK
     virtual int getValue() { return 42; }   // OK
 };
 </code></pre>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="5-common-compilation-errors-with-auto"><a class="header" href="#5-common-compilation-errors-with-auto">5. Common Compilation Errors with Auto</a></h2>
 <h3 id="error-1-using-auto-without-initialization"><a class="header" href="#error-1-using-auto-without-initialization">Error 1: Using Auto Without Initialization</a></h3>
@@ -17781,7 +18060,7 @@ auto str = std::string("Hello");
 using namespace std::string_literals;
 auto str = "Hello"s;
 </code></pre>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="best-practices-summary-1"><a class="header" href="#best-practices-summary-1">Best Practices Summary</a></h2>
 <ol>
@@ -17793,11 +18072,11 @@ auto str = "Hello"s;
 <li><strong>Always initialize</strong> <code>auto</code> variables at declaration</li>
 <li><strong>Use trailing return types</strong> in C++11 for complex return type deduction</li>
 </ol>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
-<p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
+<p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 
                     </main>
 
