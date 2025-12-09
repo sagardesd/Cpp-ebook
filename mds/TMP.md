@@ -115,7 +115,7 @@ int main() {
     return 0;
 }
 ```
-
+![TMP Factorial](images/TMP_factor.png)
 **Output:** `5040`
 
 **What happens:** The compiler calculates 7! = 5040 during compilation. The value `5040` is directly embedded in the executable. Zero runtime computation!
@@ -150,8 +150,9 @@ Factorial<7>::value = 7 * Factorial<6>::value
                     = 7 * (6 * (5 * (4 * (3 * (2 * (1 * 1))))))  ← Base case hit!
                     = 5040
 ```
-
+![Flow](images/tmp_instant.png)
 **Important:** This entire calculation happens during compilation, not when the program runs!
+![Assembly](images/TMP_assembly.png)
 
 ---
 
