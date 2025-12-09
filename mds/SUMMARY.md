@@ -29,5 +29,6 @@
   - [Variadic Templates (>= C++11)](./variadic_templates.md)
   - [Abbreviated Function Templates (>= C++20)](./c++20_abbreviated_templates.md)
   - [Template Meta Programming](./TMP.md)
+  - [constexpr (>= C++11), consteval and constinit (>= c++20)](./constexpr.md)
 - [Value Catagories (>= C++11)](./value_categories.md)
 - [auto (>= C++11)](./auto_c++11.md)
