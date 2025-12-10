@@ -170,7 +170,7 @@ int main() {
 **This is a very common C++11 pitfall!** Even when other constructors match perfectly, the initializer-list constructor takes precedence with `{}` syntax.
 
 
-## Lifetime Management: The Core Rule
+## Lifetime Management of `std::initializer_list`
 
 ### The Critical Rule You Must Remember
 
