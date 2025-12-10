@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-ec977414.js";
+            window.path_to_searchindex_js = "searchindex-16d87a58.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-cee65f0e.js"></script>
+        <script src="toc-b3677201.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -19058,6 +19058,674 @@ auto str = "Hello"s;
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
 <p><a href="#table-of-contents-27">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="in-class-member-initialization-c11"><a class="header" href="#in-class-member-initialization-c11">In-Class Member Initialization (C++11)</a></h1>
+<h2 id="introduction-4"><a class="header" href="#introduction-4">Introduction</a></h2>
+<p>In-class member initialization (also called default member initialization) was introduced in <strong>C++11</strong> and represents a significant improvement in how we initialize class data members. This feature allows you to specify default values for non-static data members directly in the class definition, rather than solely in constructors.</p>
+<h2 id="the-problem-before-c11-1"><a class="header" href="#the-problem-before-c11-1">The Problem Before C++11</a></h2>
+<p>Before C++11, the only way to initialize non-static data members was through constructor initializer lists or in the constructor body. This created several issues:</p>
+<h3 id="issue-1-repetitive-initialization-code"><a class="header" href="#issue-1-repetitive-initialization-code">Issue 1: Repetitive Initialization Code</a></h3>
+<pre><code class="language-cpp">// Pre-C++11: Repetitive and error-prone
+class Server {
+private:
+    std::string host;
+    int port;
+    int timeout;
+    bool ssl_enabled;
+    int max_connections;
+
+public:
+    // Default constructor - must initialize everything
+    Server() 
+        : host("localhost"),
+          port(8080),
+          timeout(30),
+          ssl_enabled(false),
+          max_connections(100) {
+    }
+    
+    // Parameterized constructor - must repeat defaults
+    Server(const std::string&amp; h, int p) 
+        : host(h),
+          port(p),
+          timeout(30),              // Repeated!
+          ssl_enabled(false),       // Repeated!
+          max_connections(100) {    // Repeated!
+    }
+    
+    // Another constructor - more repetition
+    Server(const std::string&amp; h, int p, bool ssl) 
+        : host(h),
+          port(p),
+          timeout(30),              // Repeated again!
+          ssl_enabled(ssl),
+          max_connections(100) {    // Repeated again!
+    }
+};
+</code></pre>
+<p><strong>Problems:</strong></p>
+<ul>
+<li>Default values duplicated across multiple constructors</li>
+<li>Easy to forget a member in one constructor</li>
+<li>Maintenance nightmare when changing default values</li>
+<li>Inconsistency risk across constructors</li>
+</ul>
+<h3 id="issue-2-mandatory-default-constructor"><a class="header" href="#issue-2-mandatory-default-constructor">Issue 2: Mandatory Default Constructor</a></h3>
+<pre><code class="language-cpp">// Pre-C++11: Forced to write default constructor just for initialization
+class Configuration {
+private:
+    int retry_count;
+    double timeout_seconds;
+    bool auto_reconnect;
+
+public:
+    // Must write this just to set defaults
+    Configuration() 
+        : retry_count(3),
+          timeout_seconds(5.0),
+          auto_reconnect(true) {
+    }
+};
+</code></pre>
+<h3 id="issue-3-const-and-reference-members-were-painful"><a class="header" href="#issue-3-const-and-reference-members-were-painful">Issue 3: Const and Reference Members Were Painful</a></h3>
+<pre><code class="language-cpp">// Pre-C++11: Const members required initialization in ALL constructors
+class Document {
+private:
+    const std::string document_id;  // Must initialize in every constructor
+    const int version;              // Must initialize in every constructor
+    std::string content;
+
+public:
+    // Every constructor must initialize const members
+    Document(const std::string&amp; id) 
+        : document_id(id),
+          version(1),               // Always the same
+          content("") {
+    }
+    
+    Document(const std::string&amp; id, const std::string&amp; text) 
+        : document_id(id),
+          version(1),               // Duplicated!
+          content(text) {
+    }
+    
+    Document(const std::string&amp; id, int ver, const std::string&amp; text) 
+        : document_id(id),
+          version(ver),
+          content(text) {
+    }
+};
+</code></pre>
+<h2 id="in-class-member-initialization-c11-1"><a class="header" href="#in-class-member-initialization-c11-1">In-Class Member Initialization (C++11)</a></h2>
+<p>C++11 introduced the ability to initialize non-static data members directly at their point of declaration.</p>
+<h3 id="basic-syntax-6"><a class="header" href="#basic-syntax-6">Basic Syntax</a></h3>
+<pre><code class="language-cpp">class MyClass {
+private:
+    int value = 42;                    // Direct initialization
+    std::string name = "default";      // Works with any type
+    double pi{3.14159};                // Brace initialization also works
+    bool flag = false;
+};
+</code></pre>
+<h3 id="solving-the-repetition-problem"><a class="header" href="#solving-the-repetition-problem">Solving the Repetition Problem</a></h3>
+<pre><code class="language-cpp">// C++11: Clean and DRY (Don't Repeat Yourself)
+class Server {
+private:
+    std::string host = "localhost";
+    int port = 8080;
+    int timeout = 30;
+    bool ssl_enabled = false;
+    int max_connections = 100;
+
+public:
+    // Default constructor becomes trivial (or can be omitted)
+    Server() = default;
+    
+    // Only specify what changes from defaults
+    Server(const std::string&amp; h, int p) 
+        : host(h), port(p) {
+        // timeout, ssl_enabled, max_connections use in-class defaults
+    }
+    
+    // Selectively override defaults
+    Server(const std::string&amp; h, int p, bool ssl) 
+        : host(h), port(p), ssl_enabled(ssl) {
+        // Other members use in-class defaults
+    }
+};
+</code></pre>
+<h3 id="no-more-mandatory-default-constructor"><a class="header" href="#no-more-mandatory-default-constructor">No More Mandatory Default Constructor</a></h3>
+<pre><code class="language-cpp">// C++11: Default constructor often not needed
+class Configuration {
+private:
+    int retry_count = 3;
+    double timeout_seconds = 5.0;
+    bool auto_reconnect = true;
+
+public:
+    // No need to define default constructor - compiler generates one
+    // that uses in-class initializers
+    
+    // Can still add parameterized constructors
+    explicit Configuration(int retries) 
+        : retry_count(retries) {
+    }
+};
+
+// Usage
+Configuration cfg1;           // Uses all defaults
+Configuration cfg2{10};       // Uses custom retry_count
+</code></pre>
+<h2 id="const-non-static-data-members"><a class="header" href="#const-non-static-data-members">Const Non-Static Data Members</a></h2>
+<p>In-class member initialization significantly simplifies working with <code>const</code> non-static data members.</p>
+<h3 id="before-c11-const-members-were-painful"><a class="header" href="#before-c11-const-members-were-painful">Before C++11: Const Members Were Painful</a></h3>
+<pre><code class="language-cpp">// Pre-C++11: Must initialize const members in EVERY constructor
+class Product {
+private:
+    const std::string product_id;     // Const - can't be changed after construction
+    const double tax_rate;            // Const - fixed value
+    std::string name;
+    double price;
+
+public:
+    // Constructor 1 - must initialize all const members
+    Product(const std::string&amp; id, const std::string&amp; n, double p)
+        : product_id(id),
+          tax_rate(0.08),             // Always 0.08, but must repeat
+          name(n),
+          price(p) {
+    }
+    
+    // Constructor 2 - must initialize all const members again
+    Product(const std::string&amp; id, const std::string&amp; n, double p, double tax)
+        : product_id(id),
+          tax_rate(tax),
+          name(n),
+          price(p) {
+    }
+    
+    // Can't have default constructor without default product_id
+    // Product() { }  // ERROR! Const members not initialized
+};
+</code></pre>
+<h3 id="c11-const-members-with-in-class-initialization"><a class="header" href="#c11-const-members-with-in-class-initialization">C++11: Const Members with In-Class Initialization</a></h3>
+<pre><code class="language-cpp">// C++11: Much cleaner with in-class initialization
+class Product {
+private:
+    const std::string product_id;     // Must still be initialized in constructor
+    const double tax_rate = 0.08;     // Can have default value!
+    std::string name = "Unnamed";     // Non-const can also have default
+    double price = 0.0;
+
+public:
+    // Constructor only needs to initialize what doesn't have defaults
+    Product(const std::string&amp; id, const std::string&amp; n, double p)
+        : product_id(id),             // Must initialize (no default possible)
+          name(n),
+          price(p) {
+        // tax_rate uses in-class default (0.08)
+    }
+    
+    // Can override the const default if needed
+    Product(const std::string&amp; id, const std::string&amp; n, double p, double tax)
+        : product_id(id),
+          tax_rate(tax),              // Overrides default
+          name(n),
+          price(p) {
+    }
+};
+</code></pre>
+<h3 id="important-rules-for-const-members"><a class="header" href="#important-rules-for-const-members">Important Rules for Const Members</a></h3>
+<pre><code class="language-cpp">class Example {
+private:
+    // ✅ Const members CAN have in-class initializers
+    const int fixed_value = 100;
+    const std::string constant_name = "Example";
+    
+    // ✅ Const members without defaults must be initialized in constructor
+    const int must_initialize_in_constructor;
+    
+    // ✅ Can override in-class initializer in constructor
+    const int can_override = 50;
+
+public:
+    Example(int value) 
+        : must_initialize_in_constructor(value),
+          can_override(value * 2) {    // Overrides the default 50
+        // fixed_value and constant_name use in-class defaults
+    }
+    
+    // ❌ Cannot modify const members after construction
+    void setValue(int v) {
+        // fixed_value = v;             // ERROR! Cannot modify const
+    }
+};
+</code></pre>
+<h3 id="const-members-common-patterns"><a class="header" href="#const-members-common-patterns">Const Members: Common Patterns</a></h3>
+<pre><code class="language-cpp">// Pattern 1: Configuration with const settings
+class DatabaseConnection {
+private:
+    const std::string connection_string;  // Must be set in constructor
+    const int max_pool_size = 10;         // Has reasonable default
+    const int timeout_seconds = 30;       // Has reasonable default
+    bool is_connected = false;            // Non-const, can change
+
+public:
+    explicit DatabaseConnection(const std::string&amp; conn_str)
+        : connection_string(conn_str) {
+        // max_pool_size and timeout_seconds use defaults
+    }
+    
+    DatabaseConnection(const std::string&amp; conn_str, int pool_size)
+        : connection_string(conn_str),
+          max_pool_size(pool_size) {
+        // timeout_seconds uses default
+    }
+};
+
+// Pattern 2: Immutable identifier with defaults
+class Transaction {
+private:
+    const std::string transaction_id;
+    const std::chrono::system_clock::time_point timestamp = 
+        std::chrono::system_clock::now();
+    const std::string currency = "USD";   // Default currency
+
+public:
+    explicit Transaction(const std::string&amp; id)
+        : transaction_id(id) {
+        // timestamp and currency use defaults
+    }
+    
+    Transaction(const std::string&amp; id, const std::string&amp; curr)
+        : transaction_id(id),
+          currency(curr) {
+        // timestamp uses default
+    }
+};
+</code></pre>
+<h2 id="how-it-reduces-constructor-headaches"><a class="header" href="#how-it-reduces-constructor-headaches">How It Reduces Constructor Headaches</a></h2>
+<h3 id="benefit-1-fewer-constructors-needed"><a class="header" href="#benefit-1-fewer-constructors-needed">Benefit 1: Fewer Constructors Needed</a></h3>
+<pre><code class="language-cpp">// Before C++11: Need multiple constructors for different defaults
+class Window {
+private:
+    int width;
+    int height;
+    bool visible;
+    bool resizable;
+    std::string title;
+
+public:
+    Window() 
+        : width(800), height(600), visible(true), 
+          resizable(true), title("Window") {}
+    
+    Window(int w, int h) 
+        : width(w), height(h), visible(true), 
+          resizable(true), title("Window") {}
+    
+    Window(int w, int h, const std::string&amp; t) 
+        : width(w), height(h), visible(true), 
+          resizable(true), title(t) {}
+    
+    // ... more constructors for different combinations
+};
+
+// C++11: One or two constructors handle everything
+class Window {
+private:
+    int width = 800;
+    int height = 600;
+    bool visible = true;
+    bool resizable = true;
+    std::string title = "Window";
+
+public:
+    // Default constructor - not even needed, compiler generates it
+    Window() = default;
+    
+    // One flexible constructor covers most cases
+    Window(int w, int h, const std::string&amp; t = "Window")
+        : width(w), height(h), title(t) {
+        // visible and resizable use defaults
+    }
+};
+</code></pre>
+<h3 id="benefit-2-constructor-delegation-made-simpler"><a class="header" href="#benefit-2-constructor-delegation-made-simpler">Benefit 2: Constructor Delegation Made Simpler</a></h3>
+<pre><code class="language-cpp">// C++11: Delegating constructors + in-class initialization
+class User {
+private:
+    std::string username;
+    std::string email;
+    bool is_admin = false;        // Default for most users
+    int login_attempts = 0;       // Fresh start
+    bool account_locked = false;  // Not locked initially
+
+public:
+    // Primary constructor
+    User(const std::string&amp; name, const std::string&amp; mail)
+        : username(name), email(mail) {
+        // is_admin, login_attempts, account_locked use defaults
+    }
+    
+    // Delegating constructor for admin
+    User(const std::string&amp; name, const std::string&amp; mail, bool admin)
+        : User(name, mail) {      // Delegate to primary constructor
+        is_admin = admin;         // Only override what's different
+    }
+};
+</code></pre>
+<h3 id="benefit-3-consistent-defaults-across-inheritance"><a class="header" href="#benefit-3-consistent-defaults-across-inheritance">Benefit 3: Consistent Defaults Across Inheritance</a></h3>
+<pre><code class="language-cpp">class Base {
+protected:
+    int base_value = 100;         // Default in base class
+    bool base_flag = true;
+
+public:
+    Base() = default;
+    explicit Base(int val) : base_value(val) {}
+};
+
+class Derived : public Base {
+private:
+    int derived_value = 200;      // Derived's own default
+    std::string name = "Derived";
+
+public:
+    // Default constructor uses all in-class defaults
+    Derived() = default;
+    
+    // Can initialize base and derived selectively
+    Derived(int base_val, int derived_val)
+        : Base(base_val), 
+          derived_value(derived_val) {
+        // name uses default, base_flag uses default
+    }
+};
+</code></pre>
+<h3 id="benefit-4-less-error-prone-maintenance"><a class="header" href="#benefit-4-less-error-prone-maintenance">Benefit 4: Less Error-Prone Maintenance</a></h3>
+<pre><code class="language-cpp">// Scenario: Need to change default timeout from 30 to 60 seconds
+
+// Before C++11: Update in multiple places (error-prone)
+class Service {
+private:
+    int timeout;
+public:
+    Service() : timeout(30) {}                    // Change here
+    Service(const std::string&amp; url) : timeout(30) {}  // And here
+    Service(const std::string&amp; url, int retries) : timeout(30) {}  // And here
+    // Easy to miss one!
+};
+
+// C++11: Change in ONE place only
+class Service {
+private:
+    int timeout = 30;  // Change ONLY here
+public:
+    Service() = default;
+    Service(const std::string&amp; url) { }
+    Service(const std::string&amp; url, int retries) { }
+    // All constructors automatically use updated default
+};
+</code></pre>
+<h3 id="benefit-5-cleaner-move-and-copy-constructors"><a class="header" href="#benefit-5-cleaner-move-and-copy-constructors">Benefit 5: Cleaner Move and Copy Constructors</a></h3>
+<pre><code class="language-cpp">class Resource {
+private:
+    std::unique_ptr&lt;int&gt; data;
+    int ref_count = 0;           // Always start at 0
+    bool is_valid = true;        // Always start valid
+
+public:
+    Resource() : data(std::make_unique&lt;int&gt;(42)) {}
+    
+    // Move constructor - only handle complex members
+    Resource(Resource&amp;&amp; other) noexcept
+        : data(std::move(other.data)) {
+        // ref_count and is_valid automatically initialized to defaults
+        other.is_valid = false;
+    }
+    
+    // Copy constructor
+    Resource(const Resource&amp; other)
+        : data(std::make_unique&lt;int&gt;(*other.data)) {
+        // ref_count and is_valid automatically use in-class defaults
+    }
+};
+</code></pre>
+<h2 id="initialization-order-and-priority"><a class="header" href="#initialization-order-and-priority">Initialization Order and Priority</a></h2>
+<p>Understanding the initialization order is crucial:</p>
+<h3 id="priority-rules"><a class="header" href="#priority-rules">Priority Rules</a></h3>
+<ol>
+<li><strong>In-class initializers</strong> are applied first</li>
+<li><strong>Constructor initializer list</strong> overrides in-class initializers</li>
+<li><strong>Constructor body</strong> can modify (but not initialize const members)</li>
+</ol>
+<pre><code class="language-cpp">class Example {
+private:
+    int a = 10;         // In-class initializer
+    int b = 20;
+    int c = 30;
+
+public:
+    Example() {
+        // a = 10, b = 20, c = 30 (all use in-class defaults)
+    }
+    
+    Example(int x) 
+        : a(x) {        // Constructor initializer list overrides
+        // a = x, b = 20, c = 30
+    }
+    
+    Example(int x, int y) 
+        : a(x), b(y) {  // Multiple overrides
+        c = 40;         // Can still modify in body (if not const)
+        // a = x, b = y, c = 40
+    }
+};
+</code></pre>
+<h3 id="what-happens-behind-the-scenes"><a class="header" href="#what-happens-behind-the-scenes">What Happens Behind the Scenes</a></h3>
+<pre><code class="language-cpp">class Demo {
+private:
+    int value = 100;
+    std::string name = "Default";
+
+public:
+    Demo(int v) : value(v) {
+        std::cout &lt;&lt; "Constructor body\n";
+    }
+};
+
+// Conceptually equivalent to:
+class Demo {
+private:
+    int value;
+    std::string name;
+
+public:
+    Demo(int v) 
+        : value(v),              // Constructor list takes priority
+          name("Default") {      // In-class initializer applied
+        std::cout &lt;&lt; "Constructor body\n";
+    }
+};
+</code></pre>
+<h2 id="syntax-options"><a class="header" href="#syntax-options">Syntax Options</a></h2>
+<p>C++11 supports multiple initialization syntaxes for in-class member initialization:</p>
+<pre><code class="language-cpp">class SyntaxExamples {
+private:
+    // ✅ Copy initialization (most common)
+    int a = 42;
+    std::string name = "example";
+    
+    // ✅ Brace initialization (preferred for preventing narrowing)
+    int b{42};
+    double pi{3.14159};
+    std::vector&lt;int&gt; vec{1, 2, 3};
+    
+    // ❌ Parentheses NOT allowed for in-class initialization
+    // int c(42);           // ERROR in C++11/14/17
+    // std::string s("hi"); // ERROR in C++11/14/17
+    
+    // Note: C++20 allows parentheses in some cases
+};
+</code></pre>
+<h2 id="static-vs-non-static-members"><a class="header" href="#static-vs-non-static-members">Static vs Non-Static Members</a></h2>
+<p>Important distinction between static and non-static initialization:</p>
+<pre><code class="language-cpp">class MemberTypes {
+private:
+    // ✅ Non-static: Can use in-class initialization (C++11)
+    int non_static = 42;
+    std::string name = "example";
+    
+    // ✅ Static const integral: Could always be initialized in-class
+    static const int static_const = 100;
+    
+    // ✅ Static constexpr: Can be initialized in-class (C++11)
+    static constexpr double pi = 3.14159;
+    
+    // ❌ Static non-const: Still needs out-of-class definition (until C++17)
+    static int static_value;  // Declared here
+    
+    // ✅ C++17: inline static can be initialized in-class
+    inline static int inline_static = 200;
+
+public:
+    void print() {
+        std::cout &lt;&lt; non_static &lt;&lt; ", " &lt;&lt; static_const &lt;&lt; "\n";
+    }
+};
+
+// Out-of-class definition still needed for static non-const (pre-C++17)
+int MemberTypes::static_value = 50;
+</code></pre>
+<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h3 id="1-use-in-class-initialization-for-defaults"><a class="header" href="#1-use-in-class-initialization-for-defaults">1. Use In-Class Initialization for Defaults</a></h3>
+<pre><code class="language-cpp">// ✅ Good: Clear default values
+class Config {
+private:
+    int timeout = 30;
+    bool debug_mode = false;
+    std::string log_file = "app.log";
+};
+
+// ❌ Avoid: Initializing in constructor when default makes sense
+class Config {
+private:
+    int timeout;
+    bool debug_mode;
+public:
+    Config() : timeout(30), debug_mode(false) {}  // Unnecessary
+};
+</code></pre>
+<h3 id="2-prefer-brace-initialization-for-safety"><a class="header" href="#2-prefer-brace-initialization-for-safety">2. Prefer Brace Initialization for Safety</a></h3>
+<pre><code class="language-cpp">class SafeInit {
+private:
+    int value{42};        // ✅ Prevents narrowing
+    double pi{3.14159};   // ✅ Consistent with uniform initialization
+    
+    // int x{3.14};       // ❌ Error: narrowing conversion
+};
+</code></pre>
+<h3 id="3-document-non-default-values"><a class="header" href="#3-document-non-default-values">3. Document Non-Default Values</a></h3>
+<pre><code class="language-cpp">class Service {
+private:
+    int retry_count = 3;           // Standard retry count
+    int timeout_ms = 5000;         // 5 second timeout
+    bool use_compression = true;   // Enable compression by default
+    
+    // Special value - document why it's different
+    int buffer_size = 8192;        // Must match OS page size
+};
+</code></pre>
+<h3 id="4-use-with-constructor-delegation"><a class="header" href="#4-use-with-constructor-delegation">4. Use with Constructor Delegation</a></h3>
+<pre><code class="language-cpp">class User {
+private:
+    std::string name;
+    int age = 0;
+    bool active = true;
+
+public:
+    // Primary constructor
+    User(const std::string&amp; n) : name(n) {}
+    
+    // Delegate and override specific members
+    User(const std::string&amp; n, int a) : User(n) {
+        age = a;
+    }
+};
+</code></pre>
+<h2 id="common-pitfalls-and-solutions"><a class="header" href="#common-pitfalls-and-solutions">Common Pitfalls and Solutions</a></h2>
+<h3 id="pitfall-1-order-of-initialization"><a class="header" href="#pitfall-1-order-of-initialization">Pitfall 1: Order of Initialization</a></h3>
+<pre><code class="language-cpp">class BadOrder {
+private:
+    int a = b + 1;  // ❌ Problem: b not initialized yet!
+    int b = 10;     // Member declaration order matters
+
+public:
+    BadOrder() {
+        // a is initialized with undefined b value
+    }
+};
+
+// ✅ Solution: Be aware of declaration order
+class GoodOrder {
+private:
+    int b = 10;     // Declare first
+    int a = b + 1;  // Then use it
+};
+</code></pre>
+<h3 id="pitfall-2-expensive-initialization"><a class="header" href="#pitfall-2-expensive-initialization">Pitfall 2: Expensive Initialization</a></h3>
+<pre><code class="language-cpp">class Expensive {
+private:
+    std::vector&lt;int&gt; data = createLargeVector();  // ❌ Called for every object
+
+    static std::vector&lt;int&gt; createLargeVector() {
+        return std::vector&lt;int&gt;(1000000, 0);
+    }
+};
+
+// ✅ Solution: Use default constructor or lazy initialization
+class Better {
+private:
+    std::vector&lt;int&gt; data;  // Start empty
+
+public:
+    void ensureData() {
+        if (data.empty()) {
+            data = createLargeVector();
+        }
+    }
+};
+</code></pre>
+<h2 id="summary-13"><a class="header" href="#summary-13">Summary</a></h2>
+<p>In-class member initialization, introduced in C++11, dramatically simplified C++ class initialization by:</p>
+<p><strong>Key Benefits:</strong></p>
+<ul>
+<li><strong>Eliminates repetition</strong> across multiple constructors</li>
+<li><strong>Reduces bugs</strong> from inconsistent defaults</li>
+<li><strong>Simplifies maintenance</strong> - change defaults in one place</li>
+<li><strong>Reduces constructor count</strong> - often don’t need default constructor</li>
+<li><strong>Works with const members</strong> - provide reasonable defaults</li>
+<li><strong>Clearer intent</strong> - defaults visible at member declaration</li>
+<li><strong>Better for generated code</strong> - compiler can optimize better</li>
+</ul>
+<p><strong>Best For:</strong></p>
+<ul>
+<li>Default values that apply to most cases</li>
+<li>Configuration classes with many optional parameters</li>
+<li>Const members with standard defaults</li>
+<li>Classes with multiple constructors</li>
+<li>Simple, consistent initialization values</li>
+</ul>
+<p><strong>Remember:</strong></p>
+<ul>
+<li>Constructor initializer list overrides in-class initializers</li>
+<li>Member declaration order matters for initialization</li>
+<li>Works with brace and copy initialization syntax</li>
+<li>C++20 added parentheses syntax support</li>
+<li>Combines perfectly with delegating constructors</li>
+</ul>
+<p>In-class member initialization represents a significant quality-of-life improvement in modern C++, making code cleaner, safer, and more maintainable.</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="uniform-initialization-c11"><a class="header" href="#uniform-initialization-c11">Uniform Initialization (C++11)</a></h1>
 <h2 id="what-is-uniform-initialization"><a class="header" href="#what-is-uniform-initialization">What is Uniform Initialization?</a></h2>
 <p>Uniform initialization, introduced in C++11, provides a consistent syntax for initializing objects using braces <code>{}</code>. Before C++11, C++ had multiple initialization syntaxes that were context-dependent and sometimes ambiguous. Uniform initialization aims to provide a single, unified approach that works in all contexts.</p>
@@ -19248,7 +19916,7 @@ Data d3{10, .c = 30};           // ERROR: cannot mix styles
 Point p1{10, 20};   // Always worked
 Point p2(10, 20);   // C++20: now also works for aggregates
 </code></pre>
-<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
 <h3 id="when-to-use-uniform-initialization"><a class="header" href="#when-to-use-uniform-initialization">When to Use Uniform Initialization</a></h3>
 <p><strong>Prefer uniform initialization when:</strong></p>
 <ul>
@@ -19288,7 +19956,7 @@ Widget w2{10, 5.0};   // ERROR: narrowing conversion (5.0 to int)
 Widget w3{10, 5};     // Calls Constructor 2 (initializer_list preferred!)
 </code></pre>
 <p>The <code>initializer_list</code> constructor is <strong>strongly preferred</strong> during overload resolution when brace initialization is used.</p>
-<h2 id="summary-13"><a class="header" href="#summary-13">Summary</a></h2>
+<h2 id="summary-14"><a class="header" href="#summary-14">Summary</a></h2>
 <p>Uniform initialization provides a consistent, safer way to initialize objects in modern C++. It prevents narrowing conversions, resolves parsing ambiguities, and enables powerful features like initializer lists and designated initializers. While it’s not always the perfect choice for every situation, understanding uniform initialization is essential for writing robust, modern C++ code.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
@@ -19406,7 +20074,7 @@ Point p5{100, 200, 300};        // Not self-documenting
 <p>The limitation? You couldn’t skip members or initialize them out of order, and the code wasn’t self-documenting.</p>
 <h2 id="designated-initialization-c20-1"><a class="header" href="#designated-initialization-c20-1">Designated Initialization (C++20)</a></h2>
 <p>Designated initialization allows you to explicitly name which members you’re initializing, making code more readable, maintainable, and less error-prone.</p>
-<h3 id="basic-syntax-6"><a class="header" href="#basic-syntax-6">Basic Syntax</a></h3>
+<h3 id="basic-syntax-7"><a class="header" href="#basic-syntax-7">Basic Syntax</a></h3>
 <pre><code class="language-cpp">struct Point {
     int x;
     int y;
@@ -19740,7 +20408,7 @@ Point p2{.x = 10, 20, 30};               // ❌ Error in C++
 int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
 </code></pre>
 <p><strong>Why stricter in C++?</strong> The restrictions maintain consistency with C++’s stronger type system and make the code more predictable and less error-prone.</p>
-<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
+<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
 <h3 id="1-use-for-configuration-and-options"><a class="header" href="#1-use-for-configuration-and-options">1. Use for Configuration and Options</a></h3>
 <pre><code class="language-cpp">// ✅ Perfect use case
 struct Config {
@@ -19783,7 +20451,7 @@ Point p{10, 20};  // ✅ Clear enough
 // Designated might be overkill
 Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
 </code></pre>
-<h2 id="summary-14"><a class="header" href="#summary-14">Summary</a></h2>
+<h2 id="summary-15"><a class="header" href="#summary-15">Summary</a></h2>
 <p>Designated initialization is a powerful C++20 feature that makes code more readable, maintainable, and less error-prone. It works exclusively with aggregate types, which are simple data structures without user-provided constructors, private members, or virtual functions.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
