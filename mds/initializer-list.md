@@ -28,7 +28,7 @@ The compiler translates it into:
 
 This happens automatically behind the scenes.
 
-## Basic Examples
+## Examples
 
 ### Using `std::initializer_list` with Standard Containers
 
