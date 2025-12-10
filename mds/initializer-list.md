@@ -6,7 +6,7 @@
 
 `std::initializer_list` is a C++11 utility type that provides a read-only view over a temporary array created from a brace-enclosed initializer list.
 
-### Key Characteristics
+### Characteristics
 
 * **Compile-time construct** (the type and elements are known at compile time)
 * **Immutable** (elements cannot be modified, means its const T)
