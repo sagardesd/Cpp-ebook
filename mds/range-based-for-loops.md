@@ -84,6 +84,10 @@ for (int num : numbers) {
 ```
 
 ### Using `auto` Keyword
+With the introduction of `auto` keyword in C++11, using auto in Range based for loops we can greatly reduce complexity as
+the porgrammer does not have to explicitly know the type of the entry in the containers or ranges.
+Simply use `auto` instead of the type.
+Compiler will deduce the type automatically from auto.
 
 ```cpp
 std::vector<std::string> words = {"hello", "world", "C++11"};
