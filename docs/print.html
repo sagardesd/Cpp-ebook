@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-113b7836.js";
+            window.path_to_searchindex_js = "searchindex-ec977414.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-571a3c34.js"></script>
+        <script src="toc-cee65f0e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -19058,6 +19058,247 @@ auto str = "Hello"s;
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
 <p><a href="#table-of-contents-27">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="uniform-initialization-c11"><a class="header" href="#uniform-initialization-c11">Uniform Initialization (C++11)</a></h1>
+<h2 id="what-is-uniform-initialization"><a class="header" href="#what-is-uniform-initialization">What is Uniform Initialization?</a></h2>
+<p>Uniform initialization, introduced in C++11, provides a consistent syntax for initializing objects using braces <code>{}</code>. Before C++11, C++ had multiple initialization syntaxes that were context-dependent and sometimes ambiguous. Uniform initialization aims to provide a single, unified approach that works in all contexts.</p>
+<h3 id="traditional-initialization-pre-c11"><a class="header" href="#traditional-initialization-pre-c11">Traditional Initialization (Pre-C++11)</a></h3>
+<pre><code class="language-cpp">int x = 5;                    // Copy initialization
+int y(10);                    // Direct initialization
+int arr[] = {1, 2, 3};        // Aggregate initialization
+std::vector&lt;int&gt; v(5, 100);   // Constructor call
+Widget w();                   // Most vexing parse - declares a function!
+</code></pre>
+<h3 id="uniform-initialization-c11-1"><a class="header" href="#uniform-initialization-c11-1">Uniform Initialization (C++11+)</a></h3>
+<pre><code class="language-cpp">int x{5};                     // Direct-list-initialization
+int y = {10};                 // Copy-list-initialization
+int arr[]{1, 2, 3};           // List initialization for arrays
+std::vector&lt;int&gt; v{5, 100};   // Initializer list constructor
+Widget w{};                   // Object initialization (not a function!)
+</code></pre>
+<h2 id="problems-solved-by-uniform-initialization"><a class="header" href="#problems-solved-by-uniform-initialization">Problems Solved by Uniform Initialization</a></h2>
+<h3 id="1-prevents-narrowing-conversions"><a class="header" href="#1-prevents-narrowing-conversions">1. Prevents Narrowing Conversions</a></h3>
+<p>Uniform initialization protects against implicit narrowing conversions that could lose data.</p>
+<pre><code class="language-cpp">// Traditional initialization - compiles with warning or silently loses data
+int x = 7.9;        // x = 7, fractional part lost
+char c = 1000;      // Overflow, undefined behavior
+
+// Uniform initialization - compilation error
+int x{7.9};         // ERROR: narrowing conversion from double to int
+char c{1000};       // ERROR: narrowing conversion, value out of range
+
+// Safe conversions are allowed
+int x{7};           // OK: no data loss
+double d{5};        // OK: widening conversion
+</code></pre>
+<p><strong>Why this matters:</strong> Catches potential bugs at compile-time rather than runtime, preventing subtle data loss issues.</p>
+<h3 id="2-solves-the-most-vexing-parse"><a class="header" href="#2-solves-the-most-vexing-parse">2. Solves the “Most Vexing Parse”</a></h3>
+<p>The Most Vexing Parse is a counterintuitive C++ parsing rule where something that looks like an object declaration is actually parsed as a function declaration.</p>
+<pre><code class="language-cpp">// Traditional syntax - ambiguous
+Widget w();         // NOT an object! This declares a function returning Widget
+Timer t(TimeKeeper());  // NOT a Timer object! Function declaration with 
+                        // function pointer parameter
+
+// These are the workarounds (pre-C++11)
+Widget w1;          // Default construction without parentheses
+Widget w2 = Widget();   // Extra copy (may be optimized away)
+Timer t((TimeKeeper()));  // Extra parentheses (confusing!)
+
+// Uniform initialization - clear and unambiguous
+Widget w{};         // Object with default constructor - no ambiguity!
+Timer t{TimeKeeper()};  // Object initialization, not function declaration
+</code></pre>
+<h3 id="3-prevents-accidental-type-conversions"><a class="header" href="#3-prevents-accidental-type-conversions">3. Prevents Accidental Type Conversions</a></h3>
+<pre><code class="language-cpp">// Traditional initialization
+std::vector&lt;int&gt; v(5, 2);   // Creates vector with 5 elements, each = 2
+
+// If you mistakenly write:
+std::vector&lt;int&gt; v(5);      // Creates vector with 5 default-initialized elements
+
+// Uniform initialization
+std::vector&lt;int&gt; v{5, 2};   // Creates vector with 2 elements: {5, 2}
+std::vector&lt;int&gt; v{5};      // Creates vector with 1 element: {5}
+
+// For size-based construction, use parentheses explicitly
+std::vector&lt;int&gt; v(5, 2);   // Still valid when you want size + value
+</code></pre>
+<h3 id="4-works-everywhere"><a class="header" href="#4-works-everywhere">4. Works Everywhere</a></h3>
+<p>Uniform initialization syntax works in contexts where other syntaxes don’t:</p>
+<pre><code class="language-cpp">// Return values
+auto createWidget() -&gt; Widget {
+    return {arg1, arg2};    // Works!
+}
+
+// Member initialization in constructors
+class MyClass {
+    std::vector&lt;int&gt; vec{1, 2, 3};  // In-class member initialization
+    std::string name{"Default"};
+};
+
+// Temporary objects as function arguments
+processData(Widget{42, "temp"});
+
+// Heap allocation
+auto ptr = new Widget{arg1, arg2};
+auto ptr2 = std::make_unique&lt;Widget&gt;(arg1, arg2);  // Parentheses still work here
+</code></pre>
+<h2 id="how-uniform-initialization-enables-advanced-features"><a class="header" href="#how-uniform-initialization-enables-advanced-features">How Uniform Initialization Enables Advanced Features</a></h2>
+<h3 id="1-initializer-lists-stdinitializer_list"><a class="header" href="#1-initializer-lists-stdinitializer_list">1. Initializer Lists (<code>std::initializer_list</code>)</a></h3>
+<p>Uniform initialization introduced <code>std::initializer_list&lt;T&gt;</code>, enabling container-style initialization for user-defined types.</p>
+<pre><code class="language-cpp">#include &lt;initializer_list&gt;
+
+class MyContainer {
+    std::vector&lt;int&gt; data;
+public:
+    MyContainer(std::initializer_list&lt;int&gt; list) : data(list) {}
+};
+
+MyContainer mc{1, 2, 3, 4, 5};  // Clean, intuitive syntax
+</code></pre>
+<h3 id="2-aggregate-initialization-enhancement"><a class="header" href="#2-aggregate-initialization-enhancement">2. Aggregate Initialization Enhancement</a></h3>
+<pre><code class="language-cpp">struct Point {
+    int x;
+    int y;
+};
+
+Point p{10, 20};    // Aggregate initialization with uniform syntax
+
+struct Line {
+    Point start;
+    Point end;
+};
+
+Line l{{0, 0}, {10, 20}};  // Nested aggregate initialization
+</code></pre>
+<h3 id="3-perfect-forwarding-and-variadic-templates"><a class="header" href="#3-perfect-forwarding-and-variadic-templates">3. Perfect Forwarding and Variadic Templates</a></h3>
+<p>Uniform initialization works seamlessly with modern C++ template features:</p>
+<pre><code class="language-cpp">template&lt;typename T, typename... Args&gt;
+std::unique_ptr&lt;T&gt; make_unique(Args&amp;&amp;... args) {
+    return std::unique_ptr&lt;T&gt;(new T{std::forward&lt;Args&gt;(args)...});
+}
+
+auto widget = make_unique&lt;Widget&gt;(42, "test");
+</code></pre>
+<h3 id="4-designated-initializers-c20"><a class="header" href="#4-designated-initializers-c20">4. Designated Initializers (C++20)</a></h3>
+<p>Building on uniform initialization, C++20 added designated initializers:</p>
+<pre><code class="language-cpp">struct Config {
+    int timeout = 30;
+    bool verbose = false;
+    std::string mode = "auto";
+};
+
+Config cfg{
+    .timeout = 60,
+    .verbose = true
+};  // Unspecified members use default values
+</code></pre>
+<h2 id="evolution-c11-to-c20"><a class="header" href="#evolution-c11-to-c20">Evolution: C++11 to C++20</a></h2>
+<h3 id="c11-initial-introduction"><a class="header" href="#c11-initial-introduction">C++11: Initial Introduction</a></h3>
+<ul>
+<li>Basic brace initialization syntax</li>
+<li><code>std::initializer_list&lt;T&gt;</code></li>
+<li>Prevention of narrowing conversions</li>
+<li>Resolution of most vexing parse</li>
+</ul>
+<pre><code class="language-cpp">std::vector&lt;int&gt; v{1, 2, 3};
+auto x = {1, 2, 3};  // Type: std::initializer_list&lt;int&gt;
+</code></pre>
+<h3 id="c14-minor-refinements"><a class="header" href="#c14-minor-refinements">C++14: Minor Refinements</a></h3>
+<ul>
+<li>Return type deduction with braced-init-list improved</li>
+<li><code>auto</code> with single-element braced-init-list</li>
+</ul>
+<pre><code class="language-cpp">auto x{5};   // C++14: x is int (not std::initializer_list&lt;int&gt;)
+auto y = {5}; // Still std::initializer_list&lt;int&gt;
+</code></pre>
+<h3 id="c17-enhanced-features"><a class="header" href="#c17-enhanced-features">C++17: Enhanced Features</a></h3>
+<ul>
+<li>Structured bindings work with brace initialization</li>
+<li>Deduction guides for class templates</li>
+</ul>
+<pre><code class="language-cpp">// Deduction guides
+std::pair p{42, "hello"};  // Deduces std::pair&lt;int, const char*&gt;
+std::tuple t{1, 2.0, "three"};  // Deduces types automatically
+
+// Structured bindings
+auto [x, y] = Point{10, 20};
+</code></pre>
+<h3 id="c20-designated-initializers"><a class="header" href="#c20-designated-initializers">C++20: Designated Initializers</a></h3>
+<ul>
+<li>Explicit member initialization by name</li>
+<li>Must be in declaration order</li>
+<li>Cannot mix with non-designated initializers in the same list</li>
+</ul>
+<pre><code class="language-cpp">struct Data {
+    int a = 1;
+    int b = 2;
+    int c = 3;
+};
+
+Data d1{.a = 10, .c = 30};     // OK: b gets default value 2
+Data d2{.c = 30, .a = 10};     // ERROR: out of order
+Data d3{10, .c = 30};           // ERROR: cannot mix styles
+</code></pre>
+<h3 id="c20-parenthesized-initialization-of-aggregates"><a class="header" href="#c20-parenthesized-initialization-of-aggregates">C++20: Parenthesized Initialization of Aggregates</a></h3>
+<p>C++20 allows using parentheses for aggregate initialization in some contexts:</p>
+<pre><code class="language-cpp">struct Point {
+    int x;
+    int y;
+};
+
+Point p1{10, 20};   // Always worked
+Point p2(10, 20);   // C++20: now also works for aggregates
+</code></pre>
+<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h3 id="when-to-use-uniform-initialization"><a class="header" href="#when-to-use-uniform-initialization">When to Use Uniform Initialization</a></h3>
+<p><strong>Prefer uniform initialization when:</strong></p>
+<ul>
+<li>Initializing aggregates or POD types</li>
+<li>You want to prevent narrowing conversions</li>
+<li>Avoiding the most vexing parse</li>
+<li>Initializing containers with multiple values</li>
+<li>Using in-class member initializers</li>
+</ul>
+<pre><code class="language-cpp">struct Settings {
+    int value{0};           // Clear intent, prevents narrowing
+    std::string name{"default"};
+};
+
+std::vector&lt;int&gt; primes{2, 3, 5, 7, 11};
+</code></pre>
+<h3 id="when-to-use-traditional-initialization"><a class="header" href="#when-to-use-traditional-initialization">When to Use Traditional Initialization</a></h3>
+<p><strong>Prefer parentheses when:</strong></p>
+<ul>
+<li>Calling constructors with specific arguments (especially containers)</li>
+<li>Avoiding initializer_list constructor overload</li>
+<li>Using <code>auto</code> and want direct type (not <code>initializer_list</code>)</li>
+</ul>
+<pre><code class="language-cpp">std::vector&lt;int&gt; v(100, 0);    // 100 zeros - clear intent
+std::unique_ptr&lt;Widget&gt; ptr(new Widget(args));
+auto x(5);  // x is int, not initializer_list
+</code></pre>
+<h3 id="watch-out-for-constructor-overload-resolution"><a class="header" href="#watch-out-for-constructor-overload-resolution">Watch Out for Constructor Overload Resolution</a></h3>
+<pre><code class="language-cpp">class Widget {
+public:
+    Widget(int x, double y);     // Constructor 1
+    Widget(std::initializer_list&lt;int&gt; list);  // Constructor 2
+};
+
+Widget w1(10, 5.0);   // Calls Constructor 1
+Widget w2{10, 5.0};   // ERROR: narrowing conversion (5.0 to int)
+Widget w3{10, 5};     // Calls Constructor 2 (initializer_list preferred!)
+</code></pre>
+<p>The <code>initializer_list</code> constructor is <strong>strongly preferred</strong> during overload resolution when brace initialization is used.</p>
+<h2 id="summary-13"><a class="header" href="#summary-13">Summary</a></h2>
+<p>Uniform initialization provides a consistent, safer way to initialize objects in modern C++. It prevents narrowing conversions, resolves parsing ambiguities, and enables powerful features like initializer lists and designated initializers. While it’s not always the perfect choice for every situation, understanding uniform initialization is essential for writing robust, modern C++ code.</p>
+<p><strong>Key Takeaways:</strong></p>
+<ul>
+<li>Use <code>{}</code> for safety and consistency in most cases</li>
+<li>Use <code>()</code> when you need specific constructor behavior or container sizing</li>
+<li>Be aware of <code>initializer_list</code> constructor priority</li>
+<li>C++20 designated initializers make code more readable and maintainable</li>
+<li>Uniform initialization is foundational to many modern C++ features</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="designated-initialization-c20"><a class="header" href="#designated-initialization-c20">Designated Initialization (C++20)</a></h1>
 <h2 id="understanding-aggregate-types"><a class="header" href="#understanding-aggregate-types">Understanding Aggregate Types</a></h2>
 <p>Before diving into designated initialization, we need to understand <strong>aggregate types</strong>, which are the only types that support this feature.</p>
@@ -19499,7 +19740,7 @@ Point p2{.x = 10, 20, 30};               // ❌ Error in C++
 int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
 </code></pre>
 <p><strong>Why stricter in C++?</strong> The restrictions maintain consistency with C++’s stronger type system and make the code more predictable and less error-prone.</p>
-<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
 <h3 id="1-use-for-configuration-and-options"><a class="header" href="#1-use-for-configuration-and-options">1. Use for Configuration and Options</a></h3>
 <pre><code class="language-cpp">// ✅ Perfect use case
 struct Config {
@@ -19542,7 +19783,7 @@ Point p{10, 20};  // ✅ Clear enough
 // Designated might be overkill
 Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
 </code></pre>
-<h2 id="summary-13"><a class="header" href="#summary-13">Summary</a></h2>
+<h2 id="summary-14"><a class="header" href="#summary-14">Summary</a></h2>
 <p>Designated initialization is a powerful C++20 feature that makes code more readable, maintainable, and less error-prone. It works exclusively with aggregate types, which are simple data structures without user-provided constructors, private members, or virtual functions.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
