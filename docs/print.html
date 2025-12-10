@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-55100050.js";
+            window.path_to_searchindex_js = "searchindex-7ac8bb6f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-bc89b3a6.js"></script>
@@ -19619,6 +19619,10 @@ for (int num : numbers) {
 }
 </code></pre>
 <h3 id="using-auto-keyword"><a class="header" href="#using-auto-keyword">Using <code>auto</code> Keyword</a></h3>
+<p>With the introduction of <code>auto</code> keyword in C++11, using auto in Range based for loops we can greatly reduce complexity as
+the porgrammer does not have to explicitly know the type of the entry in the containers or ranges.
+Simply use <code>auto</code> instead of the type.
+Compiler will deduce the type automatically from auto.</p>
 <pre><code class="language-cpp">std::vector&lt;std::string&gt; words = {"hello", "world", "C++11"};
 
 // Read-only, makes copies
