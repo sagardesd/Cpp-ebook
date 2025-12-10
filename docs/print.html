@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-16d87a58.js";
+            window.path_to_searchindex_js = "searchindex-0a20a886.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-b3677201.js"></script>
+        <script src="toc-438315bd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -19058,6 +19058,488 @@ auto str = "Hello"s;
 <p>The <code>auto</code> keyword is a powerful feature that makes C++ code more maintainable and less error-prone. Understanding its type deduction rules and limitations helps you use it effectively while avoiding common pitfalls.</p>
 <p><a href="#table-of-contents-27">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="decltype-c11-to-c20"><a class="header" href="#decltype-c11-to-c20">decltype (C++11 to C++20)</a></h1>
+<h2 id="table-of-contents-28"><a class="header" href="#table-of-contents-28">Table of Contents</a></h2>
+<ol>
+<li><a href="#what-is-decltype">What is decltype?</a></li>
+<li><a href="#why-decltype-is-needed">Why decltype is Needed</a></li>
+<li><a href="#how-decltype-works-in-c11">How decltype Works in C++11</a></li>
+<li><a href="#type-deduction-rules">Type Deduction Rules</a></li>
+<li><a href="#evolution-in-c14">Evolution in C++14</a></li>
+<li><a href="#evolution-in-c17">Evolution in C++17</a></li>
+<li><a href="#evolution-in-c20">Evolution in C++20</a></li>
+<li><a href="#common-pitfalls">Common Pitfalls</a></li>
+<li><a href="#best-practices-8">Best Practices</a></li>
+</ol>
+<hr>
+<h2 id="what-is-decltype"><a class="header" href="#what-is-decltype">What is decltype?</a></h2>
+<p><code>decltype</code> is a type specifier introduced in C++11 that inspects the declared type of an entity or the type and value category of an expression. The name stands for “<strong>decl</strong>ared <strong>type</strong>”.</p>
+<h3 id="basic-syntax-6"><a class="header" href="#basic-syntax-6">Basic Syntax</a></h3>
+<pre><code class="language-cpp">decltype(expression)
+</code></pre>
+<h3 id="simple-example-2"><a class="header" href="#simple-example-2">Simple Example</a></h3>
+<pre><code class="language-cpp">int x = 42;
+decltype(x) y = 10;  // y has type int
+
+const int&amp; z = x;
+decltype(z) w = x;   // w has type const int&amp;
+</code></pre>
+<hr>
+<h2 id="why-decltype-is-needed"><a class="header" href="#why-decltype-is-needed">Why decltype is Needed</a></h2>
+<p>Before C++11, there was no way to determine the exact type of an expression at compile time. This created several problems:</p>
+<h3 id="problem-1-template-return-type-deduction"><a class="header" href="#problem-1-template-return-type-deduction">Problem 1: Template Return Type Deduction</a></h3>
+<pre><code class="language-cpp">// Before C++11 - impossible to write correctly for all types
+template&lt;typename T, typename U&gt;
+??? multiply(T a, U b) {
+    return a * b;  // What's the return type?
+}
+</code></pre>
+<h3 id="problem-2-complex-type-expressions"><a class="header" href="#problem-2-complex-type-expressions">Problem 2: Complex Type Expressions</a></h3>
+<pre><code class="language-cpp">// Hard to maintain - if container type changes, code breaks
+std::vector&lt;int&gt; vec;
+std::vector&lt;int&gt;::iterator it = vec.begin();
+</code></pre>
+<h3 id="problem-3-perfect-forwarding-return-types"><a class="header" href="#problem-3-perfect-forwarding-return-types">Problem 3: Perfect Forwarding Return Types</a></h3>
+<pre><code class="language-cpp">// How do we preserve the exact return type?
+template&lt;typename Func, typename... Args&gt;
+??? wrapper(Func f, Args&amp;&amp;... args) {
+    return f(std::forward&lt;Args&gt;(args)...);
+}
+</code></pre>
+<h3 id="solutions-with-decltype"><a class="header" href="#solutions-with-decltype">Solutions with decltype</a></h3>
+<pre><code class="language-cpp">// Solution 1: Template return type
+template&lt;typename T, typename U&gt;
+auto multiply(T a, U b) -&gt; decltype(a * b) {
+    return a * b;
+}
+
+// Solution 2: Type inference
+auto it = vec.begin();  // Type automatically deduced
+
+// Solution 3: Perfect forwarding
+template&lt;typename Func, typename... Args&gt;
+auto wrapper(Func f, Args&amp;&amp;... args) -&gt; decltype(f(std::forward&lt;Args&gt;(args)...)) {
+    return f(std::forward&lt;Args&gt;(args)...);
+}
+</code></pre>
+<hr>
+<h2 id="how-decltype-works-in-c11"><a class="header" href="#how-decltype-works-in-c11">How decltype Works in C++11</a></h2>
+<p>In C++11, <code>decltype</code> has <strong>two completely different behaviors</strong> depending on whether the argument is parenthesized or not.</p>
+<h3 id="the-two-forms"><a class="header" href="#the-two-forms">The Two Forms</a></h3>
+<h4 id="form-1-variable-decltype-unparenthesized-id-expression"><a class="header" href="#form-1-variable-decltype-unparenthesized-id-expression">Form 1: Variable decltype (unparenthesized id-expression)</a></h4>
+<p>Returns the <strong>exact declared type</strong> of a variable, including references.</p>
+<pre><code class="language-cpp">int x = 5;
+int&amp; rx = x;
+int&amp;&amp; rrx = std::move(x);
+
+decltype(x)    // int
+decltype(rx)   // int&amp;
+decltype(rrx)  // int&amp;&amp;
+</code></pre>
+<h4 id="form-2-expression-decltype-anything-else-including-parenthesized"><a class="header" href="#form-2-expression-decltype-anything-else-including-parenthesized">Form 2: Expression decltype (anything else, including parenthesized)</a></h4>
+<p>Returns type based on <strong>value category</strong>:</p>
+<ul>
+<li><strong>prvalue</strong> → <code>T</code></li>
+<li><strong>lvalue</strong> → <code>T&amp;</code></li>
+<li><strong>xvalue</strong> → <code>T&amp;&amp;</code></li>
+</ul>
+<pre><code class="language-cpp">int x = 5;
+
+decltype((x))     // int&amp;  (lvalue)
+decltype(x + 1)   // int   (prvalue)
+decltype(std::move(x))  // int&amp;&amp; (xvalue)
+</code></pre>
+<h3 id="critical-difference-example"><a class="header" href="#critical-difference-example">Critical Difference Example</a></h3>
+<pre><code class="language-cpp">int i = 42;
+
+// Safe: returns int (copy)
+decltype(auto) fn_A(int i) {
+    return i;      // decltype(i) = int
+}
+
+// DANGEROUS: returns int&amp; (reference to local variable!)
+decltype(auto) fn_B(int i) {
+    return (i);    // decltype((i)) = int&amp;
+}
+
+int main() {
+    int a = fn_A(10);  // OK
+    int&amp; b = fn_B(10); // Undefined behavior - dangling reference!
+}
+</code></pre>
+<hr>
+<h2 id="type-deduction-rules"><a class="header" href="#type-deduction-rules">Type Deduction Rules</a></h2>
+<h3 id="rule-1-unparenthesized-variables"><a class="header" href="#rule-1-unparenthesized-variables">Rule 1: Unparenthesized Variables</a></h3>
+<pre><code class="language-cpp">int x;
+const int cx = x;
+int&amp; rx = x;
+const int&amp; crx = x;
+
+decltype(x)    // int
+decltype(cx)   // const int
+decltype(rx)   // int&amp;
+decltype(crx)  // const int&amp;
+</code></pre>
+<h3 id="rule-2-parenthesized-variables"><a class="header" href="#rule-2-parenthesized-variables">Rule 2: Parenthesized Variables</a></h3>
+<pre><code class="language-cpp">int x;
+
+decltype((x))   // int&amp; (always lvalue reference for variables)
+</code></pre>
+<h3 id="rule-3-member-access"><a class="header" href="#rule-3-member-access">Rule 3: Member Access</a></h3>
+<pre><code class="language-cpp">struct S {
+    int member;
+};
+
+S s;
+S f();
+
+decltype(s.member)       // int&amp;  (lvalue)
+decltype(f().member)     // int&amp;&amp; (xvalue - temporary object)
+decltype(S::member)      // int&amp;  (even outside class context)
+</code></pre>
+<h3 id="rule-4-function-calls"><a class="header" href="#rule-4-function-calls">Rule 4: Function Calls</a></h3>
+<p>Function call expressions take the return type of the function:</p>
+<pre><code class="language-cpp">int func();
+int&amp; func_ref();
+int&amp;&amp; func_rref();
+
+decltype(func())       // int
+decltype(func_ref())   // int&amp;
+decltype(func_rref())  // int&amp;&amp;
+</code></pre>
+<h3 id="rule-5-operators"><a class="header" href="#rule-5-operators">Rule 5: Operators</a></h3>
+<pre><code class="language-cpp">int a = 5, b = 10;
+
+decltype(a + b)   // int (prvalue)
+decltype(a = b)   // int&amp; (assignment returns lvalue reference)
+decltype(++a)     // int&amp; (pre-increment returns lvalue reference)
+decltype(a++)     // int (post-increment returns prvalue)
+decltype(a &gt; b)   // bool (prvalue)
+</code></pre>
+<h3 id="rule-6-literals-and-constants"><a class="header" href="#rule-6-literals-and-constants">Rule 6: Literals and Constants</a></h3>
+<pre><code class="language-cpp">decltype(42)        // int
+decltype(3.14)      // double
+decltype("hello")   // const char(&amp;)[6] (array reference)
+decltype(nullptr)   // std::nullptr_t
+</code></pre>
+<h3 id="value-categories-summary"><a class="header" href="#value-categories-summary">Value Categories Summary</a></h3>
+<p>Based on the Stanford article, here’s how value categories relate to decltype:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Value Category</th><th>decltype Result</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>prvalue</strong> (pure rvalue)</td><td><code>T</code></td><td><code>42</code>, <code>func()</code> returning by value</td></tr>
+<tr><td><strong>lvalue</strong></td><td><code>T&amp;</code></td><td>Variables, <code>(x)</code>, pre-increment</td></tr>
+<tr><td><strong>xvalue</strong> (expiring value)</td><td><code>T&amp;&amp;</code></td><td><code>std::move(x)</code>, <code>f().member</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="evolution-in-c14"><a class="header" href="#evolution-in-c14">Evolution in C++14</a></h2>
+<p>C++14 introduced significant improvements to make <code>decltype</code> easier to use.</p>
+<h3 id="decltypeauto"><a class="header" href="#decltypeauto">decltype(auto)</a></h3>
+<p>The biggest addition was <code>decltype(auto)</code>, which combines <code>auto</code> type deduction with <code>decltype</code> rules.</p>
+<h4 id="without-decltypeauto-c11"><a class="header" href="#without-decltypeauto-c11">Without decltype(auto) (C++11)</a></h4>
+<pre><code class="language-cpp">template&lt;typename Container&gt;
+auto getElement(Container&amp; c, int index) -&gt; decltype(c[index]) {
+    return c[index];
+}
+</code></pre>
+<h4 id="with-decltypeauto-c14"><a class="header" href="#with-decltypeauto-c14">With decltype(auto) (C++14)</a></h4>
+<pre><code class="language-cpp">template&lt;typename Container&gt;
+decltype(auto) getElement(Container&amp; c, int index) {
+    return c[index];  // Preserves reference if c[index] returns reference
+}
+</code></pre>
+<h3 id="key-benefits"><a class="header" href="#key-benefits">Key Benefits</a></h3>
+<ol>
+<li><strong>Preserves Value Category</strong></li>
+</ol>
+<pre><code class="language-cpp">std::vector&lt;int&gt; vec = {1, 2, 3};
+
+decltype(auto) elem = vec[0];  // int&amp;, can modify
+elem = 42;  // Modifies vec[0]
+
+auto elem2 = vec[0];  // int, copy
+elem2 = 42;  // Does NOT modify vec[0]
+</code></pre>
+<ol start="2">
+<li><strong>Simpler Return Type Deduction</strong></li>
+</ol>
+<pre><code class="language-cpp">// C++11
+template&lt;typename F, typename... Args&gt;
+auto wrapper(F f, Args&amp;&amp;... args) -&gt; decltype(f(std::forward&lt;Args&gt;(args)...)) {
+    return f(std::forward&lt;Args&gt;(args)...);
+}
+
+// C++14 - much cleaner!
+template&lt;typename F, typename... Args&gt;
+decltype(auto) wrapper(F f, Args&amp;&amp;... args) {
+    return f(std::forward&lt;Args&gt;(args)...);
+}
+</code></pre>
+<ol start="3">
+<li><strong>Variable Initialization</strong></li>
+</ol>
+<pre><code class="language-cpp">int x = 5;
+int&amp; rx = x;
+
+decltype(auto) y = rx;   // y is int&amp;
+auto z = rx;              // z is int (copy)
+</code></pre>
+<h3 id="return-type-rules-in-c14"><a class="header" href="#return-type-rules-in-c14">Return Type Rules in C++14</a></h3>
+<pre><code class="language-cpp">decltype(auto) f1() { return 5; }        // Returns int
+decltype(auto) f2() { int x = 5; return x; }   // Returns int
+decltype(auto) f3() { int x = 5; return (x); } // Returns int&amp; - DANGEROUS!
+</code></pre>
+<hr>
+<h2 id="evolution-in-c17"><a class="header" href="#evolution-in-c17">Evolution in C++17</a></h2>
+<p>C++17 brought conceptual changes to how prvalues work, affecting <code>decltype</code> indirectly.</p>
+<h3 id="guaranteed-copy-elision"><a class="header" href="#guaranteed-copy-elision">Guaranteed Copy Elision</a></h3>
+<p>C++17 changed prvalues to be initialization expressions rather than temporary objects.</p>
+<pre><code class="language-cpp">struct S {
+    S() { std::cout &lt;&lt; "Constructor\n"; }
+    S(const S&amp;) { std::cout &lt;&lt; "Copy\n"; }
+};
+
+S factory() { return S(); }
+
+// C++14: Constructor, Copy (maybe elided)
+// C++17: Constructor only (guaranteed)
+S s = factory();
+
+decltype(factory())  // Still S (prvalue), but semantic change
+</code></pre>
+<h3 id="structured-bindings-with-decltype"><a class="header" href="#structured-bindings-with-decltype">Structured Bindings with decltype</a></h3>
+<p>C++17 introduced structured bindings, which work well with <code>decltype</code>:</p>
+<pre><code class="language-cpp">std::pair&lt;int, double&gt; getPair() {
+    return {42, 3.14};
+}
+
+auto [i, d] = getPair();
+
+decltype(i)  // int
+decltype(d)  // double
+
+// With references
+auto&amp; [ri, rd] = getPair();  // Error: can't bind to temporary
+
+std::pair&lt;int, double&gt; p = getPair();
+auto&amp; [ri, rd] = p;  // OK
+decltype(ri)  // int&amp;
+</code></pre>
+<h3 id="template-argument-deduction-for-class-templates"><a class="header" href="#template-argument-deduction-for-class-templates">Template Argument Deduction for Class Templates</a></h3>
+<pre><code class="language-cpp">// C++17
+std::pair p{1, 2.0};  // std::pair&lt;int, double&gt;
+decltype(p)  // std::pair&lt;int, double&gt;
+
+// Works with complex expressions
+decltype(std::pair{1, 2.0})  // std::pair&lt;int, double&gt;
+</code></pre>
+<hr>
+<h2 id="evolution-in-c20"><a class="header" href="#evolution-in-c20">Evolution in C++20</a></h2>
+<p>C++20 introduced concepts and constraints, which heavily use <code>decltype</code> in requires expressions.</p>
+<h3 id="requires-expressions"><a class="header" href="#requires-expressions">Requires Expressions</a></h3>
+<pre><code class="language-cpp">#include &lt;concepts&gt;
+
+template&lt;typename T&gt;
+concept Addable = requires(T a, T b) {
+    { a + b } -&gt; std::same_as&lt;T&gt;;  // decltype((a + b)) must be T
+};
+
+template&lt;typename T&gt;
+concept HasSize = requires(T t) {
+    { t.size() } -&gt; std::convertible_to&lt;std::size_t&gt;;
+};
+</code></pre>
+<h3 id="common-mistake-in-requires-expressions"><a class="header" href="#common-mistake-in-requires-expressions">Common Mistake in Requires Expressions</a></h3>
+<pre><code class="language-cpp">template&lt;typename TA, typename TB&gt;
+auto add(TA a, TB b)
+    requires requires {
+        { a + b } -&gt; std::same_as&lt;TA&gt;;
+        { b } -&gt; std::same_as&lt;int&gt;;  // WRONG! decltype((b)) is int&amp;, not int
+    }
+{
+    return a += b;
+}
+
+// Correct version
+template&lt;typename TA, typename TB&gt;
+auto add(TA a, TB b)
+    requires requires {
+        { a + b } -&gt; std::same_as&lt;TA&gt;;
+        { b } -&gt; std::same_as&lt;int&amp;&gt;;  // Correct!
+    }
+{
+    return a += b;
+}
+</code></pre>
+<h3 id="decltype-in-abbreviated-function-templates"><a class="header" href="#decltype-in-abbreviated-function-templates">decltype in Abbreviated Function Templates</a></h3>
+<pre><code class="language-cpp">// C++20 abbreviated function template
+void process(auto x) {
+    using T = decltype(x);
+    T copy = x;
+    // ...
+}
+
+// Equivalent to:
+template&lt;typename T&gt;
+void process(T x) {
+    T copy = x;
+    // ...
+}
+</code></pre>
+<h3 id="concepts-with-decltype"><a class="header" href="#concepts-with-decltype">Concepts with decltype</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+concept Container = requires(T t) {
+    typename T::value_type;
+    { t.begin() } -&gt; std::same_as&lt;typename T::iterator&gt;;
+    { t.size() } -&gt; std::same_as&lt;typename T::size_type&gt;;
+};
+
+template&lt;Container C&gt;
+decltype(auto) getFirst(C&amp; c) {
+    return *c.begin();  // Preserves reference type
+}
+</code></pre>
+<hr>
+<h2 id="common-pitfalls"><a class="header" href="#common-pitfalls">Common Pitfalls</a></h2>
+<h3 id="pitfall-1-parentheses-matter"><a class="header" href="#pitfall-1-parentheses-matter">Pitfall 1: Parentheses Matter!</a></h3>
+<pre><code class="language-cpp">int x = 5;
+
+decltype(x) a = x;    // int
+decltype((x)) b = x;  // int&amp;
+
+// Dangerous in return statements
+decltype(auto) bad() {
+    int x = 42;
+    return (x);  // Returns int&amp; to local variable!
+}
+</code></pre>
+<h3 id="pitfall-2-temporary-object-member-access"><a class="header" href="#pitfall-2-temporary-object-member-access">Pitfall 2: Temporary Object Member Access</a></h3>
+<pre><code class="language-cpp">struct S {
+    int member = 0;
+};
+
+S f() { return S{}; }
+
+decltype(f().member)  // int&amp;&amp; (xvalue)
+
+// Dangerous!
+decltype(auto) getMember() {
+    return S{}.member;  // Returns int&amp;&amp; to destroyed temporary!
+}
+</code></pre>
+<h3 id="pitfall-3-reference-collapsing-confusion"><a class="header" href="#pitfall-3-reference-collapsing-confusion">Pitfall 3: Reference Collapsing Confusion</a></h3>
+<pre><code class="language-cpp">int x = 5;
+int&amp; rx = x;
+
+decltype(rx) y = x;     // int&amp;
+decltype((rx)) z = x;   // int&amp; (parentheses don't add another reference)
+</code></pre>
+<h3 id="pitfall-4-conditional-operator-surprises"><a class="header" href="#pitfall-4-conditional-operator-surprises">Pitfall 4: Conditional Operator Surprises</a></h3>
+<pre><code class="language-cpp">int a = 1, b = 2;
+
+decltype(a &gt; b ? a : b)  // int&amp; (both operands are lvalues)
+decltype(true ? 0 : 1)   // int (both operands are prvalues)
+decltype(a &gt; b ? a : 0)  // int (mixed: unifies to prvalue)
+</code></pre>
+<hr>
+<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h3 id="1-use-decltypeauto-for-perfect-return-type-forwarding"><a class="header" href="#1-use-decltypeauto-for-perfect-return-type-forwarding">1. Use decltype(auto) for Perfect Return Type Forwarding</a></h3>
+<pre><code class="language-cpp">// Good: Preserves exact return type
+template&lt;typename Func, typename... Args&gt;
+decltype(auto) invoke(Func&amp;&amp; f, Args&amp;&amp;... args) {
+    return std::forward&lt;Func&gt;(f)(std::forward&lt;Args&gt;(args)...);
+}
+</code></pre>
+<h3 id="2-avoid-parentheses-in-return-statements"><a class="header" href="#2-avoid-parentheses-in-return-statements">2. Avoid Parentheses in Return Statements</a></h3>
+<pre><code class="language-cpp">// Bad
+decltype(auto) bad(int x) {
+    return (x);  // int&amp; - dangerous!
+}
+
+// Good
+decltype(auto) good(int x) {
+    return x;    // int - safe
+}
+</code></pre>
+<h3 id="3-use-macros-for-safe-decltype-usage"><a class="header" href="#3-use-macros-for-safe-decltype-usage">3. Use Macros for Safe decltype Usage</a></h3>
+<pre><code class="language-cpp">// Prevent accidental expression decltype
+#define exprtype(E) decltype((E))
+#define vartype(v) decltype(v)
+
+int x = 5;
+vartype(x) y = 10;     // Clear intent: copy variable type
+exprtype(x) z = x;     // Clear intent: get expression type (lvalue ref)
+</code></pre>
+<h3 id="4-prefer-auto-for-variable-declarations"><a class="header" href="#4-prefer-auto-for-variable-declarations">4. Prefer auto for Variable Declarations</a></h3>
+<pre><code class="language-cpp">// Usually prefer this
+auto x = someFunction();
+
+// Use decltype(auto) only when you need to preserve references
+decltype(auto) y = someFunction();  // If someFunction returns a reference
+</code></pre>
+<h3 id="5-use-trailing-return-types-for-clarity"><a class="header" href="#5-use-trailing-return-types-for-clarity">5. Use Trailing Return Types for Clarity</a></h3>
+<pre><code class="language-cpp">// Clear and readable
+template&lt;typename T, typename U&gt;
+auto multiply(T a, U b) -&gt; decltype(a * b) {
+    return a * b;
+}
+</code></pre>
+<h3 id="6-test-value-categories-at-compile-time"><a class="header" href="#6-test-value-categories-at-compile-time">6. Test Value Categories at Compile Time</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt; constexpr const char* category = "prvalue";
+template&lt;typename T&gt; constexpr const char* category&lt;T&amp;&gt; = "lvalue";
+template&lt;typename T&gt; constexpr const char* category&lt;T&amp;&amp;&gt; = "xvalue";
+
+#define SHOW_CATEGORY(E) \
+    std::cout &lt;&lt; #E &lt;&lt; ": " &lt;&lt; category&lt;decltype((E))&gt; &lt;&lt; '\n'
+
+int x = 5;
+SHOW_CATEGORY(x);        // lvalue
+SHOW_CATEGORY(x + 1);    // prvalue
+SHOW_CATEGORY(std::move(x));  // xvalue
+</code></pre>
+<h3 id="7-document-intent-with-type-aliases"><a class="header" href="#7-document-intent-with-type-aliases">7. Document Intent with Type Aliases</a></h3>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+using RemoveRef = std::remove_reference_t&lt;T&gt;;
+
+template&lt;typename Func&gt;
+auto wrapper(Func&amp;&amp; f) -&gt; RemoveRef&lt;decltype(f())&gt; {
+    return f();  // Always returns by value
+}
+</code></pre>
+<hr>
+<h2 id="summary-table-2"><a class="header" href="#summary-table-2">Summary Table</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>C++11</th><th>C++14</th><th>C++17</th><th>C++20</th></tr>
+</thead>
+<tbody>
+<tr><td>Basic <code>decltype</code></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td><code>decltype(auto)</code></td><td>✗</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Trailing return types</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Guaranteed copy elision</td><td>✗</td><td>✗</td><td>✓</td><td>✓</td></tr>
+<tr><td>Requires expressions</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td></tr>
+<tr><td>Abbreviated templates</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="conclusion-1"><a class="header" href="#conclusion-1">Conclusion</a></h2>
+<p><code>decltype</code> is a powerful feature that enables:</p>
+<ul>
+<li><strong>Type introspection</strong> at compile time</li>
+<li><strong>Perfect forwarding</strong> of return types</li>
+<li><strong>Generic programming</strong> with exact type preservation</li>
+<li><strong>Metaprogramming</strong> with type computations</li>
+</ul>
+<p>Understanding the two forms of <code>decltype</code> (variable vs expression) and value categories is crucial for avoiding bugs. The evolution from C++11 through C++20 has made <code>decltype</code> progressively more powerful and easier to use, especially with <code>decltype(auto)</code> in C++14 and concepts in C++20.</p>
+<p>Remember: <strong>Parentheses matter!</strong> <code>decltype(x)</code> and <code>decltype((x))</code> can be completely different types.</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="in-class-member-initialization-c11"><a class="header" href="#in-class-member-initialization-c11">In-Class Member Initialization (C++11)</a></h1>
 <h2 id="introduction-4"><a class="header" href="#introduction-4">Introduction</a></h2>
 <p>In-class member initialization (also called default member initialization) was introduced in <strong>C++11</strong> and represents a significant improvement in how we initialize class data members. This feature allows you to specify default values for non-static data members directly in the class definition, rather than solely in constructors.</p>
@@ -19157,7 +19639,7 @@ public:
 </code></pre>
 <h2 id="in-class-member-initialization-c11-1"><a class="header" href="#in-class-member-initialization-c11-1">In-Class Member Initialization (C++11)</a></h2>
 <p>C++11 introduced the ability to initialize non-static data members directly at their point of declaration.</p>
-<h3 id="basic-syntax-6"><a class="header" href="#basic-syntax-6">Basic Syntax</a></h3>
+<h3 id="basic-syntax-7"><a class="header" href="#basic-syntax-7">Basic Syntax</a></h3>
 <pre><code class="language-cpp">class MyClass {
 private:
     int value = 42;                    // Direct initialization
@@ -19597,7 +20079,7 @@ public:
 // Out-of-class definition still needed for static non-const (pre-C++17)
 int MemberTypes::static_value = 50;
 </code></pre>
-<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
 <h3 id="1-use-in-class-initialization-for-defaults"><a class="header" href="#1-use-in-class-initialization-for-defaults">1. Use In-Class Initialization for Defaults</a></h3>
 <pre><code class="language-cpp">// ✅ Good: Clear default values
 class Config {
@@ -19916,7 +20398,7 @@ Data d3{10, .c = 30};           // ERROR: cannot mix styles
 Point p1{10, 20};   // Always worked
 Point p2(10, 20);   // C++20: now also works for aggregates
 </code></pre>
-<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
+<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
 <h3 id="when-to-use-uniform-initialization"><a class="header" href="#when-to-use-uniform-initialization">When to Use Uniform Initialization</a></h3>
 <p><strong>Prefer uniform initialization when:</strong></p>
 <ul>
@@ -20074,7 +20556,7 @@ Point p5{100, 200, 300};        // Not self-documenting
 <p>The limitation? You couldn’t skip members or initialize them out of order, and the code wasn’t self-documenting.</p>
 <h2 id="designated-initialization-c20-1"><a class="header" href="#designated-initialization-c20-1">Designated Initialization (C++20)</a></h2>
 <p>Designated initialization allows you to explicitly name which members you’re initializing, making code more readable, maintainable, and less error-prone.</p>
-<h3 id="basic-syntax-7"><a class="header" href="#basic-syntax-7">Basic Syntax</a></h3>
+<h3 id="basic-syntax-8"><a class="header" href="#basic-syntax-8">Basic Syntax</a></h3>
 <pre><code class="language-cpp">struct Point {
     int x;
     int y;
@@ -20408,7 +20890,7 @@ Point p2{.x = 10, 20, 30};               // ❌ Error in C++
 int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
 </code></pre>
 <p><strong>Why stricter in C++?</strong> The restrictions maintain consistency with C++’s stronger type system and make the code more predictable and less error-prone.</p>
-<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
+<h2 id="best-practices-11"><a class="header" href="#best-practices-11">Best Practices</a></h2>
 <h3 id="1-use-for-configuration-and-options"><a class="header" href="#1-use-for-configuration-and-options">1. Use for Configuration and Options</a></h3>
 <pre><code class="language-cpp">// ✅ Perfect use case
 struct Config {
