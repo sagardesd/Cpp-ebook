@@ -2,9 +2,7 @@
 
 ## What is `std::initializer_list`?
 
-`std::initializer_list<T>` is a lightweight, read-only view over a fixed array of objects of type `T`, created from a brace-enclosed initializer list `{ ... }`. It was introduced in C++11 to support uniform initialization and initializer-list constructors.
-
-### One-Line Definition
+`std::initializer_list<T>` is a lightweight, **read-only view** over a fixed array of objects of type `T`, created from a brace-enclosed initializer list `{ ... }`. It was introduced in C++11 to support uniform initialization and initializer-list constructors.
 
 `std::initializer_list` is a C++11 utility type that provides a read-only view over a temporary array created from a brace-enclosed initializer list.
 
