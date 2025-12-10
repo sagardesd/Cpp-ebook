@@ -15,7 +15,13 @@
 
 ## What is decltype?
 
-`decltype` is a type specifier introduced in C++11 that inspects the declared type of an entity or the type and value category of an expression. The name stands for "**decl**ared **type**".
+`decltype` is a **compile-time** type specifier introduced in C++11 that inspects the declared type of an entity or deduces **both the type and value category** of an expression **without evaluating it**. The name stands for "declared type".
+
+### Key Characteristics
+
+- **Compile-time only**: Type deduction happens during compilation, producing zero runtime cost
+- **Non-evaluating**: Expressions inside `decltype` are never executed, only analyzed for their type
+- **Value category preservation**: `decltype` preserves whether an expression is an lvalue, xvalue, or prvalue, encoding this information in the resulting type (through references)
 
 ### Basic Syntax
 ```cpp
