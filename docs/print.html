@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7463ae17.js";
+            window.path_to_searchindex_js = "searchindex-f23f01da.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-bc89b3a6.js"></script>
+        <script src="toc-78c07dba.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -20783,6 +20783,433 @@ Widget w3{10, 5};     // Calls Constructor 2 (initializer_list preferred!)
 <li>Be aware of <code>initializer_list</code> constructor priority</li>
 <li>C++20 designated initializers make code more readable and maintainable</li>
 <li>Uniform initialization is foundational to many modern C++ features</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdinitializer_list-in-c11"><a class="header" href="#stdinitializer_list-in-c11">std::initializer_list in C++11</a></h1>
+<h2 id="what-is-stdinitializer_list"><a class="header" href="#what-is-stdinitializer_list">What is <code>std::initializer_list</code>?</a></h2>
+<p><code>std::initializer_list&lt;T&gt;</code> is a lightweight, <strong>read-only view</strong> over a fixed array of objects of type <code>T</code>, created from a brace-enclosed initializer list <code>{ ... }</code>. It was introduced in C++11 to support uniform initialization and initializer-list constructors.</p>
+<p><code>std::initializer_list</code> is a C++11 utility type that provides a read-only view over a temporary array created from a brace-enclosed initializer list.</p>
+<h3 id="characteristics"><a class="header" href="#characteristics">Characteristics</a></h3>
+<ul>
+<li><strong>Compile-time construct</strong> (the type and elements are known at compile time)</li>
+<li><strong>Immutable</strong> (elements cannot be modified, means its const T)</li>
+<li><strong>Cheap to copy</strong> (typically just two pointers)</li>
+<li><strong>Does not own elements</strong></li>
+<li><strong>Elements’ lifetime is tied to the full expression</strong></li>
+</ul>
+<h2 id="how-it-works-conceptually"><a class="header" href="#how-it-works-conceptually">How It Works Conceptually</a></h2>
+<p>When you write:</p>
+<pre><code class="language-cpp">{1, 2, 3}
+</code></pre>
+<p>The compiler translates it into:</p>
+<ol>
+<li>A temporary array of <code>const T</code></li>
+<li>Wrapped in a <code>std::initializer_list&lt;T&gt;</code></li>
+</ol>
+<p>This happens automatically behind the scenes.</p>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<h3 id="using-stdinitializer_list-with-standard-containers"><a class="header" href="#using-stdinitializer_list-with-standard-containers">Using <code>std::initializer_list</code> with Standard Containers</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;initializer_list&gt;
+
+int main() {
+    // Vector initialized with initializer_list
+    std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+    
+    // String initialized with initializer_list
+    std::vector&lt;std::string&gt; words = {"hello", "world", "C++11"};
+    
+    // Direct use in range-based for loop
+    for (int value : {10, 20, 30, 40}) {
+        std::cout &lt;&lt; value &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<h3 id="custom-function-taking-stdinitializer_list"><a class="header" href="#custom-function-taking-stdinitializer_list">Custom Function Taking <code>std::initializer_list</code></a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+
+// Function that accepts initializer_list
+int sum(std::initializer_list&lt;int&gt; values) {
+    int total = 0;
+    for (int val : values) {
+        total += val;
+    }
+    return total;
+}
+
+int main() {
+    std::cout &lt;&lt; sum({1, 2, 3, 4, 5}) &lt;&lt; std::endl;  // Output: 15
+    std::cout &lt;&lt; sum({10, 20}) &lt;&lt; std::endl;          // Output: 30
+    
+    return 0;
+}
+</code></pre>
+<h3 id="custom-class-with-initializer-list-constructor"><a class="header" href="#custom-class-with-initializer-list-constructor">Custom Class with Initializer-List Constructor</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+#include &lt;vector&gt;
+
+class MyContainer {
+private:
+    std::vector&lt;int&gt; data;
+
+public:
+    // Constructor accepting initializer_list
+    MyContainer(std::initializer_list&lt;int&gt; init) : data(init) {
+        std::cout &lt;&lt; "Initializer-list constructor called with " 
+                  &lt;&lt; init.size() &lt;&lt; " elements" &lt;&lt; std::endl;
+    }
+    
+    void print() const {
+        for (int val : data) {
+            std::cout &lt;&lt; val &lt;&lt; " ";
+        }
+        std::cout &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    MyContainer container = {1, 2, 3, 4, 5};
+    container.print();  // Output: 1 2 3 4 5
+    
+    return 0;
+}
+</code></pre>
+<h2 id="rules"><a class="header" href="#rules">Rules</a></h2>
+<h3 id="syntax-driven-not-type-driven"><a class="header" href="#syntax-driven-not-type-driven">Syntax-Driven, Not Type-Driven</a></h3>
+<p><strong>Important:</strong> <code>std::initializer_list</code> is syntax-driven, not type-driven. It exists to support <code>{}</code> syntax — not to abstract containers.</p>
+<h3 id="the-one-line-rule"><a class="header" href="#the-one-line-rule">The One-Line Rule</a></h3>
+<p>A <code>std::initializer_list</code> parameter can only bind to a brace-enclosed initializer list, <strong>never to a container object</strong>.</p>
+<pre><code class="language-cpp">#include &lt;vector&gt;
+#include &lt;initializer_list&gt;
+
+void process(std::initializer_list&lt;int&gt; values) {
+    // ...
+}
+
+int main() {
+    process({1, 2, 3});  // ✅ Works - brace-enclosed list
+    
+    std::vector&lt;int&gt; vec = {1, 2, 3};
+    // process(vec);     // ❌ Error - cannot bind vector to initializer_list
+    
+    return 0;
+}
+</code></pre>
+<h3 id="overload-resolution-priority"><a class="header" href="#overload-resolution-priority">Overload Resolution Priority</a></h3>
+<p>Initializer-list constructors have <strong>higher priority</strong> than other constructors when using brace initialization:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+
+class X {
+public:
+    X(int a, int b) {
+        std::cout &lt;&lt; "X(int, int) called" &lt;&lt; std::endl;
+    }
+    
+    X(std::initializer_list&lt;int&gt; init) {
+        std::cout &lt;&lt; "X(std::initializer_list&lt;int&gt;) called" &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    X x(1, 2);   // Output: X(int, int) called
+    X y{1, 2};   // Output: X(std::initializer_list&lt;int&gt;) called
+    
+    return 0;
+}
+</code></pre>
+<p><strong>This is a very common C++11 pitfall!</strong> Even when other constructors match perfectly, the initializer-list constructor takes precedence with <code>{}</code> syntax.</p>
+<h2 id="lifetime-management-of-stdinitializer_list"><a class="header" href="#lifetime-management-of-stdinitializer_list">Lifetime Management of <code>std::initializer_list</code></a></h2>
+<h3 id="the-critical-rule-you-must-remember"><a class="header" href="#the-critical-rule-you-must-remember">The Critical Rule You Must Remember</a></h3>
+<p><code>std::initializer_list</code> does <strong>NOT</strong> own its elements. It only points to a temporary array created by the compiler.</p>
+<p><strong>The lifetime of the array behind a <code>std::initializer_list</code> is tied to the lifetime of the initializer_list object that is directly created from <code>{}</code> — NOT to copies made later.</strong></p>
+<h3 id="safe-usage"><a class="header" href="#safe-usage">Safe Usage</a></h3>
+<p>It is <strong>safe</strong> to use <code>std::initializer_list</code> as a function parameter:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+
+void safe_usage(std::initializer_list&lt;int&gt; values) {
+    // Safe: using within the function scope
+    for (int val : values) {
+        std::cout &lt;&lt; val &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+}
+
+int main() {
+    safe_usage({1, 2, 3, 4, 5});  // ✅ Safe
+    return 0;
+}
+</code></pre>
+<h3 id="lifetime-extension-with-local-variables"><a class="header" href="#lifetime-extension-with-local-variables">Lifetime Extension with Local Variables</a></h3>
+<p>When using <code>std::initializer_list</code> as a local variable, <strong>the type declaration matters</strong>:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+
+int main() {
+    // ❌ DANGEROUS: auto deduction
+    auto il1 = {1, 2, 3};
+    // Temporary array destroyed at end of statement!
+    // il1 now holds dangling pointers
+    
+    // ✅ SAFE: Explicit type
+    std::initializer_list&lt;int&gt; il2 = {1, 2, 3};
+    // Lifetime of temporary array is extended to match il2's scope
+    
+    // Using il1 here is undefined behavior
+    // for (int val : il1) { }  // ❌ Dangling!
+    
+    // Using il2 is safe
+    for (int val : il2) {  // ✅ Safe
+        std::cout &lt;&lt; val &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<h4 id="why-the-difference"><a class="header" href="#why-the-difference">Why the Difference?</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Code</th><th>Mechanism</th><th>Lifetime Rule</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td><code>auto il = {1, 2, 3};</code></td><td><code>auto</code> deduction happens after temporary creation</td><td>Temporary array destroyed at end of statement</td><td>❌ Dangling</td></tr>
+<tr><td><code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code></td><td>Explicitly typed variable binds to the temporary</td><td>Lifetime of temporary is extended to match <code>il</code></td><td>✅ Safe</td></tr>
+</tbody>
+</table>
+</div>
+<h5 id="case-1-auto-il--1-2-3--dangling"><a class="header" href="#case-1-auto-il--1-2-3--dangling">Case 1: <code>auto il = {1, 2, 3};</code> (❌ Dangling)</a></h5>
+<p>This line works because C++ infers the type of <code>il</code> to be <code>std::initializer_list&lt;int&gt;</code>. However, the underlying temporary array is created within the full expression of that single statement.</p>
+<p><strong>The critical issue is the order of operations:</strong></p>
+<ol>
+<li>The temporary array containing <code>{1, 2, 3}</code> is created</li>
+<li><code>auto</code> type deduction happens (determines <code>il</code> should be <code>std::initializer_list&lt;int&gt;</code>)</li>
+<li>The <code>std::initializer_list</code> is constructed to point to the temporary array</li>
+<li><strong>The statement ends (semicolon is reached)</strong></li>
+<li><strong>The temporary array is immediately destroyed</strong> (standard C++ lifetime rules)</li>
+<li><code>il</code> is left holding dangling pointers to deallocated memory</li>
+</ol>
+<p><strong>Why it fails:</strong></p>
+<p>In C++ rules, temporaries are destroyed at the end of the full expression that creates them. As soon as the semicolon is reached, the temporary array is destroyed. The variable <code>il</code> now contains pointers to invalid memory.</p>
+<p>While some compilers might extend the lifetime in this specific <code>auto</code> case as an extension or optimization, <strong>relying on <code>il</code> after the declaration line is undefined behavior</strong> according to the C++ standard. The reason is that <code>auto</code> deduction happens <em>after</em> the temporary is already created, so the lifetime extension rule doesn’t apply.</p>
+<h5 id="case-2-stdinitializer_listint-il--1-2-3--safe"><a class="header" href="#case-2-stdinitializer_listint-il--1-2-3--safe">Case 2: <code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code> (✅ Safe)</a></h5>
+<p>This works correctly due to a <strong>specific lifetime extension rule</strong> in the C++ standard.</p>
+<p><strong>How it works:</strong></p>
+<p>When a temporary object is used to initialize a variable with an explicitly declared type (especially one that acts like a reference to the underlying data), the lifetime of that temporary object is extended to match the lifetime of the variable.</p>
+<p><strong>The process:</strong></p>
+<ol>
+<li>You explicitly declare <code>il</code> as <code>std::initializer_list&lt;int&gt;</code> (type is known upfront)</li>
+<li>The temporary array <code>{1, 2, 3}</code> is created</li>
+<li>The compiler binds the temporary array to the <code>il</code> variable’s scope</li>
+<li><strong>Lifetime extension rule applies</strong>: the temporary array’s lifetime is extended to match <code>il</code>’s lifetime</li>
+<li>The array is guaranteed to exist as long as <code>il</code> is in scope</li>
+</ol>
+<p><strong>Why it succeeds:</strong></p>
+<p>Because you explicitly declared the variable type, the compiler knows from the beginning that it needs to bind the temporary to this variable, and therefore applies the lifetime extension rule.</p>
+<h3 id="unsafe-usage-storing-beyond-lifetime"><a class="header" href="#unsafe-usage-storing-beyond-lifetime">Unsafe Usage: Storing Beyond Lifetime</a></h3>
+<p>It is <strong>unsafe</strong> to store <code>std::initializer_list</code> beyond the lifetime of the initializer expression.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+
+class BuggyContainer {
+private:
+    std::initializer_list&lt;int&gt; stored_list;  // ❌ DANGER!
+
+public:
+    BuggyContainer(std::initializer_list&lt;int&gt; init) : stored_list(init) {
+        // Storing the initializer_list directly!
+    }
+    
+    void print() const {
+        // ❌ UNDEFINED BEHAVIOR: The temporary array is gone!
+        for (int val : stored_list) {
+            std::cout &lt;&lt; val &lt;&lt; " ";
+        }
+        std::cout &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    BuggyContainer container({1, 2, 3, 4, 5});
+    container.print();  // ❌ Undefined behavior - accessing dangling pointers!
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Why This Fails:</strong></p>
+<ol>
+<li><code>{1, 2, 3, 4, 5}</code> creates a temporary array</li>
+<li><code>std::initializer_list&lt;int&gt;</code> points to this temporary</li>
+<li>After the constructor finishes, the temporary array is destroyed</li>
+<li><code>stored_list</code> now contains dangling pointers</li>
+<li>Accessing it in <code>print()</code> causes undefined behavior</li>
+</ol>
+<h3 id="correct-approach-copy-to-an-owning-container"><a class="header" href="#correct-approach-copy-to-an-owning-container">Correct Approach: Copy to an Owning Container</a></h3>
+<p><strong>Always copy the elements to an owning container</strong> when you need to store them:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+#include &lt;vector&gt;
+
+class CorrectContainer {
+private:
+    std::vector&lt;int&gt; data;  // ✅ Owns the data
+
+public:
+    CorrectContainer(std::initializer_list&lt;int&gt; init) : data(init) {
+        // Copy elements from initializer_list to vector
+        // Vector now owns the data
+    }
+    
+    void print() const {
+        // ✅ Safe: accessing owned data
+        for (int val : data) {
+            std::cout &lt;&lt; val &lt;&lt; " ";
+        }
+        std::cout &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    CorrectContainer container({1, 2, 3, 4, 5});
+    container.print();  // ✅ Safe and correct!
+    
+    return 0;
+}
+</code></pre>
+<h2 id="advanced-stdinitializer_list-with-variadic-templates"><a class="header" href="#advanced-stdinitializer_list-with-variadic-templates">Advanced: <code>std::initializer_list</code> with Variadic Templates</a></h2>
+<p><code>std::initializer_list</code> can be combined with variadic templates to create flexible initialization patterns.</p>
+<h3 id="example-generic-initialization-function"><a class="header" href="#example-generic-initialization-function">Example: Generic Initialization Function</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+// Using variadic templates for type-safe initialization
+template&lt;typename T&gt;
+std::vector&lt;T&gt; make_vector(std::initializer_list&lt;T&gt; init) {
+    return std::vector&lt;T&gt;(init);
+}
+
+// Using variadic templates with perfect forwarding
+template&lt;typename T, typename... Args&gt;
+std::vector&lt;T&gt; make_vector_variadic(Args&amp;&amp;... args) {
+    return std::vector&lt;T&gt;{std::forward&lt;Args&gt;(args)...};
+}
+
+int main() {
+    // Using initializer_list
+    auto vec1 = make_vector({1, 2, 3, 4, 5});
+    
+    // Using variadic templates
+    auto vec2 = make_vector_variadic&lt;int&gt;(1, 2, 3, 4, 5);
+    
+    for (int val : vec1) std::cout &lt;&lt; val &lt;&lt; " ";
+    std::cout &lt;&lt; std::endl;
+    
+    for (int val : vec2) std::cout &lt;&lt; val &lt;&lt; " ";
+    std::cout &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<h3 id="example-combining-both-approaches"><a class="header" href="#example-combining-both-approaches">Example: Combining Both Approaches</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;initializer_list&gt;
+#include &lt;vector&gt;
+
+template&lt;typename T&gt;
+class FlexibleContainer {
+private:
+    std::vector&lt;T&gt; data;
+
+public:
+    // Constructor with initializer_list
+    FlexibleContainer(std::initializer_list&lt;T&gt; init) : data(init) {
+        std::cout &lt;&lt; "Constructed with initializer_list" &lt;&lt; std::endl;
+    }
+    
+    // Variadic template constructor
+    template&lt;typename... Args&gt;
+    FlexibleContainer(Args&amp;&amp;... args) {
+        std::cout &lt;&lt; "Constructed with variadic template" &lt;&lt; std::endl;
+        (data.push_back(std::forward&lt;Args&gt;(args)), ...);  // C++17 fold expression
+    }
+    
+    void print() const {
+        for (const auto&amp; val : data) {
+            std::cout &lt;&lt; val &lt;&lt; " ";
+        }
+        std::cout &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    // Uses initializer_list constructor (higher priority!)
+    FlexibleContainer&lt;int&gt; c1{1, 2, 3, 4, 5};
+    c1.print();
+    
+    // Uses variadic template constructor
+    FlexibleContainer&lt;int&gt; c2(1, 2, 3, 4, 5);
+    c2.print();
+    
+    return 0;
+}
+</code></pre>
+<h3 id="why-use-variadic-templates-instead"><a class="header" href="#why-use-variadic-templates-instead">Why Use Variadic Templates Instead?</a></h3>
+<p>While <code>std::initializer_list</code> is great for homogeneous collections, variadic templates offer more flexibility:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;tuple&gt;
+
+// With initializer_list - all same type
+void print_same_type(std::initializer_list&lt;int&gt; values) {
+    for (int val : values) {
+        std::cout &lt;&lt; val &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+}
+
+// With variadic templates - different types allowed
+template&lt;typename... Args&gt;
+void print_different_types(Args&amp;&amp;... args) {
+    ((std::cout &lt;&lt; args &lt;&lt; " "), ...);  // C++17 fold expression
+    std::cout &lt;&lt; std::endl;
+}
+
+int main() {
+    print_same_type({1, 2, 3});  // All must be int
+    
+    print_different_types(1, 2.5, "hello", 'x');  // Different types allowed!
+    
+    return 0;
+}
+</code></pre>
+<h2 id="best-practices-summary-2"><a class="header" href="#best-practices-summary-2">Best Practices Summary</a></h2>
+<ol>
+<li><strong>Use as function parameters</strong> for convenient initialization</li>
+<li><strong>Use explicit type</strong> when declaring as local variable: <code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code></li>
+<li><strong>Never use <code>auto</code> with initializer lists</strong>: <code>auto il = {1, 2, 3};</code> creates dangling pointers</li>
+<li><strong>Copy to owning containers</strong> (like <code>std::vector</code>) when you need to store data</li>
+<li><strong>Never store <code>std::initializer_list</code> as a member variable</strong></li>
+<li><strong>Be aware of constructor overload resolution</strong> with <code>{}</code> vs <code>()</code> syntax</li>
+<li><strong>Consider variadic templates</strong> when you need heterogeneous types or perfect forwarding</li>
+</ol>
+<h2 id="key-takeaways-7"><a class="header" href="#key-takeaways-7">Key Takeaways</a></h2>
+<ul>
+<li><code>std::initializer_list</code> is a <strong>non-owning view</strong> over a temporary array</li>
+<li>It’s <strong>syntax-driven</strong> (works only with <code>{}</code>) and <strong>immutable</strong></li>
+<li><strong>Never store it</strong> beyond the scope of its creation</li>
+<li>Always <strong>copy elements to an owning container</strong> for long-term storage</li>
+<li>Be mindful of <strong>constructor overload resolution priority</strong></li>
+<li>Combine with <strong>variadic templates</strong> for more advanced patterns</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="designated-initialization-c20"><a class="header" href="#designated-initialization-c20">Designated Initialization (C++20)</a></h1>
