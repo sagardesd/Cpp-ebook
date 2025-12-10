@@ -1,4 +1,4 @@
-# `std::initializer_list`
+# std::initializer_list in C++11
 
 ## What is `std::initializer_list`?
 
