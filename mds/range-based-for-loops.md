@@ -99,6 +99,7 @@ for (auto word : words) {
 ```
 
 ### Using References
+So `auto&` can be used as well to get reference for entries that programmer can modify.
 
 ```cpp
 std::vector<std::string> words = {"hello", "world"};
