@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-0a20a886.js";
+            window.path_to_searchindex_js = "searchindex-5ffcd26c.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-438315bd.js"></script>
@@ -19073,7 +19073,13 @@ auto str = "Hello"s;
 </ol>
 <hr>
 <h2 id="what-is-decltype"><a class="header" href="#what-is-decltype">What is decltype?</a></h2>
-<p><code>decltype</code> is a type specifier introduced in C++11 that inspects the declared type of an entity or the type and value category of an expression. The name stands for “<strong>decl</strong>ared <strong>type</strong>”.</p>
+<p><code>decltype</code> is a <strong>compile-time</strong> type specifier introduced in C++11 that inspects the declared type of an entity or deduces <strong>both the type and value category</strong> of an expression <strong>without evaluating it</strong>. The name stands for “declared type”.</p>
+<h3 id="key-characteristics-3"><a class="header" href="#key-characteristics-3">Key Characteristics</a></h3>
+<ul>
+<li><strong>Compile-time only</strong>: Type deduction happens during compilation, producing zero runtime cost</li>
+<li><strong>Non-evaluating</strong>: Expressions inside <code>decltype</code> are never executed, only analyzed for their type</li>
+<li><strong>Value category preservation</strong>: <code>decltype</code> preserves whether an expression is an lvalue, xvalue, or prvalue, encoding this information in the resulting type (through references)</li>
+</ul>
 <h3 id="basic-syntax-6"><a class="header" href="#basic-syntax-6">Basic Syntax</a></h3>
 <pre><code class="language-cpp">decltype(expression)
 </code></pre>
