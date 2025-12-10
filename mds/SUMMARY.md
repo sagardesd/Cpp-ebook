@@ -32,4 +32,5 @@
   - [constexpr (>= C++11), consteval and constinit (>= c++20)](./constexpr.md)
 - [Value Catagories (>= C++11)](./value_categories.md)
 - [auto (>= C++11)](./auto_c++11.md)
+- [Uniform Initialization (>= C++11)](./uniform_initialization.md)
 - [Designated initialization (>= C++20)](./designated_initialization.md)
