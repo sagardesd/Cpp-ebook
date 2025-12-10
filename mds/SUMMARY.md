@@ -36,4 +36,5 @@
 - [Range Based for loops (>= C++11)](./range-based-for-loops.md)
 - [In-Class Member Initialization ( >= C++11)](./in_class_initialization.md)
 - [Uniform Initialization (>= C++11)](./uniform_initialization.md)
+- [std::initializer_list (>= C++11)](./initializer-list.md)
 - [Designated initialization (>= C++20)](./designated_initialization.md)
