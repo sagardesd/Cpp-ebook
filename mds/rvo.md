@@ -106,7 +106,7 @@ With RVO (C++17):
     myPhoto's memory location
 ```
 
-## When Does RVO Apply?
+## When Does RVO Apply and When it cannot/won't ?
 
 RVO works in specific scenarios. Let's explore when it applies and when it doesn't.
 
