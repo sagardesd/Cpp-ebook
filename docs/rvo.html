@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-40156d06.js";
+            window.path_to_searchindex_js = "searchindex-1c7aee39.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-62a41ebd.js"></script>
@@ -180,7 +180,8 @@
 <p>When returning objects from functions, you might expect that temporary objects would be created and then copied or moved. However, modern C++ compilers can optimize this away entirely!</p>
 <h3 id="what-is-rvo"><a class="header" href="#what-is-rvo">What is RVO?</a></h3>
 <p><strong>Return Value Optimization (RVO)</strong> is a compiler optimization that eliminates temporary objects when returning values from functions, constructing the return value directly in the caller’s memory location.</p>
-<p>Before diving into RVO, we need to understand <strong>prvalues</strong> (pure rvalues):</p>
+<p>Before diving into RVO, we need to understand the value catagory <strong>prvalues</strong> (pure rvalues):
+(You can refer the Value catagories chapter for more detail to understad various value catagories since C++11)</p>
 <p><strong>Prvalue (pure rvalue)</strong> = A temporary object or value that doesn’t have a persistent memory location</p>
 <ul>
 <li>Examples: <code>Photo{100, 200}</code>, <code>5</code>, <code>x + y</code>, function return values</li>
