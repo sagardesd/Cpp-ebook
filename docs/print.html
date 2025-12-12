@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-25da7f5b.js";
+            window.path_to_searchindex_js = "searchindex-40156d06.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a61082ac.js"></script>
+        <script src="toc-62a41ebd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -19219,6 +19219,632 @@ Photo d = std::move(b);          // std::move casts lvalue to rvalue
 </code></pre>
 <p><strong>Key Takeaway:</strong> Move semantics are a powerful optimization, but with great power comes great responsibility. Use <code>std::move</code> sparingly and only when you’re certain the moved-from object won’t be accessed again.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rvo-return-value-optimization-and-the-rule-of-035"><a class="header" href="#rvo-return-value-optimization-and-the-rule-of-035">RVO: Return Value Optimization and the Rule of 0/3/5</a></h1>
+<h2 id="return-value-optimization-rvo"><a class="header" href="#return-value-optimization-rvo">Return Value Optimization (RVO)</a></h2>
+<p>When returning objects from functions, you might expect that temporary objects would be created and then copied or moved. However, modern C++ compilers can optimize this away entirely!</p>
+<h3 id="what-is-rvo"><a class="header" href="#what-is-rvo">What is RVO?</a></h3>
+<p><strong>Return Value Optimization (RVO)</strong> is a compiler optimization that eliminates temporary objects when returning values from functions, constructing the return value directly in the caller’s memory location.</p>
+<p>Before diving into RVO, we need to understand <strong>prvalues</strong> (pure rvalues):</p>
+<p><strong>Prvalue (pure rvalue)</strong> = A temporary object or value that doesn’t have a persistent memory location</p>
+<ul>
+<li>Examples: <code>Photo{100, 200}</code>, <code>5</code>, <code>x + y</code>, function return values</li>
+<li>These are “pure” rvalues because they’re truly temporary - about to be created or just created</li>
+<li>Before C++17: prvalues would trigger move operations</li>
+<li>From C++17 onward: prvalues trigger mandatory copy elision (RVO)</li>
+</ul>
+<h3 id="example-without-rvo"><a class="header" href="#example-without-rvo">Example: Without RVO</a></h3>
+<p>Let’s see what would happen without optimization:</p>
+<pre><code class="language-cpp">Photo createPhoto() {
+    Photo temp{100, 200};
+    return temp;  // Without RVO: copy or move temp to return location
+}
+
+int main() {
+    Photo myPhoto = createPhoto();  // Without RVO: another copy/move
+}
+</code></pre>
+<p><strong>Expected behavior without RVO:</strong></p>
+<ol>
+<li>Create <code>temp</code> inside <code>createPhoto()</code></li>
+<li>Copy/move <code>temp</code> to a temporary return object</li>
+<li>Copy/move the return object to <code>myPhoto</code></li>
+<li>Destroy temporaries</li>
+</ol>
+<p>This could involve multiple copy or move operations!</p>
+<h3 id="with-rvo-direct-construction-c17"><a class="header" href="#with-rvo-direct-construction-c17">With RVO: Direct Construction (C++17)</a></h3>
+<pre><code class="language-cpp">Photo createPhoto() {
+    return Photo{100, 200};  // Prvalue: mandatory copy elision since C++17
+}
+
+int main() {
+    Photo myPhoto = createPhoto();
+}
+</code></pre>
+<p><strong>C++17 output:</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Destructor invoked
+</code></pre>
+<p><strong>Only ONE constructor call!</strong> The object is constructed directly in <code>myPhoto</code>’s memory location. No copy, no move, not even a move constructor call!</p>
+<p><strong>Before C++17:</strong> The move constructor would be called:</p>
+<pre><code>Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<h3 id="visual-representation-of-rvo"><a class="header" href="#visual-representation-of-rvo">Visual Representation of RVO</a></h3>
+<pre><code>Without RVO (theoretical):
+┌─────────────────────────┐
+│  createPhoto() stack    │
+│  ┌──────────────┐       │
+│  │ temp{100,200}│       │
+│  └──────┬───────┘       │
+│         │ copy/move     │
+│         ▼               │
+│  ┌──────────────┐       │
+│  │return object │       │
+│  └──────┬───────┘       │
+└─────────┼───────────────┘
+          │ copy/move
+          ▼
+┌─────────────────────────┐
+│  main() stack           │
+│  ┌──────────────┐       │
+│  │   myPhoto    │       │
+│  └──────────────┘       │
+└─────────────────────────┘
+
+With RVO (C++17):
+┌─────────────────────────┐
+│  main() stack           │
+│  ┌──────────────┐       │
+│  │   myPhoto    │◄──────┼─── Constructed directly here!
+│  └──────────────┘       │
+└─────────────────────────┘
+         ▲
+         │
+    createPhoto() constructs
+    the object directly in
+    myPhoto's memory location
+</code></pre>
+<h2 id="when-does-rvo-apply"><a class="header" href="#when-does-rvo-apply">When Does RVO Apply?</a></h2>
+<p>RVO works in specific scenarios. Let’s explore when it applies and when it doesn’t.</p>
+<h3 id="case-1-returning-a-temporary-prvalue"><a class="header" href="#case-1-returning-a-temporary-prvalue">Case 1: Returning a Temporary (Prvalue)</a></h3>
+<pre><code class="language-cpp">Photo createPhoto() {
+    return Photo{100, 200};  // Prvalue: RVO applies in C++17!
+}
+</code></pre>
+<p><strong>C++17 and later output:</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Destructor invoked
+</code></pre>
+<p><strong>RVO applies (mandatory since C++17)</strong> - Direct construction, no copy, no move!</p>
+<p><strong>Before C++17:</strong> This would have called the move constructor:</p>
+<pre><code>Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>Key point:</strong> <code>Photo{100, 200}</code> is a <strong>prvalue</strong> (pure rvalue) - a temporary being created. Since C++17, the compiler is <strong>required</strong> to perform copy elision for prvalues, constructing the object directly in the caller’s location.</p>
+<h3 id="case-2-returning-a-single-local-variable-nrvo"><a class="header" href="#case-2-returning-a-single-local-variable-nrvo">Case 2: Returning a Single Local Variable (NRVO)</a></h3>
+<pre><code class="language-cpp">Photo createPhoto() {
+    Photo temp{100, 200};
+    // ... do some work with temp ...
+    return temp;  // Named RVO (NRVO) may apply
+}
+</code></pre>
+<p><strong>Note:</strong> This is <strong>Named Return Value Optimization (NRVO)</strong>. In C++17, NRVO is <strong>not mandatory</strong> but most compilers still perform it. You might see:</p>
+<pre><code>Photo::Photo(int, int) invoked
+Destructor invoked
+</code></pre>
+<p>Or with some compilers/flags:</p>
+<pre><code>Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<h3 id="case-3-returning-different-objects-based-on-condition"><a class="header" href="#case-3-returning-different-objects-based-on-condition">Case 3: Returning Different Objects Based on Condition</a></h3>
+<pre><code class="language-cpp">Photo createPhoto(bool highRes) {
+    if (highRes) {
+        Photo temp1{1920, 1080};
+        return temp1;  // RVO does NOT apply!
+    } else {
+        Photo temp2{640, 480};
+        return temp2;   // RVO does NOT apply!
+    }
+}
+
+int main() {
+    Photo myPhoto = createPhoto(true);
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>RVO does NOT apply</strong> because the compiler can’t determine at compile time which object will be returned. The <strong>move constructor is used</strong> instead!</p>
+<h3 id="case-4-returning-function-parameters"><a class="header" href="#case-4-returning-function-parameters">Case 4: Returning Function Parameters</a></h3>
+<pre><code class="language-cpp">Photo processPhoto(Photo input) {
+    // ... process input ...
+    return input;  // RVO does NOT apply!
+}
+
+int main() {
+    Photo original{100, 200};
+    Photo processed = processPhoto(original);
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Copy Constructor invoked: Photo(const Photo&amp;)
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>RVO does NOT apply</strong> to function parameters. The <strong>move constructor is used</strong> when returning.</p>
+<h3 id="case-5-returning-with-stdmove-anti-pattern"><a class="header" href="#case-5-returning-with-stdmove-anti-pattern">Case 5: Returning with std::move (Anti-pattern!)</a></h3>
+<pre><code class="language-cpp">Photo createPhoto() {
+    Photo temp{100, 200};
+    return std::move(temp);  // DON'T DO THIS! Prevents RVO!
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>Using <code>std::move</code> on return values PREVENTS RVO!</strong> This is an anti-pattern. The compiler would have optimized this, but <code>std::move</code> forces a move operation.</p>
+<p><strong>Rule:</strong> Never use <code>std::move</code> on return values when returning local variables.</p>
+<h2 id="why-we-still-need-move-semantics"><a class="header" href="#why-we-still-need-move-semantics">Why We Still Need Move Semantics</a></h2>
+<p>Even with C++17’s mandatory RVO for prvalues, we still need move constructors and move assignment operators. <strong>RVO and move semantics solve DIFFERENT problems!</strong></p>
+<h3 id="understanding-the-difference"><a class="header" href="#understanding-the-difference">Understanding the Difference</a></h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│ RVO solves: The cost of returning PRVALUES                  │
+│ Move constructor solves: The cost of moving EXISTING objects│
+│ Move assignment solves: The cost of REASSIGNING objects     │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="problem-1-rvo-only-works-for-prvalues"><a class="header" href="#problem-1-rvo-only-works-for-prvalues">Problem 1: RVO Only Works for Prvalues</a></h3>
+<p><strong>✅ RVO handles this:</strong></p>
+<pre><code class="language-cpp">Photo make() {
+    return Photo{100, 200};  // Prvalue → RVO: constructed directly in caller
+}
+
+Photo p = make();  // Only ONE constructor call!
+</code></pre>
+<p><strong>RVO cannot handle this:</strong></p>
+<pre><code class="language-cpp">Photo a{100, 200};
+Photo b = std::move(a);  // NEED move constructor!
+</code></pre>
+<p>Here, <code>a</code> is a <strong>real existing object in memory</strong>. RVO doesn’t apply because:</p>
+<ul>
+<li>We’re not returning from a function</li>
+<li><code>a</code> is an lvalue, not a prvalue</li>
+<li>We want to transfer resources from an existing object</li>
+</ul>
+<p><strong>Without move constructor:</strong> This would call the copy constructor (expensive deep copy)!</p>
+<h3 id="problem-2-move-assignment---reassigning-existing-objects"><a class="header" href="#problem-2-move-assignment---reassigning-existing-objects">Problem 2: Move Assignment - Reassigning Existing Objects</a></h3>
+<p>RVO applies <strong>only during construction</strong>. Move assignment handles reassignment when the object already exists.</p>
+<pre><code class="language-cpp">Photo a{100, 200};
+Photo b{640, 480};
+
+a = std::move(b);     // NEED move assignment operator!
+</code></pre>
+<p><strong>Why RVO doesn’t apply:</strong></p>
+<ul>
+<li>No construction happening</li>
+<li><code>a</code> already exists in memory</li>
+<li>We’re <strong>overwriting</strong> an existing object</li>
+<li>Need to clean up <code>a</code>’s old resources first, then steal from <code>b</code></li>
+</ul>
+<p><strong>Without move assignment:</strong> This would call the copy assignment operator (expensive)!</p>
+<h3 id="problem-3-containers-rely-heavily-on-move-constructors"><a class="header" href="#problem-3-containers-rely-heavily-on-move-constructors">Problem 3: Containers Rely Heavily on Move Constructors</a></h3>
+<p>Standard library containers like <code>std::vector</code> <strong>cannot use RVO</strong> for internal operations.</p>
+<h4 id="example-vector-growth"><a class="header" href="#example-vector-growth">Example: Vector Growth</a></h4>
+<pre><code class="language-cpp">std::vector&lt;Photo&gt; photos;
+photos.push_back(Photo{100, 200});  // Move constructor needed!
+
+// When vector grows:
+photos.reserve(100);
+</code></pre>
+<p><strong>What happens during vector reallocation:</strong></p>
+<pre><code>Old storage:                    New storage:
+┌─────────┐                    ┌─────────┐
+│ Photo 1 │ ─── move ────────&gt; │ Photo 1 │
+├─────────┤                    ├─────────┤
+│ Photo 2 │ ─── move ────────&gt; │ Photo 2 │
+├─────────┤                    ├─────────┤
+│ Photo 3 │ ─── move ────────&gt; │ Photo 3 │
+└─────────┘                    ├─────────┤
+                               │   ...   │
+                               └─────────┘
+</code></pre>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>Allocate larger block</li>
+<li><strong>Move construct</strong> each element into new block (move constructor!)</li>
+<li>Destroy old elements</li>
+</ol>
+<p><strong>RVO cannot help</strong> because:</p>
+<ul>
+<li>Elements already exist in the old storage</li>
+<li>We’re moving existing objects, not returning prvalues</li>
+<li>This is a runtime operation based on vector size</li>
+</ul>
+<p><strong>Without move constructors:</strong> Every reallocation would <strong>copy</strong> all elements (extremely slow for large objects)!</p>
+<h4 id="more-container-examples"><a class="header" href="#more-container-examples">More Container Examples</a></h4>
+<pre><code class="language-cpp">std::vector&lt;Photo&gt; photos;
+
+// 1. push_back with temporary
+photos.push_back(Photo{100, 200});    
+// - Prvalue → RVO might help in some cases
+// - But vector still needs move constructor to store it
+
+// 2. push_back with existing object
+Photo temp{640, 480};
+photos.push_back(std::move(temp));    
+// - NEED move constructor (RVO doesn't apply)
+
+// 3. Sorting
+std::sort(photos.begin(), photos.end());
+// - Uses move operations to shuffle elements
+// - NEED move constructor and move assignment
+
+// 4. Vector assignment
+std::vector&lt;Photo&gt; vec1, vec2;
+vec1 = std::move(vec2);
+// - NEED move assignment for vector itself
+</code></pre>
+<h3 id="problem-4-generic-code-and-templates-need-moves"><a class="header" href="#problem-4-generic-code-and-templates-need-moves">Problem 4: Generic Code and Templates Need Moves</a></h3>
+<p>Templates work with many types and cannot rely on RVO for all scenarios.</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+T make_twice(T x) {
+    return x;    // Named variable, NOT a prvalue!
+}
+
+Photo p{100, 200};
+Photo result = make_twice(p);  // NEED move or copy constructor
+</code></pre>
+<p><strong>Why RVO doesn’t apply:</strong></p>
+<ul>
+<li><code>x</code> is a <strong>named object</strong> (lvalue)</li>
+<li>NRVO (Named RVO) is <strong>not guaranteed</strong></li>
+<li>The compiler may or may not optimize this</li>
+<li>Move constructor is the fallback</li>
+</ul>
+<h3 id="problem-5-nrvo-is-not-guaranteed"><a class="header" href="#problem-5-nrvo-is-not-guaranteed">Problem 5: NRVO is Not Guaranteed</a></h3>
+<p>When returning a named local variable, NRVO <strong>may</strong> apply, but it’s <strong>not mandatory</strong>.</p>
+<pre><code class="language-cpp">Photo createPhoto() {
+    Photo temp{100, 200};
+    // ... do work ...
+    return temp;   // NRVO: compiler *may* optimize
+}
+</code></pre>
+<p><strong>Possible outcomes:</strong></p>
+<p><strong>Best case (NRVO applies):</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Destructor invoked
+</code></pre>
+<p><strong>Without NRVO (move constructor used):</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>Without move constructor (only copy available):</strong></p>
+<pre><code>Photo::Photo(int, int) invoked
+Copy Constructor invoked: Photo(const Photo&amp;)
+Destructor invoked
+Destructor invoked
+</code></pre>
+<h3 id="problem-6-conditional-returns-cannot-use-rvo"><a class="header" href="#problem-6-conditional-returns-cannot-use-rvo">Problem 6: Conditional Returns Cannot Use RVO</a></h3>
+<pre><code class="language-cpp">Photo createPhoto(bool highRes) {
+    Photo small{640, 480};
+    Photo large{1920, 1080};
+    return highRes ? large : small;  // RVO cannot optimize!
+}
+</code></pre>
+<p><strong>Why RVO fails:</strong></p>
+<ul>
+<li>Compiler can’t determine at compile time which object is returned</li>
+<li>Both <code>small</code> and <code>large</code> are lvalues</li>
+<li><strong>Move constructor is used</strong> as fallback</li>
+</ul>
+<h3 id="problem-7-algorithms-and-stl-operations"><a class="header" href="#problem-7-algorithms-and-stl-operations">Problem 7: Algorithms and STL Operations</a></h3>
+<pre><code class="language-cpp">// Swapping
+Photo a{100, 200}, b{640, 480};
+std::swap(a, b);  // Uses move constructor and move assignment!
+
+// Moving into data structures
+std::map&lt;int, Photo&gt; photoMap;
+Photo temp{100, 200};
+photoMap[1] = std::move(temp);  // NEED move assignment!
+
+// Returning from algorithms
+auto it = std::find(photos.begin(), photos.end(), target);
+Photo found = std::move(*it);  // NEED move constructor!
+</code></pre>
+<h3 id="summary-different-problems-different-solutions"><a class="header" href="#summary-different-problems-different-solutions">Summary: Different Problems, Different Solutions</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Scenario</th><th>Solution</th><th>Why RVO Doesn’t Help</th></tr>
+</thead>
+<tbody>
+<tr><td><code>return Photo{};</code></td><td>✅ RVO (C++17)</td><td>N/A - RVO applies!</td></tr>
+<tr><td><code>Photo b = std::move(a);</code></td><td>Move constructor</td><td><code>a</code> is existing object, not prvalue</td></tr>
+<tr><td><code>a = std::move(b);</code></td><td>Move assignment</td><td>Reassignment, not construction</td></tr>
+<tr><td><code>vector::push_back()</code></td><td>Move constructor</td><td>Storing existing objects</td></tr>
+<tr><td><code>vector</code> reallocation</td><td>Move constructor</td><td>Moving existing elements</td></tr>
+<tr><td><code>return namedVar;</code></td><td>Move constructor</td><td>NRVO not guaranteed</td></tr>
+<tr><td><code>return cond ? a : b;</code></td><td>Move constructor</td><td>Runtime decision, lvalues</td></tr>
+<tr><td><code>std::swap(a, b)</code></td><td>Move ctor + assignment</td><td>Operating on existing objects</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="the-complete-picture-1"><a class="header" href="#the-complete-picture-1">The Complete Picture</a></h3>
+<pre><code class="language-cpp">// 1. RVO handles this perfectly (C++17+)
+Photo p1 = Photo{100, 200};           // ✅ RVO
+
+// 2. These ALL need move semantics
+Photo a{100, 200};
+Photo b = std::move(a);                // ❌ No RVO → move constructor
+
+Photo c{640, 480};
+b = std::move(c);                      // ❌ No RVO → move assignment
+
+std::vector&lt;Photo&gt; photos;
+photos.push_back(std::move(b));        // ❌ No RVO → move constructor
+photos.reserve(100);                   // ❌ No RVO → move constructor (realloc)
+
+std::sort(photos.begin(), photos.end()); // ❌ No RVO → move operations
+</code></pre>
+<p><strong>Key Insight:</strong> RVO eliminates moves during <strong>prvalue return</strong>, but the vast majority of move operations happen in <strong>other contexts</strong> where RVO cannot apply. Move semantics are essential for efficient C++ code!</p>
+<h2 id="summary-rvo-rules"><a class="header" href="#summary-rvo-rules">Summary: RVO Rules</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Scenario</th><th>Value Category</th><th>RVO Applies?</th><th>Fallback</th></tr>
+</thead>
+<tbody>
+<tr><td><code>return Photo{...};</code></td><td>Prvalue</td><td>✅ Yes (mandatory C++17)</td><td>N/A</td></tr>
+<tr><td><code>Photo x{...}; return x;</code></td><td>Lvalue</td><td>⚠️ Maybe (NRVO, not mandatory)</td><td>Move constructor</td></tr>
+<tr><td><code>return condition ? x : y;</code></td><td>Lvalue</td><td>❌ No</td><td>Move constructor</td></tr>
+<tr><td><code>return parameter;</code></td><td>Lvalue</td><td>❌ No</td><td>Move constructor</td></tr>
+<tr><td><code>return std::move(x);</code></td><td>Xvalue</td><td>❌ No (prevents RVO!)</td><td>Move constructor</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Key Takeaway:</strong></p>
+<ul>
+<li><strong>C++17 and later:</strong> RVO is <strong>mandatory</strong> for prvalues (pure rvalues) - zero copies, zero moves</li>
+<li><strong>Before C++17:</strong> Prvalues would use move constructor</li>
+<li>Move semantics are still essential as a fallback when RVO can’t be applied (lvalues, conditionals, etc.)</li>
+</ul>
+<h2 id="the-rule-of-zero-three-and-five"><a class="header" href="#the-rule-of-zero-three-and-five">The Rule of Zero, Three, and Five</a></h2>
+<p>Now that we understand copy and move semantics, let’s discuss best practices for implementing special member functions.</p>
+<h3 id="special-member-functions"><a class="header" href="#special-member-functions">Special Member Functions</a></h3>
+<p>C++ has six special member functions that the compiler can generate automatically:</p>
+<ol>
+<li><strong>Default constructor:</strong> <code>Photo()</code></li>
+<li><strong>Destructor:</strong> <code>~Photo()</code></li>
+<li><strong>Copy constructor:</strong> <code>Photo(const Photo&amp;)</code></li>
+<li><strong>Copy assignment operator:</strong> <code>Photo&amp; operator=(const Photo&amp;)</code></li>
+<li><strong>Move constructor:</strong> <code>Photo(Photo&amp;&amp;)</code>  <em>(C++11)</em></li>
+<li><strong>Move assignment operator:</strong> <code>Photo&amp; operator=(Photo&amp;&amp;)</code>  <em>(C++11)</em></li>
+</ol>
+<h3 id="rule-of-zero"><a class="header" href="#rule-of-zero">Rule of Zero</a></h3>
+<p><strong>If your class doesn’t directly manage resources, don’t define any special member functions.</strong></p>
+<pre><code class="language-cpp">// Good example: Rule of Zero
+class Photo {
+public:
+    Photo(int w, int h) : width(w), height(h), data(w * h) {}
+    
+    // No destructor, no copy/move operations defined!
+    // Compiler generates them correctly.
+    
+private:
+    int width;
+    int height;
+    std::vector&lt;int&gt; data;  // std::vector manages memory for us
+};
+</code></pre>
+<p><strong>Why this works:</strong></p>
+<ul>
+<li><code>std::vector</code> already handles memory management correctly</li>
+<li>The compiler-generated special members correctly copy/move the <code>std::vector</code></li>
+<li>Less code to write and maintain</li>
+<li>No chance of getting it wrong!</li>
+</ul>
+<p><strong>When to use:</strong> Whenever possible! Use standard library containers (<code>std::vector</code>, <code>std::string</code>, <code>std::unique_ptr</code>, etc.) instead of raw pointers.</p>
+<h3 id="rule-of-three-pre-c11"><a class="header" href="#rule-of-three-pre-c11">Rule of Three (Pre-C++11)</a></h3>
+<p><strong>If you define any one of these three, you should probably define all three:</strong></p>
+<ol>
+<li>Destructor</li>
+<li>Copy constructor</li>
+<li>Copy assignment operator</li>
+</ol>
+<pre><code class="language-cpp">// Rule of Three example
+class Photo {
+public:
+    Photo(int w, int h) 
+        : width(w), height(h), data(new int[w * h]) {}
+    
+    // 1. Destructor
+    ~Photo() {
+        delete[] data;
+    }
+    
+    // 2. Copy constructor
+    Photo(const Photo&amp; other)
+        : width(other.width), height(other.height),
+          data(new int[width * height]) {
+        std::copy(other.data, other.data + width * height, data);
+    }
+    
+    // 3. Copy assignment operator
+    Photo&amp; operator=(const Photo&amp; other) {
+        if (this != &amp;other) {
+            delete[] data;
+            width = other.width;
+            height = other.height;
+            data = new int[width * height];
+            std::copy(other.data, other.data + width * height, data);
+        }
+        return *this;
+    }
+    
+private:
+    int width;
+    int height;
+    int* data;  // Raw pointer: we manage the memory!
+};
+</code></pre>
+<p><strong>Why all three?</strong></p>
+<ul>
+<li>If you need a destructor, you’re managing a resource</li>
+<li>If you’re managing a resource, the default copy operations will be wrong (shallow copy)</li>
+<li>You need to implement deep copy semantics</li>
+</ul>
+<h3 id="rule-of-five-c11-and-later"><a class="header" href="#rule-of-five-c11-and-later">Rule of Five (C++11 and later)</a></h3>
+<p><strong>If you define any one of the five operations below, you should probably define all five:</strong></p>
+<ol>
+<li>Destructor</li>
+<li>Copy constructor</li>
+<li>Copy assignment operator</li>
+<li>Move constructor  <em>(new in C++11)</em></li>
+<li>Move assignment operator  <em>(new in C++11)</em></li>
+</ol>
+<pre><code class="language-cpp">// Rule of Five example
+class Photo {
+public:
+    Photo(int w, int h) 
+        : width(w), height(h), data(new int[w * h]) {}
+    
+    // 1. Destructor
+    ~Photo() {
+        delete[] data;
+    }
+    
+    // 2. Copy constructor
+    Photo(const Photo&amp; other)
+        : width(other.width), height(other.height),
+          data(new int[width * height]) {
+        std::copy(other.data, other.data + width * height, data);
+    }
+    
+    // 3. Copy assignment operator
+    Photo&amp; operator=(const Photo&amp; other) {
+        if (this != &amp;other) {
+            delete[] data;
+            width = other.width;
+            height = other.height;
+            data = new int[width * height];
+            std::copy(other.data, other.data + width * height, data);
+        }
+        return *this;
+    }
+    
+    // 4. Move constructor
+    Photo(Photo&amp;&amp; other) noexcept
+        : width(other.width), height(other.height), data(other.data) {
+        other.data = nullptr;
+        other.width = 0;
+        other.height = 0;
+    }
+    
+    // 5. Move assignment operator
+    Photo&amp; operator=(Photo&amp;&amp; other) noexcept {
+        if (this != &amp;other) {
+            delete[] data;
+            width = other.width;
+            height = other.height;
+            data = other.data;
+            other.data = nullptr;
+            other.width = 0;
+            other.height = 0;
+        }
+        return *this;
+    }
+    
+private:
+    int width;
+    int height;
+    int* data;
+};
+</code></pre>
+<p><strong>Why add move operations?</strong></p>
+<ul>
+<li>Without them, moving will fall back to copying (inefficient!)</li>
+<li>Move operations provide significant performance improvements</li>
+<li>They’re expected by modern C++ code (containers, algorithms)</li>
+</ul>
+<p><strong>Note:</strong> Mark move operations as <code>noexcept</code> when possible - this allows standard containers to use them more aggressively for optimization.</p>
+<h2 id="quick-decision-guide-2"><a class="header" href="#quick-decision-guide-2">Quick Decision Guide</a></h2>
+<pre><code>Do you directly manage resources (raw pointers, file handles, etc.)?
+│
+├─ NO  → Rule of Zero
+│        Use std::vector, std::string, std::unique_ptr, etc.
+│        Let the compiler generate everything.
+│
+└─ YES → Rule of Five
+         Implement all five special member functions.
+         (Or better yet: refactor to use Rule of Zero!)
+</code></pre>
+<h3 id="common-mistake-rule-of-threefour"><a class="header" href="#common-mistake-rule-of-threefour">Common Mistake: Rule of Three/Four</a></h3>
+<pre><code class="language-cpp">// Bad: Defined destructor and copy operations, but no move operations
+class Photo {
+public:
+    ~Photo() { delete[] data; }
+    Photo(const Photo&amp; other) { /* ... */ }
+    Photo&amp; operator=(const Photo&amp; other) { /* ... */ }
+    
+    // Missing move constructor and move assignment!
+    // Moving will fall back to expensive copying!
+private:
+    int* data;
+};
+</code></pre>
+<p><strong>Problem:</strong> This class can’t be moved efficiently. Any attempt to move will result in copying.</p>
+<p><strong>Solution:</strong> Either add move operations (Rule of Five) or use RAII types (Rule of Zero).</p>
+<h2 id="best-practices-summary-1"><a class="header" href="#best-practices-summary-1">Best Practices Summary</a></h2>
+<ol>
+<li><strong>Prefer Rule of Zero</strong> - Use standard library types that manage resources for you</li>
+<li><strong>If you must manage resources directly, follow Rule of Five</strong> - Implement all five special member functions</li>
+<li><strong>Mark move operations as <code>noexcept</code></strong> - Enables better optimizations in standard containers</li>
+<li><strong>Trust RVO</strong> - Don’t use <code>std::move</code> on return values of local variables</li>
+<li><strong>Test your special member functions</strong> - Easy to get wrong, especially self-assignment and move operations</li>
+</ol>
+<h2 id="complete-example-comparing-all-three-rules"><a class="header" href="#complete-example-comparing-all-three-rules">Complete Example: Comparing All Three Rules</a></h2>
+<h3 id="rule-of-zero-preferred"><a class="header" href="#rule-of-zero-preferred">Rule of Zero (Preferred)</a></h3>
+<pre><code class="language-cpp">class Photo {
+public:
+    Photo(int w, int h) : width(w), height(h), data(w * h) {}
+    // That's it! Compiler handles everything correctly.
+private:
+    int width, height;
+    std::vector&lt;int&gt; data;
+};
+</code></pre>
+<h3 id="rule-of-five-when-necessary"><a class="header" href="#rule-of-five-when-necessary">Rule of Five (When Necessary)</a></h3>
+<pre><code class="language-cpp">class Photo {
+public:
+    Photo(int w, int h);
+    ~Photo();
+    Photo(const Photo&amp;);
+    Photo&amp; operator=(const Photo&amp;);
+    Photo(Photo&amp;&amp;) noexcept;
+    Photo&amp; operator=(Photo&amp;&amp;) noexcept;
+private:
+    int width, height;
+    int* data;  // Raw resource
+};
+</code></pre>
+<p><strong>Rule of thumb:</strong> If you can use Rule of Zero, do it. It’s simpler, safer, and less error-prone!</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-auto-keyword"><a class="header" href="#c11-auto-keyword">C++11 auto Keyword</a></h1>
 <h2 id="table-of-contents-27"><a class="header" href="#table-of-contents-27">Table of Contents</a></h2>
 <ol>
@@ -19227,7 +19853,7 @@ Photo d = std::move(b);          // std::move casts lvalue to rvalue
 <li><a href="#3-benefits-of-using-auto">Benefits of Using Auto</a></li>
 <li><a href="#4-restrictions-where-auto-cannot-be-used">Restrictions: Where Auto Cannot Be Used</a></li>
 <li><a href="#5-common-compilation-errors-with-auto">Common Compilation Errors with Auto</a></li>
-<li><a href="#best-practices-summary-1">Best Practices Summary</a></li>
+<li><a href="#best-practices-summary-2">Best Practices Summary</a></li>
 <li><a href="#conclusion">Conclusion</a></li>
 </ol>
 <hr>
@@ -19532,7 +20158,7 @@ auto str = "Hello"s;
 </code></pre>
 <p><a href="#table-of-contents-27">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-summary-1"><a class="header" href="#best-practices-summary-1">Best Practices Summary</a></h2>
+<h2 id="best-practices-summary-2"><a class="header" href="#best-practices-summary-2">Best Practices Summary</a></h2>
 <ol>
 <li><strong>Use <code>auto</code></strong> when the type is obvious from context or overly verbose</li>
 <li><strong>Use <code>const auto&amp;</code></strong> for loop variables to avoid copies</li>
@@ -21682,7 +22308,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="best-practices-summary-2"><a class="header" href="#best-practices-summary-2">Best Practices Summary</a></h2>
+<h2 id="best-practices-summary-3"><a class="header" href="#best-practices-summary-3">Best Practices Summary</a></h2>
 <ol>
 <li><strong>Use as function parameters</strong> for convenient initialization</li>
 <li><strong>Use explicit type</strong> when declaring as local variable: <code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code></li>
