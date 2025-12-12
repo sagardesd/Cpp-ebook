@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f23f01da.js";
+            window.path_to_searchindex_js = "searchindex-25da7f5b.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-78c07dba.js"></script>
+        <script src="toc-a61082ac.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -18729,6 +18729,496 @@ rvalue  = { xvalue, prvalue } ← Things you can move from
 </ul>
 <p><a href="#table-of-contents-26">↑ Back to Table of Contents</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="move-semantics---rvalues-and-move-constructors"><a class="header" href="#move-semantics---rvalues-and-move-constructors">Move Semantics - rvalues and Move Constructors</a></h1>
+<h2 id="understanding-the-problem"><a class="header" href="#understanding-the-problem">Understanding the Problem</a></h2>
+<h3 id="the-inefficiency-of-copying"><a class="header" href="#the-inefficiency-of-copying">The Inefficiency of Copying</a></h3>
+<p>Let’s start with a basic <code>Photo</code> class that manages dynamic memory:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class Photo {
+    public:
+        Photo(int width, int height);
+        Photo(const Photo&amp; other);              // Copy constructor
+        Photo&amp; operator=(const Photo&amp; other);   // Copy assignment operator
+        ~Photo();
+    private:
+        int width;
+        int height;
+        int* data;
+};
+
+Photo::Photo(int width, int height): 
+    width(width), 
+    height(height), 
+    data(new int[width * height]) {
+    std::cout &lt;&lt; "Photo::Photo(int, int) invoked\n";
+}
+
+Photo::Photo(const Photo&amp; other)
+    : width(other.width), 
+    height(other.height),
+    data(new int[width * height])
+{
+    std::cout &lt;&lt; "Copy Constructor invoked: Photo(const Photo&amp;)\n";
+    std::copy(other.data, other.data + width * height, data);
+}
+
+Photo&amp; Photo::operator=(const Photo&amp; other) {
+    std::cout &lt;&lt; "Copy assignment operator invoked: operator=(const Photo&amp;)\n";
+    if (this == &amp;other) return *this;
+    delete[] data;
+    width = other.width;
+    height = other.height;
+    data = new int[width * height];
+    std::copy(other.data, other.data + width * height, data);
+    return *this;
+}
+
+Photo::~Photo() {
+    std::cout &lt;&lt; "Destructor invoked\n";
+    delete[] data;
+}
+</code></pre>
+<p><strong>Tracing Object Creation Flow</strong></p>
+<p>Let’s see what happens when we create and assign objects:</p>
+<pre><code class="language-cpp">int main() {
+    std::cout &lt;&lt; "Check - 1\n";
+    Photo selfie = Photo {0, 0}; 
+    std::cout &lt;&lt; "------------\n";
+    Photo retake{4,5};
+    std::cout &lt;&lt; "------------\n";
+    std::cout &lt;&lt; "Check - 2\n";
+    retake = Photo{1,2};
+    std::cout &lt;&lt; "------------\n";
+}
+</code></pre>
+<p><strong>Output (compiled with <code>-O0 -fno-elide-constructors</code> to visalize the in-efficiency without compiler optimization):</strong></p>
+<pre><code>Check - 1
+Photo::Photo(int, int) invoked
+Copy Constructor invoked: Photo(const Photo&amp;)
+Destructor invoked
+------------
+Photo::Photo(int, int) invoked
+------------
+Check - 2
+Photo::Photo(int, int) invoked
+Copy assignment operator invoked: operator=(const Photo&amp;)
+Destructor invoked
+------------
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>Notice what happens:</strong></p>
+<p><strong>Line: <code>Photo selfie = Photo{0, 0};</code></strong></p>
+<ul>
+<li>Creates a temporary <code>Photo{0, 0}</code> object</li>
+<li>Copies it to <code>selfie</code> using the copy constructor (allocates new memory and copies all data)</li>
+<li>Destroys the temporary object</li>
+</ul>
+<p><strong>Line: <code>retake = Photo{1,2};</code></strong></p>
+<ul>
+<li>Creates a temporary <code>Photo{1,2}</code> object</li>
+<li>Copies it to <code>retake</code> using copy assignment (allocates new memory and copies all data)</li>
+<li>Destroys the temporary object</li>
+</ul>
+<p><strong>The inefficiency:</strong> We’re allocating memory and copying data from temporary objects that are about to be destroyed anyway! This is wasteful, especially for large objects.</p>
+<hr>
+<h2 id="understanding-rvalues"><a class="header" href="#understanding-rvalues">Understanding rvalues</a></h2>
+<h3 id="what-is-an-rvalue"><a class="header" href="#what-is-an-rvalue">What is an rvalue?</a></h3>
+<p>In the expression <code>Photo selfie = Photo{0, 0}</code>, the <code>Photo{0, 0}</code> is an <strong>rvalue</strong>.</p>
+<p>An rvalue is a temporary object that:</p>
+<ul>
+<li>Doesn’t have a persistent memory address</li>
+<li>Exists only for the duration of the expression</li>
+<li>Cannot have its address taken (cannot use <code>&amp;</code> on it)</li>
+<li>Is about to be destroyed, so we can “steal” its resources instead of copying them</li>
+</ul>
+<h3 id="examples-of-rvalues-and-lvalues"><a class="header" href="#examples-of-rvalues-and-lvalues">Examples of rvalues and lvalues</a></h3>
+<p><strong>rvalues (temporaries):</strong></p>
+<pre><code class="language-cpp">Photo{1, 2}        // rvalue - temporary object
+5                  // rvalue - literal
+x + y              // rvalue - result of expression
+takePhoto()        // rvalue - return value of function
+</code></pre>
+<p><strong>lvalues (persistent objects):</strong></p>
+<pre><code class="language-cpp">Photo selfie{1, 2};  // selfie is an lvalue - it has a persistent address
+int x = 5;           // x is an lvalue
+</code></pre>
+<hr>
+<h2 id="passing-objects-to-functions"><a class="header" href="#passing-objects-to-functions">Passing Objects to Functions</a></h2>
+<h3 id="the-naive-approach"><a class="header" href="#the-naive-approach">The Naive Approach</a></h3>
+<p>Let’s say we want to upload a photo:</p>
+<pre><code class="language-cpp">void upload(Photo p) {
+    std::cout &lt;&lt; "upload(Photo p) invoked\n";
+}
+
+int main() {
+    Photo selfie = Photo{1,2};
+    upload(selfie);
+}
+</code></pre>
+<p><strong>Problem:</strong> This copies the entire <code>Photo</code> object (including allocating memory and copying all pixel data) when calling <code>upload</code>. Very inefficient!</p>
+<h3 id="solution-1-pass-by-lvalue-reference"><a class="header" href="#solution-1-pass-by-lvalue-reference">Solution 1: Pass by lvalue Reference</a></h3>
+<p>To avoid copying lvalues, pass by reference:</p>
+<pre><code class="language-cpp">void upload(Photo&amp; p) {
+    std::cout &lt;&lt; "upload(Photo&amp; p) invoked\n";
+}
+
+int main() {
+    Photo selfie = Photo{1,2};
+    upload(selfie);  // No copy! Just passes a reference
+}
+</code></pre>
+<p><strong>Much better!</strong> No copying occurs.</p>
+<h3 id="the-problem-with-temporary-objects"><a class="header" href="#the-problem-with-temporary-objects">The Problem with Temporary Objects</a></h3>
+<p>What if we try this?</p>
+<pre><code class="language-cpp">int main() {
+    upload(Photo{1,2});  // Passing a temporary
+}
+</code></pre>
+<p><strong>Compiler error:</strong></p>
+<pre><code>error: candidate function not viable: expects lvalue as 1st argument
+</code></pre>
+<p>The problem: <code>Photo{1,2}</code> is an rvalue (temporary), but <code>Photo&amp;</code> only binds to lvalues!</p>
+<h3 id="solution-2-rvalue-references"><a class="header" href="#solution-2-rvalue-references">Solution 2: rvalue References</a></h3>
+<p>To accept temporary objects without copying, we use <strong>rvalue references</strong>:</p>
+<pre><code class="language-cpp">void upload(Photo&amp;&amp; p) {
+    std::cout &lt;&lt; "upload(Photo&amp;&amp; p) invoked\n";
+}
+
+int main() {
+    upload(Photo{1,2});  // Works! No copy!
+}
+</code></pre>
+<p><strong>Syntax:</strong> <code>Type&amp;&amp;</code> is an rvalue reference.</p>
+<h3 id="key-differences-between-reference-types"><a class="header" href="#key-differences-between-reference-types">Key Differences Between Reference Types</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>lvalue reference (<code>Type&amp;</code>)</th><th>rvalue reference (<code>Type&amp;&amp;</code>)</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Binds to</strong></td><td>Persistent objects (lvalues)</td><td>Temporary objects (rvalues)</td></tr>
+<tr><td><strong>Expectation</strong></td><td>Object must remain valid</td><td>Object is temporary, can be modified</td></tr>
+<tr><td><strong>Use case</strong></td><td>Avoid copying persistent objects</td><td>Avoid copying temporary objects</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="function-overloading-with-references"><a class="header" href="#function-overloading-with-references">Function Overloading with References</a></h3>
+<p>You can overload functions based on lvalue vs rvalue references:</p>
+<pre><code class="language-cpp">void upload(Photo&amp; p) {
+    std::cout &lt;&lt; "upload(Photo&amp; p) - lvalue version\n";
+}
+
+void upload(Photo&amp;&amp; p) {
+    std::cout &lt;&lt; "upload(Photo&amp;&amp; p) - rvalue version\n";
+}
+
+int main() {
+    Photo selfie{1,2};
+    upload(selfie);        // Calls lvalue version
+    upload(Photo{3,4});    // Calls rvalue version
+}
+</code></pre>
+<p>The compiler automatically chooses the correct version based on whether the argument is an lvalue or rvalue!</p>
+<hr>
+<h2 id="move-constructor-and-move-assignment-c11"><a class="header" href="#move-constructor-and-move-assignment-c11">Move Constructor and Move Assignment (C++11)</a></h2>
+<h3 id="the-concept"><a class="header" href="#the-concept">The Concept</a></h3>
+<p>Since rvalues are temporary and about to be destroyed, we can <strong>steal (move)</strong> their resources instead of copying them. C++11 introduced two new special member functions:</p>
+<ol>
+<li><strong>Move Constructor:</strong> <code>Type(Type&amp;&amp; other)</code></li>
+<li><strong>Move Assignment Operator:</strong> <code>Type&amp; operator=(Type&amp;&amp; other)</code></li>
+</ol>
+<h3 id="visual-comparison-copy-vs-move"><a class="header" href="#visual-comparison-copy-vs-move">Visual Comparison: Copy vs Move</a></h3>
+<h4 id="copy-constructor-expensive"><a class="header" href="#copy-constructor-expensive">Copy Constructor (Expensive)</a></h4>
+<pre><code>Before Copy:
+  temporary           selfie
+  ┌────────┐         ┌────────┐
+  │width: 2│         │  ???   │
+  │height:3│         │  ???   │
+  │data: ──┼──       │  ???   │
+  └────────┘ │       └────────┘
+             │
+             ▼
+         [pixel data]
+         [in memory ]
+
+After Copy Constructor:
+  temporary           selfie
+  ┌────────┐         ┌────────┐
+  │width: 2│         │width: 2│
+  │height:3│         │height:3│
+  │data: ──┼──       │data: ──┼──
+  └────────┘ │       └────────┘ │
+             │                   │
+             ▼                   ▼
+         [pixel data]        [NEW pixel data]
+         [original  ]        [COPIED!       ]
+  
+  - Allocated new memory and copied all data!
+  - Two separate copies of pixel data exist
+</code></pre>
+<h4 id="move-constructor-efficient"><a class="header" href="#move-constructor-efficient">Move Constructor (Efficient)</a></h4>
+<pre><code>Before Move:
+  temporary           selfie
+  ┌────────┐         ┌────────┐
+  │width: 2│         │  ???   │
+  │height:3│         │  ???   │
+  │data: ──┼──       │  ???   │
+  └────────┘ │       └────────┘
+             │
+             ▼
+         [pixel data]
+         [in memory ]
+
+After Move Constructor:
+  temporary           selfie
+  ┌────────┐         ┌────────┐
+  │width: 2│         │width: 2│
+  │height:3│         │height:3│
+  │data:NULL│        │data: ──┼──
+  └────────┘         └────────┘ │
+                                 │
+                                 ▼
+                             [pixel data]
+                             [STOLEN!   ]
+  
+  - Just copied the pointer (steal)!
+  - Set source pointer to nullptr
+  - No memory allocation, no data copying!
+</code></pre>
+<h3 id="implementation"><a class="header" href="#implementation">Implementation</a></h3>
+<pre><code class="language-cpp">class Photo {
+    public:
+        // ... (previous members)
+        Photo(Photo&amp;&amp; obj);               // Move constructor
+        Photo&amp; operator=(Photo&amp;&amp; obj);    // Move assignment operator
+};
+
+// Move constructor
+Photo::Photo(Photo&amp;&amp; obj) {
+    std::cout &lt;&lt; "Move constructor: Photo(Photo&amp;&amp;) invoked\n";
+    // Steal the resources
+    this-&gt;width = obj.width;
+    this-&gt;height = obj.height;
+    this-&gt;data = obj.data;
+    
+    // Leave the source object in a valid but empty state
+    obj.data = nullptr;
+}
+
+// Move assignment operator
+Photo&amp; Photo::operator=(Photo&amp;&amp; obj) {
+    std::cout &lt;&lt; "Move assignment operator: operator=(Photo&amp;&amp;) invoked\n";
+    if (this == &amp;obj) return *this;
+    
+    // Clean up our current resources
+    delete[] data;
+    
+    // Steal the resources from obj
+    this-&gt;width = obj.width;
+    this-&gt;height = obj.height;
+    this-&gt;data = obj.data;
+    
+    // Leave obj in a valid but empty state
+    obj.data = nullptr;
+    
+    return *this;
+}
+</code></pre>
+<p><strong>Key points:</strong></p>
+<ul>
+<li>Instead of allocating new memory and copying, we just <strong>steal the pointer</strong></li>
+<li>We set <code>obj.data = nullptr</code> so the source object’s destructor won’t delete the memory we stole</li>
+<li>Much more efficient: just copying a few integers and a pointer!</li>
+</ul>
+<h3 id="the-results"><a class="header" href="#the-results">The Results</a></h3>
+<p>Running the same code with move semantics:</p>
+<pre><code class="language-cpp">int main() {
+    std::cout &lt;&lt; "Check - 1\n";
+    Photo selfie = Photo {0, 0}; 
+    std::cout &lt;&lt; "------------\n";
+    Photo retake{4,5};
+    std::cout &lt;&lt; "------------\n";
+    std::cout &lt;&lt; "Check - 2\n";
+    retake = Photo{1,2};
+    std::cout &lt;&lt; "------------\n";
+}
+</code></pre>
+<p><strong>Output (with move semantics):</strong></p>
+<pre><code>Check - 1
+Photo::Photo(int, int) invoked
+Move constructor: Photo(Photo&amp;&amp;) invoked
+Destructor invoked
+------------
+Photo::Photo(int, int) invoked
+------------
+Check - 2
+Photo::Photo(int, int) invoked
+Move assignment operator: operator=(Photo&amp;&amp;) invoked
+Destructor invoked
+------------
+Destructor invoked
+Destructor invoked
+</code></pre>
+<p><strong>Notice:</strong> The copy constructor and copy assignment are replaced with their move counterparts!</p>
+<hr>
+<h2 id="stdmove---forcing-move-semantics"><a class="header" href="#stdmove---forcing-move-semantics">std::move - Forcing Move Semantics</a></h2>
+<h3 id="when-lvalue-references-arent-enough"><a class="header" href="#when-lvalue-references-arent-enough">When lvalue References Aren’t Enough</a></h3>
+<p>Sometimes we have an lvalue that we <strong>know</strong> will never be used again. In these cases, copying is still inefficient.</p>
+<h4 id="problem-unnecessary-copies-of-lvalues"><a class="header" href="#problem-unnecessary-copies-of-lvalues">Problem: Unnecessary Copies of lvalues</a></h4>
+<p>Consider this code that inserts a photo into a collection:</p>
+<pre><code class="language-cpp">void PhotoCollection::insert(const Photo&amp; pic, int pos) {
+    for (int i = size(); i &gt; pos; i--)
+        myPhotos[i] = myPhotos[i - 1];  // Line 3: Shuffle elements down
+    myPhotos[pos] = pic;
+}
+</code></pre>
+<p><strong>The inefficiency on line 3:</strong></p>
+<ul>
+<li><code>myPhotos[i - 1]</code> is an lvalue (it has a persistent address)</li>
+<li>The copy assignment operator is called</li>
+<li>Each element is <strong>copied</strong> into its new position</li>
+<li>But the original value at <code>myPhotos[i - 1]</code> is <strong>never used again</strong> - it will be immediately overwritten!</li>
+</ul>
+<p>We’re doing expensive deep copies when we could just move the resources!</p>
+<h4 id="solution-using-stdmove"><a class="header" href="#solution-using-stdmove">Solution: Using std::move</a></h4>
+<p>We can use <code>std::move</code> to treat an lvalue as an rvalue:</p>
+<pre><code class="language-cpp">void PhotoCollection::insert(const Photo&amp; pic, int pos) {
+    for (int i = size(); i &gt; pos; i--)
+        myPhotos[i] = std::move(myPhotos[i - 1]);  // Use move assignment!
+    myPhotos[pos] = pic;
+}
+</code></pre>
+<p>Now the move assignment operator is called instead of copy assignment, making the shuffling much more efficient!</p>
+<h3 id="what-is-stdmove"><a class="header" href="#what-is-stdmove">What is std::move?</a></h3>
+<p><strong>Important:</strong> <code>std::move</code> doesn’t actually move anything!</p>
+<p><code>std::move</code> is just a <strong>type cast</strong> that converts an lvalue to an rvalue reference:</p>
+<pre><code class="language-cpp">Photo selfie{1, 2};
+Photo moved = std::move(selfie);  // std::move(selfie) casts selfie to Photo&amp;&amp;
+</code></pre>
+<p>After <code>std::move</code>:</p>
+<ol>
+<li>The compiler sees an rvalue reference (<code>Photo&amp;&amp;</code>)</li>
+<li>The move constructor/assignment operator is called</li>
+<li>Resources are stolen from <code>selfie</code></li>
+<li><code>selfie</code> is left in a <strong>valid but unspecified state</strong></li>
+</ol>
+<hr>
+<h2 id="the-danger-of-stdmove"><a class="header" href="#the-danger-of-stdmove">The Danger of std::move</a></h2>
+<h3 id="be-careful-with-moved-from-objects"><a class="header" href="#be-careful-with-moved-from-objects">Be Careful with Moved-From Objects!</a></h3>
+<pre><code class="language-cpp">Photo takePhoto() {
+    return Photo{100, 100};
+}
+
+void foo(Photo whoAmI) {
+    Photo selfie = std::move(whoAmI);  // Force move from lvalue
+    whoAmI.get_pixel(21, 24);          // ⚠️ DANGER!
+}
+</code></pre>
+<p><strong>What happens to <code>whoAmI</code> after it’s moved?</strong></p>
+<ul>
+<li>Its resources have been stolen by <code>selfie</code></li>
+<li>It’s in a <strong>valid but unspecified state</strong></li>
+<li>In our <code>Photo</code> implementation, <code>whoAmI.data == nullptr</code></li>
+<li>Calling <code>get_pixel()</code> will likely crash or cause undefined behavior!</li>
+</ul>
+<h3 id="moved-from-object-guarantees"><a class="header" href="#moved-from-object-guarantees">Moved-From Object Guarantees</a></h3>
+<p>After an object is moved from:</p>
+<ul>
+<li>It’s in a <strong>valid state</strong> (you can safely destroy it)</li>
+<li>You can assign a new value to it</li>
+<li>You <strong>cannot assume anything else</strong> about its state</li>
+<li>Don’t call methods that depend on its resources</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="language-cpp">Photo a{10, 10};
+Photo b = std::move(a);
+
+// Safe operations on 'a':
+a = Photo{5, 5};     // OK: assign new value
+// a is destroyed     // OK: destructor works
+
+// Unsafe operations on 'a':
+a.get_pixel(1, 1);   // NOT OK: might crash
+int w = a.width;     // NOT OK: undefined value
+</code></pre>
+<hr>
+<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h3 id="when-to-use-stdmove"><a class="header" href="#when-to-use-stdmove">When to Use std::move</a></h3>
+<h4 id="good-use-cases"><a class="header" href="#good-use-cases">Good use cases:</a></h4>
+<p><strong>1. You know for certain the object won’t be used again</strong></p>
+<pre><code class="language-cpp">std::vector&lt;Photo&gt; photos;
+Photo temp{100, 100};
+photos.push_back(std::move(temp));  // OK: temp not used after this
+</code></pre>
+<p><strong>2. Performance is critical and you control the object lifetime</strong></p>
+<pre><code class="language-cpp">Photo a{1000, 1000};
+Photo b = std::move(a);
+// Don't touch 'a' again!
+</code></pre>
+<p><strong>3. Implementing move constructors/assignment operators</strong></p>
+<pre><code class="language-cpp">Photo(Photo&amp;&amp; other) {
+    data = std::move(other.data);  // Moving members
+}
+</code></pre>
+<h4 id="avoid-stdmove-when"><a class="header" href="#avoid-stdmove-when">Avoid std::move when:</a></h4>
+<ol>
+<li><strong>You’re not sure if the object will be used later</strong></li>
+<li><strong>The performance gain is negligible</strong> (e.g., moving small objects)</li>
+<li><strong>You’re working with function parameters that might be accessed after</strong></li>
+</ol>
+<h3 id="general-guidelines"><a class="header" href="#general-guidelines">General Guidelines</a></h3>
+<p><strong>1. Don’t overuse std::move</strong></p>
+<p>The compiler automatically uses move semantics for rvalues (temporaries). Only use <code>std::move</code> when you need to force move semantics on an lvalue.</p>
+<p><strong>2. After moving, either:</strong></p>
+<ul>
+<li>Don’t touch the object again, or</li>
+<li>Assign it a new value before using it</li>
+</ul>
+<p><strong>3. Document when functions take ownership:</strong></p>
+<pre><code class="language-cpp">// Takes ownership of photo (moves it)
+void PhotoCollection::insert(Photo&amp;&amp; photo) {
+    // ...
+}
+</code></pre>
+<p><strong>4. In most code, prefer copy semantics for clarity</strong></p>
+<p>Use move semantics only when performance profiling shows it’s necessary.</p>
+<hr>
+<h2 id="summary-13"><a class="header" href="#summary-13">Summary</a></h2>
+<h3 id="quick-reference-table"><a class="header" href="#quick-reference-table">Quick Reference Table</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>Syntax</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>lvalue reference</strong></td><td><code>Type&amp;</code></td><td>Bind to persistent objects to avoid copying</td></tr>
+<tr><td><strong>rvalue reference</strong></td><td><code>Type&amp;&amp;</code></td><td>Bind to temporary objects to enable moving</td></tr>
+<tr><td><strong>Move constructor</strong></td><td><code>Type(Type&amp;&amp; other)</code></td><td>Construct by stealing resources from a temporary</td></tr>
+<tr><td><strong>Move assignment</strong></td><td><code>Type&amp; operator=(Type&amp;&amp; other)</code></td><td>Assign by stealing resources from a temporary</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="the-big-idea"><a class="header" href="#the-big-idea">The Big Idea</a></h3>
+<p><strong>Copy semantics (lvalue):</strong> Object will continue to exist, must keep it valid → expensive deep copy</p>
+<p><strong>Move semantics (rvalue):</strong> Object is temporary and will be destroyed → cheap resource transfer</p>
+<p>Move semantics provide significant performance improvements for classes that manage resources (dynamic memory, file handles, network connections, etc.) by eliminating unnecessary copies of temporary objects.</p>
+<h3 id="the-complete-picture"><a class="header" href="#the-complete-picture">The Complete Picture</a></h3>
+<pre><code class="language-cpp">// 1. Automatic move (compiler does this)
+Photo a = Photo{1, 2};           // Temporary → move constructor called
+
+// 2. Copy an lvalue (default behavior)
+Photo b{3, 4};
+Photo c = b;                     // lvalue → copy constructor called
+
+// 3. Force move an lvalue (use with caution!)
+Photo d = std::move(b);          // std::move casts lvalue to rvalue
+                                 // move constructor called
+                                 // b is now in unspecified state!
+</code></pre>
+<p><strong>Key Takeaway:</strong> Move semantics are a powerful optimization, but with great power comes great responsibility. Use <code>std::move</code> sparingly and only when you’re certain the moved-from object won’t be accessed again.</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-auto-keyword"><a class="header" href="#c11-auto-keyword">C++11 auto Keyword</a></h1>
 <h2 id="table-of-contents-27"><a class="header" href="#table-of-contents-27">Table of Contents</a></h2>
 <ol>
@@ -19069,7 +19559,7 @@ auto str = "Hello"s;
 <li><a href="#evolution-in-c17">Evolution in C++17</a></li>
 <li><a href="#evolution-in-c20">Evolution in C++20</a></li>
 <li><a href="#common-pitfalls">Common Pitfalls</a></li>
-<li><a href="#best-practices-8">Best Practices</a></li>
+<li><a href="#best-practices-9">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="what-is-decltype"><a class="header" href="#what-is-decltype">What is decltype?</a></h2>
@@ -19453,7 +19943,7 @@ decltype(true ? 0 : 1)   // int (both operands are prvalues)
 decltype(a &gt; b ? a : 0)  // int (mixed: unifies to prvalue)
 </code></pre>
 <hr>
-<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
 <h3 id="1-use-decltypeauto-for-perfect-return-type-forwarding"><a class="header" href="#1-use-decltypeauto-for-perfect-return-type-forwarding">1. Use decltype(auto) for Perfect Return Type Forwarding</a></h3>
 <pre><code class="language-cpp">// Good: Preserves exact return type
 template&lt;typename Func, typename... Args&gt;
@@ -19841,7 +20331,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
+<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
 <h3 id="use-const-auto-for-read-only-access"><a class="header" href="#use-const-auto-for-read-only-access">Use <code>const auto&amp;</code> for Read-Only Access</a></h3>
 <p>When you don’t need to modify elements and want to avoid copying (especially for large objects):</p>
 <pre><code class="language-cpp">std::vector&lt;std::string&gt; large_strings = {"very", "long", "strings"};
@@ -19866,7 +20356,7 @@ for (auto num : numbers) {
     num *= 2;  // modifies the copy, not the original
 }
 </code></pre>
-<h2 id="summary-13"><a class="header" href="#summary-13">Summary</a></h2>
+<h2 id="summary-14"><a class="header" href="#summary-14">Summary</a></h2>
 <p>Range-based for loops provide:</p>
 <ul>
 <li><strong>Cleaner syntax</strong>: No need for explicit iterators or index management</li>
@@ -20415,7 +20905,7 @@ public:
 // Out-of-class definition still needed for static non-const (pre-C++17)
 int MemberTypes::static_value = 50;
 </code></pre>
-<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
+<h2 id="best-practices-11"><a class="header" href="#best-practices-11">Best Practices</a></h2>
 <h3 id="1-use-in-class-initialization-for-defaults"><a class="header" href="#1-use-in-class-initialization-for-defaults">1. Use In-Class Initialization for Defaults</a></h3>
 <pre><code class="language-cpp">// ✅ Good: Clear default values
 class Config {
@@ -20514,7 +21004,7 @@ public:
     }
 };
 </code></pre>
-<h2 id="summary-14"><a class="header" href="#summary-14">Summary</a></h2>
+<h2 id="summary-15"><a class="header" href="#summary-15">Summary</a></h2>
 <p>In-class member initialization, introduced in C++11, dramatically simplified C++ class initialization by:</p>
 <p><strong>Key Benefits:</strong></p>
 <ul>
@@ -20734,7 +21224,7 @@ Data d3{10, .c = 30};           // ERROR: cannot mix styles
 Point p1{10, 20};   // Always worked
 Point p2(10, 20);   // C++20: now also works for aggregates
 </code></pre>
-<h2 id="best-practices-11"><a class="header" href="#best-practices-11">Best Practices</a></h2>
+<h2 id="best-practices-12"><a class="header" href="#best-practices-12">Best Practices</a></h2>
 <h3 id="when-to-use-uniform-initialization"><a class="header" href="#when-to-use-uniform-initialization">When to Use Uniform Initialization</a></h3>
 <p><strong>Prefer uniform initialization when:</strong></p>
 <ul>
@@ -20774,7 +21264,7 @@ Widget w2{10, 5.0};   // ERROR: narrowing conversion (5.0 to int)
 Widget w3{10, 5};     // Calls Constructor 2 (initializer_list preferred!)
 </code></pre>
 <p>The <code>initializer_list</code> constructor is <strong>strongly preferred</strong> during overload resolution when brace initialization is used.</p>
-<h2 id="summary-15"><a class="header" href="#summary-15">Summary</a></h2>
+<h2 id="summary-16"><a class="header" href="#summary-16">Summary</a></h2>
 <p>Uniform initialization provides a consistent, safer way to initialize objects in modern C++. It prevents narrowing conversions, resolves parsing ambiguities, and enables powerful features like initializer lists and designated initializers. While it’s not always the perfect choice for every situation, understanding uniform initialization is essential for writing robust, modern C++ code.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
@@ -21653,7 +22143,7 @@ Point p2{.x = 10, 20, 30};               // ❌ Error in C++
 int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
 </code></pre>
 <p><strong>Why stricter in C++?</strong> The restrictions maintain consistency with C++’s stronger type system and make the code more predictable and less error-prone.</p>
-<h2 id="best-practices-12"><a class="header" href="#best-practices-12">Best Practices</a></h2>
+<h2 id="best-practices-13"><a class="header" href="#best-practices-13">Best Practices</a></h2>
 <h3 id="1-use-for-configuration-and-options"><a class="header" href="#1-use-for-configuration-and-options">1. Use for Configuration and Options</a></h3>
 <pre><code class="language-cpp">// ✅ Perfect use case
 struct Config {
@@ -21696,7 +22186,7 @@ Point p{10, 20};  // ✅ Clear enough
 // Designated might be overkill
 Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
 </code></pre>
-<h2 id="summary-16"><a class="header" href="#summary-16">Summary</a></h2>
+<h2 id="summary-17"><a class="header" href="#summary-17">Summary</a></h2>
 <p>Designated initialization is a powerful C++20 feature that makes code more readable, maintainable, and less error-prone. It works exclusively with aggregate types, which are simple data structures without user-provided constructors, private members, or virtual functions.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
