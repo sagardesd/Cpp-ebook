@@ -8,8 +8,6 @@ When returning objects from functions, you might expect that temporary objects w
 
 **Return Value Optimization (RVO)** is a compiler optimization that eliminates temporary objects when returning values from functions, constructing the return value directly in the caller's memory location.
 
-### Understanding Value Categories: Prvalues
-
 Before diving into RVO, we need to understand **prvalues** (pure rvalues):
 
 **Prvalue (pure rvalue)** = A temporary object or value that doesn't have a persistent memory location
