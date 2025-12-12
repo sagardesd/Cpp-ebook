@@ -247,8 +247,6 @@ Since rvalues are temporary and about to be destroyed, we can **steal (move)** t
 1. **Move Constructor:** `Type(Type&& other)`
 2. **Move Assignment Operator:** `Type& operator=(Type&& other)`
 
-### Visual Comparison: Copy vs Move
-
 #### Copy Constructor (Expensive)
 
 ```
