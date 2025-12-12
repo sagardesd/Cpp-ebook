@@ -31,6 +31,7 @@
   - [Template Meta Programming](./TMP.md)
   - [constexpr (>= C++11), consteval and constinit (>= c++20)](./constexpr.md)
 - [Value Catagories (>= C++11)](./value_categories.md)
+- [Move Semantics (>= C++11)](./move_semantics.md)
 - [auto (>= C++11)](./auto_c++11.md)
 - [decltype (>= C++11)](./decltype.md)
 - [Range Based for loops (>= C++11)](./range-based-for-loops.md)
