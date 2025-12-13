@@ -1,4 +1,4 @@
-# RVO: Return Value Optimization and the Rule of 0/3/5
+# Return Value Optimization(RVO) and the Rule of 0/3/5
 
 ## Return Value Optimization (RVO)
 
