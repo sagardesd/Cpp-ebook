@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-dee02eee.js";
+            window.path_to_searchindex_js = "searchindex-25ce60ef.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-62a41ebd.js"></script>
+        <script src="toc-ebeb7a64.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -22825,6 +22825,561 @@ Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
 <li>Combines beautifully with default member initializers</li>
 </ul>
 <p>Designated initialization represents a significant improvement in C++’s ability to write clear, self-documenting initialization code while maintaining type safety and predictability.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="raii-a-natural-solution-to-resource-management"><a class="header" href="#raii-a-natural-solution-to-resource-management">RAII: A Natural Solution to Resource Management</a></h1>
+<h2 id="the-problem-resource-leaks"><a class="header" href="#the-problem-resource-leaks">The Problem: Resource Leaks</a></h2>
+<p>Let’s start with a common problem. Imagine you’re writing a function that needs to allocate some memory:</p>
+<pre><code class="language-cpp">void processData(int size) {
+    int* data = new int[size];
+    
+    // Do some processing
+    if (size &gt; 1000) {
+        // Oops, early return!
+        return;
+    }
+    
+    // More processing
+    complexCalculation(data);
+    
+    // Clean up
+    delete[] data;
+}
+</code></pre>
+<p><strong>What’s wrong here?</strong> If <code>size &gt; 1000</code>, we return early and never call <code>delete[]</code>. The memory is leaked! The operating system won’t reclaim it until the program terminates.</p>
+<pre><code>Flow Diagram:
+┌─────────────────┐
+│  new int[size]  │
+└────────┬────────┘
+         │
+         ▼
+    ┌─────────┐
+    │size&gt;1000│
+    └────┬────┘
+         │
+    ┌────┴────┐
+    │         │
+   Yes       No
+    │         │
+    ▼         ▼
+┌────────┐  ┌──────────────────┐
+│ return │  │complexCalculation│
+└───┬────┘  └────────┬─────────┘
+    │                │
+    ▼                ▼
+  LEAK!        ┌──────────┐
+               │delete[]  │
+               └────┬─────┘
+                    │
+                    ▼
+                   OK ✓
+</code></pre>
+<p>Let’s add error handling to make it worse:</p>
+<pre><code class="language-cpp">void processData(int size) {
+    int* data = new int[size];
+    
+    // Do some processing
+    if (size &gt; 1000) {
+        return;  // LEAK!
+    }
+    
+    // This might throw an exception
+    riskyOperation(data);
+    
+    // More processing
+    complexCalculation(data);
+    
+    // Clean up
+    delete[] data;  // Never reached if riskyOperation throws!
+}
+</code></pre>
+<p>Now we have <strong>two ways to leak memory</strong>: early returns and exceptions. We could try to fix this with try-catch blocks and remembering to delete in every path, but that’s tedious and error-prone.</p>
+<p><strong>There has to be a better way!</strong></p>
+<h2 id="understanding-the-stack"><a class="header" href="#understanding-the-stack">Understanding the Stack</a></h2>
+<p>Before we solve this, let’s understand how C++ manages automatic variables. When you declare a variable in a function, it lives on the <strong>stack</strong>:</p>
+<pre><code class="language-cpp">void myFunction() {
+    int x = 42;           // x lives on the stack
+    double y = 3.14;      // y lives on the stack
+    
+    if (x &gt; 10) {
+        int z = 100;      // z lives on the stack
+    }  // z automatically destroyed here
+    
+}  // x and y automatically destroyed here
+</code></pre>
+<pre><code>Stack Lifetime:
+┌─────────────────────────────┐
+│ myFunction() called         │
+├─────────────────────────────┤
+│ x = 42        [created]     │
+│ y = 3.14      [created]     │
+│                             │
+│ if (x &gt; 10) {               │
+│   z = 100     [created]     │
+│ }             [z destroyed] │ ← automatic cleanup
+│                             │
+│ }             [y destroyed] │ ← automatic cleanup
+│               [x destroyed] │ ← automatic cleanup
+└─────────────────────────────┘
+</code></pre>
+<p>The beautiful thing about stack variables is they’re <strong>automatically cleaned up</strong> when they go out of scope. You don’t have to do anything—the compiler handles it for you.</p>
+<p>This automatic cleanup happens <strong>even if an exception is thrown</strong>:</p>
+<pre><code class="language-cpp">void myFunction() {
+    int x = 42;
+    
+    riskyOperation();  // Might throw an exception
+    
+}  // x is STILL cleaned up, even if exception thrown!
+</code></pre>
+<p>This is called <strong>stack unwinding</strong>. When an exception occurs or a function returns, C++ walks back through the stack and cleans up all automatic variables.</p>
+<h2 id="constructors-and-destructors"><a class="header" href="#constructors-and-destructors">Constructors and Destructors</a></h2>
+<p>C++ classes have special member functions that run automatically:</p>
+<ul>
+<li><strong>Constructor</strong>: A special member function called when an object is created to initialize the object. If it has an initializer list, members are initialized during object creation itself.</li>
+<li><strong>Destructor</strong>: Called when an object is destroyed</li>
+</ul>
+<pre><code class="language-cpp">class MyClass {
+public:
+    MyClass() {
+        std::cout &lt;&lt; "Object created!\n";
+    }
+    
+    ~MyClass() {
+        std::cout &lt;&lt; "Object destroyed!\n";
+    }
+};
+
+void demo() {
+    MyClass obj;  // Constructor called: "Object created!"
+    
+    // Do stuff...
+    
+}  // Destructor called: "Object destroyed!"
+</code></pre>
+<p>The destructor runs automatically when the object goes out of scope. <strong>Always.</strong> Even if there’s an exception.</p>
+<h2 id="the-brilliant-idea-combine-them"><a class="header" href="#the-brilliant-idea-combine-them">The Brilliant Idea: Combine Them!</a></h2>
+<p>Here’s the insight: What if we <strong>acquire resources in the constructor</strong> and <strong>release them in the destructor</strong>?</p>
+<p>Let’s wrap our problematic memory allocation:</p>
+<pre><code class="language-cpp">class IntArray {
+private:
+    int* data;
+    int size;
+    
+public:
+    // Constructor: acquire the resource
+    IntArray(int s) : size(s) {
+        data = new int[size];
+        std::cout &lt;&lt; "Memory allocated\n";
+    }
+    
+    // Destructor: release the resource
+    ~IntArray() {
+        delete[] data;
+        std::cout &lt;&lt; "Memory freed\n";
+    }
+    
+    int&amp; operator[](int index) {
+        return data[index];
+    }
+};
+</code></pre>
+<p>Now watch what happens when we use it:</p>
+<pre><code class="language-cpp">void processData(int size) {
+    IntArray data(size);  // Memory allocated in constructor
+    
+    // Do some processing
+    if (size &gt; 1000) {
+        return;  // Destructor called automatically - NO LEAK!
+    }
+    
+    // This might throw an exception
+    riskyOperation(data);  // If it throws, destructor still called - NO LEAK!
+    
+    // More processing
+    complexCalculation(data);
+    
+}  // Destructor called automatically - memory freed
+</code></pre>
+<p><strong>Voila!</strong> No manual resource management. No need to worry about ownership. No need to worry about cleanup. It’s all handled automatically when the object goes out of scope.</p>
+<ul>
+<li>Early return? ✓ Memory freed</li>
+<li>Exception thrown? ✓ Memory freed</li>
+<li>Normal path? ✓ Memory freed</li>
+</ul>
+<p><strong>Every single path</strong> through the function automatically cleans up the memory. You literally cannot forget.</p>
+<h2 id="this-technique-is-called-raii"><a class="header" href="#this-technique-is-called-raii">This Technique is Called RAII</a></h2>
+<p><strong>RAII</strong> stands for “Resource Acquisition Is Initialization.”</p>
+<p>The idea is simple:</p>
+<p><strong>Acquire the resource in the constructor</strong> - This is where initialization happens</p>
+<p><strong>Release the resource in the destructor</strong> - This happens automatically when the object goes out of scope</p>
+<h3 id="key-principles"><a class="header" href="#key-principles">Key Principles</a></h3>
+<ul>
+<li><strong>There should never be a half-ready or half-dead object</strong></li>
+<li><strong>When an object is created, it should be in a ready state</strong> - fully initialized and usable</li>
+<li><strong>When an object goes out of scope, it should release its resources</strong> - automatically, without user intervention</li>
+<li><strong>The user shouldn’t have to do anything more</strong> - no manual cleanup calls, no worrying about exceptions</li>
+</ul>
+<p>To be honest, “Resource Acquisition Is Initialization” is a bit of a mouthful. More descriptive names might be:</p>
+<ul>
+<li><strong>Constructor Acquires, Destructor Releases</strong> (CADR)</li>
+<li><strong>Scope-Based Resource Management</strong> (SBRM)</li>
+</ul>
+<p>But we’re stuck with RAII, so let’s embrace it!</p>
+<h2 id="raii-in-action-file-handling"><a class="header" href="#raii-in-action-file-handling">RAII in Action: File Handling</a></h2>
+<p>Let’s see another example with files:</p>
+<pre><code class="language-cpp">// Without RAII: Easy to leak file handles
+void readFile(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    
+    if (!file) {
+        return;  // OK, nothing to clean
+    }
+    
+    // Process the file
+    if (errorCondition) {
+        return;  // LEAK! Forgot to fclose
+    }
+    
+    processData(file);  // Might throw exception - LEAK!
+    
+    fclose(file);  // Only reached on success path
+}
+</code></pre>
+<pre><code class="language-cpp">// With RAII: File handle always closed
+class File {
+private:
+    FILE* file;
+    
+public:
+    File(const char* filename, const char* mode) {
+        file = fopen(filename, mode);
+        if (!file) {
+            throw std::runtime_error("Failed to open file");
+        }
+    }
+    
+    ~File() {
+        fclose(file);
+    }
+    
+    FILE* get() { return file; }
+};
+
+void readFile(const char* filename) {
+    File file(filename, "r");  // File opened
+    
+    // Process the file
+    if (errorCondition) {
+        return;  // File closed automatically
+    }
+    
+    processData(file.get());  // Exception? File still closed automatically
+    
+}  // File closed automatically
+</code></pre>
+<h2 id="wait-can-raii-go-wrong"><a class="header" href="#wait-can-raii-go-wrong">Wait, Can RAII Go Wrong?</a></h2>
+<p>Yes! Even with RAII, you can still leak resources if you’re not careful. Let’s see how:</p>
+<pre><code class="language-cpp">class BadResourceManager {
+private:
+    int* buffer;
+    FILE* file;
+    
+public:
+    BadResourceManager(const char* filename, int size) {
+        // Acquire first resource
+        buffer = new int[size];
+        std::cout &lt;&lt; "Buffer allocated\n";
+        
+        // Try to acquire second resource
+        file = fopen(filename, "r");
+        if (!file) {
+            // Constructor throws exception
+            throw std::runtime_error("Failed to open file");
+            // MEMORY LEAK! buffer is never freed
+        }
+        
+        std::cout &lt;&lt; "File opened\n";
+    }
+    
+    ~BadResourceManager() {
+        std::cout &lt;&lt; "Destructor called\n";
+        delete[] buffer;
+        if (file) fclose(file);
+    }
+};
+
+void demonstrateProblem() {
+    try {
+        BadResourceManager manager("nonexistent.txt", 1000);
+    } catch (const std::exception&amp; e) {
+        std::cout &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; "\n";
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Buffer allocated
+Caught: Failed to open file
+</code></pre>
+<p>Notice what’s missing? <strong>“Destructor called” never prints!</strong></p>
+<p>The memory allocated for <code>buffer</code> is <strong>leaked</strong>. Why?</p>
+<h2 id="understanding-fully-constructed-objects"><a class="header" href="#understanding-fully-constructed-objects">Understanding “Fully Constructed Objects”</a></h2>
+<p>Here’s a critical rule in C++:</p>
+<p><strong>The destructor is only called for fully constructed objects.</strong></p>
+<p>An object is considered <strong>fully constructed</strong> only when its constructor completes successfully (reaches the end without throwing).</p>
+<p>Let’s trace what happens in our bad example:</p>
+<pre><code class="language-cpp">BadResourceManager(const char* filename, int size) {
+    buffer = new int[size];     // ✓ Memory allocated
+    
+    file = fopen(filename, "r");
+    if (!file) {
+        throw std::runtime_error("Failed to open file");
+        // ✗ Constructor did NOT complete
+        // ✗ Object is NOT fully constructed
+        // ✗ Destructor will NOT be called
+        // ✗ buffer memory LEAKED
+    }
+    
+    // Constructor completes here - but we never reach this!
+}
+</code></pre>
+<pre><code>Object Construction Timeline:
+┌────────────────────────────────────┐
+│ Constructor starts                 │
+├────────────────────────────────────┤
+│ buffer = new int[size]   ✓         │ ← Memory allocated
+│ file = fopen(...)        ✗         │ ← Failed!
+│ throw exception          ✗         │ ← Constructor interrupted
+├────────────────────────────────────┤
+│ Constructor did NOT complete       │
+│ Object is NOT fully constructed    │
+│ Destructor will NOT be called      │
+│ buffer is LEAKED!                  │
+└────────────────────────────────────┘
+</code></pre>
+<p>The object is in a <strong>half-baked state</strong>: some resources acquired, some not, constructor failed. C++ considers this object to have never truly existed, so it doesn’t call the destructor.</p>
+<p><strong>Think of it like a failed cake</strong>: if you start baking a cake but the oven breaks halfway through, you don’t have a cake—you have a mess. Similarly, a partially constructed object isn’t really an object.</p>
+<h2 id="the-manual-cleanup-trap"><a class="header" href="#the-manual-cleanup-trap">The Manual Cleanup Trap</a></h2>
+<p>You might think: “I’ll just clean up before throwing!”</p>
+<pre><code class="language-cpp">BadResourceManager(const char* filename, int size) {
+    buffer = new int[size];
+    
+    file = fopen(filename, "r");
+    if (!file) {
+        delete[] buffer;  // Manual cleanup
+        throw std::runtime_error("Failed to open file");
+    }
+}
+</code></pre>
+<p>This works, but now you’re back to <strong>manual resource management</strong>! You have to remember to clean up in every failure path. If you acquire three resources, you need cleanup logic for three different failure points. This is exactly what RAII was supposed to eliminate.</p>
+<p><strong>We need a better solution.</strong></p>
+<h2 id="the-solution-raii-all-the-way-down"><a class="header" href="#the-solution-raii-all-the-way-down">The Solution: RAII All The Way Down</a></h2>
+<p>The key insight: <strong>use RAII objects as members</strong>. When a constructor throws, the destructors of all <strong>fully constructed members</strong> are automatically called.</p>
+<pre><code class="language-cpp">// RAII wrapper for memory
+class Buffer {
+private:
+    int* data;
+    int size;
+    
+public:
+    Buffer(int s) : size(s) {
+        data = new int[size];
+        std::cout &lt;&lt; "Buffer allocated\n";
+    }
+    
+    ~Buffer() {
+        delete[] data;
+        std::cout &lt;&lt; "Buffer freed\n";
+    }
+    
+    int* get() { return data; }
+};
+
+// RAII wrapper for files
+class File {
+private:
+    FILE* handle;
+    
+public:
+    File(const char* filename, const char* mode) {
+        handle = fopen(filename, mode);
+        if (!handle) {
+            throw std::runtime_error("Failed to open file");
+        }
+        std::cout &lt;&lt; "File opened\n";
+    }
+    
+    ~File() {
+        fclose(handle);
+        std::cout &lt;&lt; "File closed\n";
+    }
+    
+    FILE* get() { return handle; }
+};
+
+// Good resource manager using RAII members
+class GoodResourceManager {
+private:
+    Buffer buffer;  // RAII member
+    File file;      // RAII member
+    
+public:
+    GoodResourceManager(const char* filename, int size)
+        : buffer(size),      // Buffer constructor called
+          file(filename, "r") // File constructor called
+    {
+        // If we reach here, both resources acquired successfully
+        std::cout &lt;&lt; "Manager fully constructed\n";
+    }
+    
+    ~GoodResourceManager() {
+        std::cout &lt;&lt; "Manager destructor\n";
+        // buffer and file destructors called automatically
+    }
+};
+
+void demonstrateSolution() {
+    try {
+        GoodResourceManager manager("nonexistent.txt", 1000);
+    } catch (const std::exception&amp; e) {
+        std::cout &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; "\n";
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Buffer allocated
+Buffer freed
+Caught: Failed to open file
+</code></pre>
+<p><strong>Look at that!</strong> Even though <code>File</code>’s constructor threw an exception:</p>
+<ol>
+<li><code>Buffer</code> was fully constructed (its constructor completed)</li>
+<li>So <code>Buffer</code>’s destructor was called automatically</li>
+<li>No memory leak!</li>
+</ol>
+<p>The <code>GoodResourceManager</code> object itself was never fully constructed, so its destructor wasn’t called—but that’s fine, because its <strong>member</strong> destructors were called, and they’re the ones managing the actual resources.</p>
+<h2 id="how-member-construction-order-matters"><a class="header" href="#how-member-construction-order-matters">How Member Construction Order Matters</a></h2>
+<p>Members are constructed in the <strong>order they’re declared</strong> in the class:</p>
+<pre><code class="language-cpp">class Manager {
+private:
+    Buffer buffer;  // Constructed first
+    File file;      // Constructed second
+    
+public:
+    Manager(const char* filename, int size)
+        : buffer(size),
+          file(filename, "r")
+    {
+    }
+};
+</code></pre>
+<p>If <code>file</code> construction throws:</p>
+<ul>
+<li><code>buffer</code> was already fully constructed → its destructor runs ✓</li>
+<li><code>file</code> was never fully constructed → its destructor doesn’t run (but it never acquired anything anyway)</li>
+<li><code>Manager</code> was never fully constructed → its destructor doesn’t run (but that’s OK, the members handle cleanup)</li>
+</ul>
+<pre><code>Member Construction Flow with Exception:
+┌──────────────────────────────────────────┐
+│ Manager construction starts              │
+├──────────────────────────────────────────┤
+│ 1. buffer(size)           ✓ SUCCESS      │ ← Fully constructed
+│    - new int[size]                       │
+│    - Buffer ready                        │
+├──────────────────────────────────────────┤
+│ 2. file(filename, "r")    ✗ THROWS       │ ← Construction fails
+│    - fopen fails                         │
+│    - throw exception                     │
+├──────────────────────────────────────────┤
+│ Exception caught - cleanup begins:       │
+│                                          │
+│ • buffer destructor called ✓             │ ← Automatic!
+│   - delete[] data                        │
+│   - No leak!                             │
+│                                          │
+│ • file destructor NOT called             │ ← Never constructed
+│ • Manager destructor NOT called          │ ← Never constructed
+└──────────────────────────────────────────┘
+</code></pre>
+<p><strong>This is the magic</strong>: by composing RAII objects, you get <strong>automatic exception safety</strong>. Each layer handles its own cleanup, and the language guarantees it all happens in the right order.</p>
+<h2 id="the-standard-library-does-this"><a class="header" href="#the-standard-library-does-this">The Standard Library Does This</a></h2>
+<p>You rarely need to write your own RAII wrappers because the standard library provides them:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;fstream&gt;
+
+class ModernResourceManager {
+private:
+    std::unique_ptr&lt;int[]&gt; buffer;  // RAII for memory
+    std::ifstream file;              // RAII for files
+    
+public:
+    ModernResourceManager(const char* filename, int size)
+        : buffer(std::make_unique&lt;int[]&gt;(size)),
+          file(filename)
+    {
+        if (!file.is_open()) {
+            // buffer automatically cleaned up when exception thrown!
+            throw std::runtime_error("Failed to open file");
+        }
+    }
+    
+    // Compiler-generated destructor does the right thing
+    ~ModernResourceManager() = default;
+};
+</code></pre>
+<p>If the file fails to open, <code>std::unique_ptr</code>’s destructor is automatically called and frees the memory. You don’t write any cleanup code—the language does it for you.</p>
+<h2 id="what-can-you-manage-with-raii"><a class="header" href="#what-can-you-manage-with-raii">What Can You Manage with RAII?</a></h2>
+<p>RAII isn’t just for memory and files. It works for <strong>any resource</strong>:</p>
+<ul>
+<li><strong>Memory</strong> - <code>new</code>/<code>delete</code>, <code>malloc</code>/<code>free</code></li>
+<li><strong>Files</strong> - <code>fopen</code>/<code>fclose</code>, file descriptors</li>
+<li><strong>Locks</strong> - <code>mutex.lock()</code>/<code>mutex.unlock()</code></li>
+<li><strong>Sockets</strong> - <code>socket()</code>/<code>close()</code></li>
+<li><strong>Database connections</strong> - <code>connect()</code>/<code>disconnect()</code></li>
+<li><strong>OpenGL contexts</strong> - <code>createContext()</code>/<code>destroyContext()</code></li>
+<li><strong>Temporary state</strong> - Save/restore settings</li>
+</ul>
+<p>The pattern is always the same:</p>
+<ol>
+<li>Acquire in constructor</li>
+<li>Release in destructor</li>
+<li>Let the stack do the work</li>
+</ol>
+<h2 id="the-c-standard-library-uses-raii-everywhere"><a class="header" href="#the-c-standard-library-uses-raii-everywhere">The C++ Standard Library Uses RAII Everywhere</a></h2>
+<p>You don’t have to write RAII wrappers yourself—C++ provides them:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;fstream&gt;
+#include &lt;vector&gt;
+#include &lt;mutex&gt;
+
+void modernCpp() {
+    // Smart pointers manage memory
+    std::unique_ptr&lt;int[]&gt; data(new int[100]);
+    
+    // Streams manage file handles
+    std::ifstream file("data.txt");
+    
+    // Containers manage their own memory
+    std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+    
+    // Lock guards manage mutexes
+    std::mutex m;
+    std::lock_guard&lt;std::mutex&gt; lock(m);
+    
+}  // Everything cleaned up automatically!
+</code></pre>
+<h2 id="why-raii-is-beautiful"><a class="header" href="#why-raii-is-beautiful">Why RAII is Beautiful</a></h2>
+<p>RAII transforms resource management from a <strong>manual chore</strong> into an <strong>automatic guarantee</strong>.</p>
+<p>Instead of remembering to clean up, you <strong>cannot forget</strong> to clean up. Instead of writing error-prone cleanup logic in every return path and exception handler, you write it <strong>once</strong> in the destructor.</p>
+<p>The destructor is your cleanup code, and the C++ language guarantees it runs. Always. No matter what.</p>
+<p>That’s the power of RAII: <strong>using the language’s automatic features to enforce correctness.</strong></p>
+<h2 id="summary-18"><a class="header" href="#summary-18">Summary</a></h2>
+<ol>
+<li>Resource leaks happen when you forget to clean up</li>
+<li>Stack variables are automatically destroyed when they go out of scope</li>
+<li>Destructors run automatically, even during exceptions (stack unwinding)</li>
+<li>RAII combines these: acquire in constructor, release in destructor</li>
+<li>The result: automatic, leak-free resource management</li>
+</ol>
+<p><strong>RAII = Let the stack do the work for you!</strong></p>
 
                     </main>
 
