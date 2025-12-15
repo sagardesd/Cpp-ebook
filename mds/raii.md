@@ -232,8 +232,6 @@ The idea is simple:
 - **When an object goes out of scope, it should release its resources** - automatically, without user intervention
 - **The user shouldn't have to do anything more** - no manual cleanup calls, no worrying about exceptions
 
-### A Better Name?
-
 To be honest, "Resource Acquisition Is Initialization" is a bit of a mouthful. More descriptive names might be:
 
 - **Constructor Acquires, Destructor Releases** (CADR)
