@@ -127,7 +127,7 @@ void myFunction() {
 
 This is called **stack unwinding**. When an exception occurs or a function returns, C++ walks back through the stack and cleans up all automatic variables.
 
-## Enter: Constructors and Destructors
+## Constructors and Destructors
 
 C++ classes have special member functions that run automatically:
 
