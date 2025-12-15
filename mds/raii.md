@@ -217,7 +217,9 @@ void processData(int size) {
 
 ## This Technique is Called RAII
 
-**RAII** stands for "Resource Acquisition Is Initialization." The idea is simple:
+**RAII** stands for "Resource Acquisition Is Initialization."
+
+The idea is simple:
 
 **Acquire the resource in the constructor** - This is where initialization happens
 
