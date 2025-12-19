@@ -1,4 +1,4 @@
-# std::unique_ptr<T>
+# Exclusive ownership smart pointer - `std::unique_ptr<T>` 
 
 ## Table of Contents
 1. [What is std::unique_ptr<T>?](#what-is-uniqueptrt)
