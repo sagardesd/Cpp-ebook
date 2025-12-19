@@ -42,4 +42,5 @@
 - [Designated initialization (>= C++20)](./designated_initialization.md)
 - [Issues with new and delete](./memory_leak.md) 
 - [RAII - Resource Acquisition Is Initialization](./raii.md)
+  - [Smart Pointers (>= C++11)](./smart_pointers_intro.md) 
   
