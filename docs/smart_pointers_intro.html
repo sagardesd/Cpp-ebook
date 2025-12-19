@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found</title>
-        <base href="/cpp-ebook-by-sagar/">
+        <title>Smart Pointers (&gt;&#x3D; C++11)</title>
 
 
         <!-- Custom HTML head -->
@@ -176,13 +175,45 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="c11-smart-pointers"><a class="header" href="#c11-smart-pointers">C++11 Smart Pointers</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>C++11 introduced <strong>smart pointers</strong> to the Standard Library, providing automatic resource management and helping developers avoid resource leaks and dangling pointers. Smart pointers manage the lifetime of resources (memory, files, network connections, etc.) and automatically release them when they’re no longer needed. They leverage the <strong>RAII (Resource Acquisition Is Initialization)</strong> principle to ensure resources are properly cleaned up.</p>
+<h2 id="smart-pointers-introduced-in-c11"><a class="header" href="#smart-pointers-introduced-in-c11">Smart Pointers Introduced in C++11</a></h2>
+<p>C++11 introduced <strong>three main smart pointers</strong> as <strong>class templates</strong>:</p>
+<h3 id="1-stdunique_ptr"><a class="header" href="#1-stdunique_ptr">1. <code>std::unique_ptr</code></a></h3>
+<p>A smart pointer that provides exclusive ownership of a resource, ensuring only one pointer can own it at a time.</p>
+<h3 id="2-stdshared_ptr"><a class="header" href="#2-stdshared_ptr">2. <code>std::shared_ptr</code></a></h3>
+<p>A smart pointer that allows multiple pointers to share ownership of the same resource using reference counting.</p>
+<h3 id="3-stdweak_ptr"><a class="header" href="#3-stdweak_ptr">3. <code>std::weak_ptr</code></a></h3>
+<p>A non-owning smart pointer that holds a reference to a resource managed by <code>std::shared_ptr</code>, useful for breaking circular references.</p>
+<h2 id="key-benefits"><a class="header" href="#key-benefits">Key Benefits</a></h2>
+<ul>
+<li><strong>Automatic resource management</strong>: Resources are automatically released when no longer needed</li>
+<li><strong>Exception safety</strong>: Memory is properly released even if exceptions occur</li>
+<li><strong>No overhead for unique ownership</strong>: <code>std::unique_ptr</code> has zero-cost abstraction</li>
+<li><strong>Clear ownership semantics</strong>: Code intent is explicit about who owns the resource</li>
+</ul>
+<h2 id="quick-comparison"><a class="header" href="#quick-comparison">Quick Comparison</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Smart Pointer</th><th>Ownership</th><th>Use Case</th></tr>
+</thead>
+<tbody>
+<tr><td><code>std::unique_ptr</code></td><td>Exclusive</td><td>Single owner scenarios</td></tr>
+<tr><td><code>std::shared_ptr</code></td><td>Shared</td><td>Multiple owners of the same object</td></tr>
+<tr><td><code>std::weak_ptr</code></td><td>Non-owning</td><td>Breaking circular references</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="raii.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -191,6 +222,9 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="raii.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
             </nav>
 

@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-73a757e1.js";
+            window.path_to_searchindex_js = "searchindex-cde099be.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-50098e5c.js"></script>
+        <script src="toc-f53eb8e8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -22826,6 +22826,372 @@ Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
 </ul>
 <p>Designated initialization represents a significant improvement in C++’s ability to write clear, self-documenting initialization code while maintaining type safety and predictability.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="understanding-dynamic-memory-leaks"><a class="header" href="#understanding-dynamic-memory-leaks">Understanding Dynamic memory leaks</a></h1>
+<h2 id="dynamic-memory-allocation-in-c"><a class="header" href="#dynamic-memory-allocation-in-c">Dynamic Memory Allocation in C++</a></h2>
+<p>In C++, when you need to allocate memory dynamically (at runtime), you use the <code>new</code> operator to get memory from the <strong>heap</strong>. Unlike stack memory, heap memory is <strong>not automatically managed</strong> - you must manually free it using the <code>delete</code> operator.</p>
+<pre><code>Stack Memory                  Heap Memory
+┌──────────────┐             ┌──────────────────┐
+│ Automatic    │             │ Manual Management│
+│ Cleaned up   │             │ YOU must call    │
+│ automatically│             │ delete!          │
+└──────────────┘             └──────────────────┘
+       ↑                              ↑
+  int x = 5;                  int* p = new int(5);
+  (destroyed when            (YOU must delete p)
+   out of scope)
+</code></pre>
+<p>C++ does <strong>not</strong> have automatic garbage collection.</p>
+<p>If you allocate memory with <code>new</code>, you <strong>must</strong> free it with <code>delete</code>.</p>
+<p>If you forget, that memory is <strong>permanently lost</strong> until your program terminates - this is called a <strong>memory leak</strong>.</p>
+<p>Let’s start with an example where the prgram calls new to allocate memory and delete to free the memory:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+void good_function(int data) {
+    int* rawPtr = new int(data);  // 1. Allocate memory from heap
+    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
+    delete rawPtr;  // 2. Free the memory 
+}
+
+int main() {
+    good_function(10);
+    return 0;
+}
+</code></pre>
+<p><strong>Compile and run with Valgrind:</strong></p>
+<pre><code class="language-bash">g++ -g -O0 good_example.cpp -o good_example
+valgrind --leak-check=full ./good_example
+</code></pre>
+<p><strong>Valgrind Report (No Leaks):</strong></p>
+<pre><code>==3102717== HEAP SUMMARY:
+==3102717==     in use at exit: 0 bytes in 0 blocks
+==3102717==   total heap usage: 3 allocs, 3 frees, 73,732 bytes allocated
+==3102717== 
+==3102717== All heap blocks were freed -- no leaks are possible
+==3102717== 
+==3102717== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+</code></pre>
+<p><strong>Memory Lifecycle:</strong></p>
+<pre><code>Step 1: int* rawPtr = new int(data)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│  Function    │              │              │
+│  Stack Frame │              │  [4 bytes]   │
+│              │              │  value: 10   │
+│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
+│  (address)   │              │              │
+└──────────────┘              └──────────────┘
+    ↑                              ↑
+  Lives here               Lives here until
+  (automatic)              delete is called
+
+
+Step 2: Using *rawPtr
+    
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
+│  (pointer)   │              │              │
+└──────────────┘              └──────────────┘
+                              Access via pointer
+
+
+Step 3: delete rawPtr ✅
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr      │      X       │  [freed]     │
+│  (dangling)  │              │              │
+└──────────────┘              └──────────────┘
+                              Memory returned to OS
+
+
+Step 4: Function exits
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  [destroyed] │              │  [free]      │
+│              │              │              │
+└──────────────┘              └──────────────┘
+    Stack cleaned up          No leak! ✅
+</code></pre>
+<p>Now let’s see what happens when you forget to call <code>delete</code>:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+void bad_function(int data) {
+    int* rawPtr = new int(data);  // Allocate memory from heap
+    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
+    // Forgot to delete! 
+}
+
+int main() {
+    bad_function(10);
+    return 0;
+}
+</code></pre>
+<p><strong>Compile and run with Valgrind:</strong></p>
+<pre><code class="language-bash">g++ -g -O0 forgot_delete.cpp -o forgot_delete
+valgrind --leak-check=full ./forgot_delete
+</code></pre>
+<p><strong>Valgrind Report - Observe the Memory Leak:</strong></p>
+<pre><code>==3102369== HEAP SUMMARY:
+==3102369==     in use at exit: 4 bytes in 1 blocks
+==3102369==   total heap usage: 3 allocs, 2 frees, 73,732 bytes allocated
+==3102369== 
+==3102369== Searching for pointers to 1 not-freed blocks
+==3102369== Checked 147,280 bytes
+==3102369== 
+==3102369== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==3102369==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==3102369==    by 0x109201: bad_function(int) (memory_leak.cpp:5)
+==3102369==    by 0x10925D: main (memory_leak.cpp:10)
+==3102369== 
+==3102369== LEAK SUMMARY:
+==3102369==    definitely lost: 4 bytes in 1 blocks
+==3102369==    indirectly lost: 0 bytes in 0 blocks
+==3102369==      possibly lost: 0 bytes in 0 blocks
+==3102369==    still reachable: 0 bytes in 0 blocks
+==3102369==         suppressed: 0 bytes in 0 blocks
+==3102369== 
+==3102369== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+</code></pre>
+<h3 id="memory-lifecycle"><a class="header" href="#memory-lifecycle">Memory Lifecycle:</a></h3>
+<pre><code>Step 1: int* rawPtr = new int(data)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│  Function    │              │              │
+│  Stack Frame │              │  [4 bytes]   │
+│              │              │  value: 10   │
+│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
+│  (address)   │              │              │
+└──────────────┘              └──────────────┘
+    ↑                              ↑
+  Lives here               Lives here until
+  (automatic)              delete is called
+
+
+Step 2: Using *rawPtr
+    
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
+│  (pointer)   │              │              │
+└──────────────┘              └──────────────┘
+                              Access via pointer
+
+
+Step 3: Function exits (NO delete called!) ❌
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  [destroyed] │      X       │  [LEAKED!]   │
+│              │              │  value: 10   │
+└──────────────┘              └──────────────┘
+  rawPtr is gone!             Memory orphaned!
+  (pointer destroyed)         No way to free it!
+
+
+Step 4: Program continues
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│              │              │  [LEAKED]    │
+│              │              │  4 bytes     │
+└──────────────┘              └──────────────┘
+                              Permanently lost! ❌
+</code></pre>
+<p><strong>The Problem:</strong> When <code>bad_function()</code> exits:</p>
+<ol>
+<li>The local variable <code>rawPtr</code> is destroyed (it’s on the stack)</li>
+<li>But the memory it pointed to (on the heap) is <strong>not</strong> freed</li>
+<li>There’s now <strong>no way</strong> to access or free that memory</li>
+<li>The 4 bytes are <strong>permanently lost</strong> until the program terminates</li>
+</ol>
+<h3 id="why-this-matters-at-scale"><a class="header" href="#why-this-matters-at-scale">Why This Matters at Scale:</a></h3>
+<pre><code class="language-cpp">int main() {
+    for (int i = 0; i &lt; 1000000; i++) {
+        bad_function(i);  // Leaks 4 bytes EVERY call!
+    }
+    // Total leaked: 4 MB of memory!
+    return 0;
+}
+</code></pre>
+<p>In a long-running application:</p>
+<ul>
+<li>Memory consumption grows continuously</li>
+<li>System performance degrades</li>
+<li>Eventually: out-of-memory crashes</li>
+</ul>
+<p>Even if you remember to call <code>delete</code>, exceptions can still cause leaks:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;stdexcept&gt;
+
+void some_function() {
+    throw std::runtime_error("Something went wrong");
+}
+
+void bad_function(int data) {
+    int* rawPtr = new int(data);  // Allocate memory
+    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
+    some_function();  // Exception thrown here! 
+    delete rawPtr;    // This line NEVER executes! ❌
+}
+
+int main() {
+    try {
+        bad_function(10);
+    } catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; '\n';
+    }
+    return 0;
+}
+</code></pre>
+<p><strong>Compile and run with Valgrind:</strong></p>
+<pre><code class="language-bash">g++ -g -O0 exception_leak.cpp -o exception_leak
+valgrind --leak-check=full ./exception_leak
+</code></pre>
+<h3 id="valgrind-report---observe-the-exception-leak"><a class="header" href="#valgrind-report---observe-the-exception-leak">Valgrind Report - Observe the Exception Leak:</a></h3>
+<pre><code>data: 10
+Caught: Something went wrong
+==3106542== 
+==3106542== HEAP SUMMARY:
+==3106542==     in use at exit: 4 bytes in 1 blocks
+==3106542==   total heap usage: 4 allocs, 3 frees, 73,804 bytes allocated
+==3106542== 
+==3106542== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==3106542==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==3106542==    by 0x109381: bad_function(int) (memory_leak_exc.cpp:9)
+==3106542==    by 0x1093FD: main (memory_leak_exc.cpp:17)
+==3106542== 
+==3106542== LEAK SUMMARY:
+==3106542==    definitely lost: 4 bytes in 1 blocks
+==3106542==    indirectly lost: 0 bytes in 0 blocks
+==3106542==      possibly lost: 0 bytes in 0 blocks
+==3106542==    still reachable: 0 bytes in 0 blocks
+==3106542==         suppressed: 0 bytes in 0 blocks
+==3106542== 
+==3106542== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+</code></pre>
+<h3 id="the-surprising-result"><a class="header" href="#the-surprising-result">The Surprising Result:</a></h3>
+<p><strong>Observation:</strong> Even though we have <code>delete rawPtr</code> in the code, the memory still leaked!</p>
+<ul>
+<li><strong>“4 bytes in 1 blocks are definitely lost”</strong> - Memory leaked despite <code>delete</code> being present</li>
+<li>The exception caused the function to exit <strong>before</strong> reaching <code>delete</code></li>
+<li>Leak originated at line 9 (the <code>new</code> statement)</li>
+</ul>
+<h3 id="exception-execution-flow"><a class="header" href="#exception-execution-flow">Exception Execution Flow:</a></h3>
+<pre><code>Step 1: int* rawPtr = new int(data)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│  Function    │              │              │
+│  Stack Frame │              │  [4 bytes]   │
+│              │              │  value: 10   │
+│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
+│              │              │              │
+└──────────────┘              └──────────────┘
+
+
+Step 2: some_function() throws exception ⚡
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
+│              │              │              │
+└──────────────┘              └──────────────┘
+    ⚡ Exception!               Still allocated!
+
+
+Step 3: Stack unwinding begins
+        (cleaning up local variables)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr      │      ?       │  [10]        │
+│ (being       │              │              │
+│  destroyed)  │              │              │
+└──────────────┘              └──────────────┘
+  Pointer about to die        Memory still there!
+  delete rawPtr NEVER runs!
+
+
+Step 4: Function exited via exception
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  [destroyed] │      X       │  [LEAKED!]   │
+│              │              │  value: 10   │
+└──────────────┘              └──────────────┘
+  rawPtr destroyed!           Memory orphaned!
+  delete line skipped!        No way to free it! ❌
+</code></pre>
+<p><strong>What happened:</strong></p>
+<ol>
+<li>Memory is allocated with <code>new</code></li>
+<li>Exception is thrown in <code>some_function()</code></li>
+<li><strong>Stack unwinding</strong> begins (C++ cleans up local objects)</li>
+<li><code>rawPtr</code> (the pointer variable) is destroyed during unwinding</li>
+<li>The <code>delete rawPtr</code> line is <strong>never reached</strong></li>
+<li>The allocated memory has <strong>no way to be freed</strong></li>
+</ol>
+<h2 id="the-problems-with-manual-memory-management"><a class="header" href="#the-problems-with-manual-memory-management">The Problems with Manual Memory Management</a></h2>
+<p>Managing heap memory manually with <code>new</code>/<code>delete</code> is <strong>error-prone</strong> because:</p>
+<h3 id="problem-1-easy-to-forget"><a class="header" href="#problem-1-easy-to-forget">Problem 1: Easy to Forget</a></h3>
+<pre><code class="language-cpp">void process() {
+    int* data = new int[1000];
+    // ... lots of code ...
+    // Did you remember to delete[]? ❌
+}
+</code></pre>
+<p><strong>Issue:</strong> In complex functions with multiple return paths, it’s easy to forget <code>delete</code>.</p>
+<h3 id="problem-2-exception-safety-is-hard"><a class="header" href="#problem-2-exception-safety-is-hard">Problem 2: Exception Safety is Hard</a></h3>
+<pre><code class="language-cpp">void process() {
+    int* data = new int[1000];
+    // Any function here might throw! ⚡
+    complexOperation();  // Exception?
+    delete[] data;  // Might never execute!
+}
+</code></pre>
+<p><strong>Issue:</strong> Any exception between <code>new</code> and <code>delete</code> causes a leak.</p>
+<h3 id="problem-3-multiple-exit-points"><a class="header" href="#problem-3-multiple-exit-points">Problem 3: Multiple Exit Points</a></h3>
+<pre><code class="language-cpp">void process(bool condition) {
+    int* data = new int[1000];
+    if (condition) {
+        return;  // Oops, forgot delete! ❌
+    }
+    // ... more code ...
+    if (errorOccurred) {
+        return;  // Oops again! ❌
+    }
+    delete[] data;  // Only this path is safe
+}
+</code></pre>
+<p><strong>Issue:</strong> Each return path needs its own <code>delete</code>.</p>
+<h3 id="problem-4-ownership-is-unclear"><a class="header" href="#problem-4-ownership-is-unclear">Problem 4: Ownership is Unclear</a></h3>
+<pre><code class="language-cpp">int* createData();  // Who deletes this?
+void process(int* data);  // Does this take ownership?
+int* getData();  // Should caller delete?
+</code></pre>
+<p><strong>Issue:</strong> Unclear who is responsible for freeing memory.</p>
+<h3 id="detection-tools-you-can-use-to-findout-memory-leaks"><a class="header" href="#detection-tools-you-can-use-to-findout-memory-leaks">Detection Tools you can use to findout memory leaks</a></h3>
+<ul>
+<li><strong>Valgrind</strong> - Detects memory leaks at runtime</li>
+<li><strong>AddressSanitizer</strong> - Fast leak detection during testing</li>
+<li><strong>Static analyzers</strong> - Clang-Tidy, Cppcheck find potential leaks</li>
+</ul>
+<p><strong>Uhh So many problems, is there anyway these problems can be fixed.</strong>
+<strong>Yes the answer to all these problems is Smart pointers introduced in C++11 based on the RAII concept.</strong></p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="raii-a-natural-solution-to-resource-management"><a class="header" href="#raii-a-natural-solution-to-resource-management">RAII: A Natural Solution to Resource Management</a></h1>
 <h2 id="the-problem-resource-leaks"><a class="header" href="#the-problem-resource-leaks">The Problem: Resource Leaks</a></h2>
 <p>Let’s start with a common problem. Imagine you’re writing a function that needs to allocate some memory:</p>
@@ -23381,371 +23747,37 @@ void modernCpp() {
 </ol>
 <p><strong>RAII = Let the stack do the work for you!</strong></p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="understanding-dynamic-memory-leaks"><a class="header" href="#understanding-dynamic-memory-leaks">Understanding Dynamic memory leaks</a></h1>
-<h2 id="dynamic-memory-allocation-in-c"><a class="header" href="#dynamic-memory-allocation-in-c">Dynamic Memory Allocation in C++</a></h2>
-<p>In C++, when you need to allocate memory dynamically (at runtime), you use the <code>new</code> operator to get memory from the <strong>heap</strong>. Unlike stack memory, heap memory is <strong>not automatically managed</strong> - you must manually free it using the <code>delete</code> operator.</p>
-<pre><code>Stack Memory                  Heap Memory
-┌──────────────┐             ┌──────────────────┐
-│ Automatic    │             │ Manual Management│
-│ Cleaned up   │             │ YOU must call    │
-│ automatically│             │ delete!          │
-└──────────────┘             └──────────────────┘
-       ↑                              ↑
-  int x = 5;                  int* p = new int(5);
-  (destroyed when            (YOU must delete p)
-   out of scope)
-</code></pre>
-<p>C++ does <strong>not</strong> have automatic garbage collection.</p>
-<p>If you allocate memory with <code>new</code>, you <strong>must</strong> free it with <code>delete</code>.</p>
-<p>If you forget, that memory is <strong>permanently lost</strong> until your program terminates - this is called a <strong>memory leak</strong>.</p>
-<p>Let’s start with an example where the prgram calls new to allocate memory and delete to free the memory:</p>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-
-void good_function(int data) {
-    int* rawPtr = new int(data);  // 1. Allocate memory from heap
-    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
-    delete rawPtr;  // 2. Free the memory 
-}
-
-int main() {
-    good_function(10);
-    return 0;
-}
-</code></pre>
-<p><strong>Compile and run with Valgrind:</strong></p>
-<pre><code class="language-bash">g++ -g -O0 good_example.cpp -o good_example
-valgrind --leak-check=full ./good_example
-</code></pre>
-<p><strong>Valgrind Report (No Leaks):</strong></p>
-<pre><code>==3102717== HEAP SUMMARY:
-==3102717==     in use at exit: 0 bytes in 0 blocks
-==3102717==   total heap usage: 3 allocs, 3 frees, 73,732 bytes allocated
-==3102717== 
-==3102717== All heap blocks were freed -- no leaks are possible
-==3102717== 
-==3102717== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
-</code></pre>
-<p><strong>Memory Lifecycle:</strong></p>
-<pre><code>Step 1: int* rawPtr = new int(data)
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│  Function    │              │              │
-│  Stack Frame │              │  [4 bytes]   │
-│              │              │  value: 10   │
-│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
-│  (address)   │              │              │
-└──────────────┘              └──────────────┘
-    ↑                              ↑
-  Lives here               Lives here until
-  (automatic)              delete is called
-
-
-Step 2: Using *rawPtr
-    
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
-│  (pointer)   │              │              │
-└──────────────┘              └──────────────┘
-                              Access via pointer
-
-
-Step 3: delete rawPtr ✅
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  rawPtr      │      X       │  [freed]     │
-│  (dangling)  │              │              │
-└──────────────┘              └──────────────┘
-                              Memory returned to OS
-
-
-Step 4: Function exits
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  [destroyed] │              │  [free]      │
-│              │              │              │
-└──────────────┘              └──────────────┘
-    Stack cleaned up          No leak! ✅
-</code></pre>
-<p>Now let’s see what happens when you forget to call <code>delete</code>:</p>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-
-void bad_function(int data) {
-    int* rawPtr = new int(data);  // Allocate memory from heap
-    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
-    // Forgot to delete! 
-}
-
-int main() {
-    bad_function(10);
-    return 0;
-}
-</code></pre>
-<p><strong>Compile and run with Valgrind:</strong></p>
-<pre><code class="language-bash">g++ -g -O0 forgot_delete.cpp -o forgot_delete
-valgrind --leak-check=full ./forgot_delete
-</code></pre>
-<p><strong>Valgrind Report - Observe the Memory Leak:</strong></p>
-<pre><code>==3102369== HEAP SUMMARY:
-==3102369==     in use at exit: 4 bytes in 1 blocks
-==3102369==   total heap usage: 3 allocs, 2 frees, 73,732 bytes allocated
-==3102369== 
-==3102369== Searching for pointers to 1 not-freed blocks
-==3102369== Checked 147,280 bytes
-==3102369== 
-==3102369== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
-==3102369==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3102369==    by 0x109201: bad_function(int) (memory_leak.cpp:5)
-==3102369==    by 0x10925D: main (memory_leak.cpp:10)
-==3102369== 
-==3102369== LEAK SUMMARY:
-==3102369==    definitely lost: 4 bytes in 1 blocks
-==3102369==    indirectly lost: 0 bytes in 0 blocks
-==3102369==      possibly lost: 0 bytes in 0 blocks
-==3102369==    still reachable: 0 bytes in 0 blocks
-==3102369==         suppressed: 0 bytes in 0 blocks
-==3102369== 
-==3102369== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-</code></pre>
-<h3 id="memory-lifecycle"><a class="header" href="#memory-lifecycle">Memory Lifecycle:</a></h3>
-<pre><code>Step 1: int* rawPtr = new int(data)
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│  Function    │              │              │
-│  Stack Frame │              │  [4 bytes]   │
-│              │              │  value: 10   │
-│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
-│  (address)   │              │              │
-└──────────────┘              └──────────────┘
-    ↑                              ↑
-  Lives here               Lives here until
-  (automatic)              delete is called
-
-
-Step 2: Using *rawPtr
-    
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
-│  (pointer)   │              │              │
-└──────────────┘              └──────────────┘
-                              Access via pointer
-
-
-Step 3: Function exits (NO delete called!) ❌
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  [destroyed] │      X       │  [LEAKED!]   │
-│              │              │  value: 10   │
-└──────────────┘              └──────────────┘
-  rawPtr is gone!             Memory orphaned!
-  (pointer destroyed)         No way to free it!
-
-
-Step 4: Program continues
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│              │              │  [LEAKED]    │
-│              │              │  4 bytes     │
-└──────────────┘              └──────────────┘
-                              Permanently lost! ❌
-</code></pre>
-<p><strong>The Problem:</strong> When <code>bad_function()</code> exits:</p>
-<ol>
-<li>The local variable <code>rawPtr</code> is destroyed (it’s on the stack)</li>
-<li>But the memory it pointed to (on the heap) is <strong>not</strong> freed</li>
-<li>There’s now <strong>no way</strong> to access or free that memory</li>
-<li>The 4 bytes are <strong>permanently lost</strong> until the program terminates</li>
-</ol>
-<h3 id="why-this-matters-at-scale"><a class="header" href="#why-this-matters-at-scale">Why This Matters at Scale:</a></h3>
-<pre><code class="language-cpp">int main() {
-    for (int i = 0; i &lt; 1000000; i++) {
-        bad_function(i);  // Leaks 4 bytes EVERY call!
-    }
-    // Total leaked: 4 MB of memory!
-    return 0;
-}
-</code></pre>
-<p>In a long-running application:</p>
+<h1 id="c11-smart-pointers"><a class="header" href="#c11-smart-pointers">C++11 Smart Pointers</a></h1>
+<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<p>C++11 introduced <strong>smart pointers</strong> to the Standard Library, providing automatic resource management and helping developers avoid resource leaks and dangling pointers. Smart pointers manage the lifetime of resources (memory, files, network connections, etc.) and automatically release them when they’re no longer needed. They leverage the <strong>RAII (Resource Acquisition Is Initialization)</strong> principle to ensure resources are properly cleaned up.</p>
+<h2 id="smart-pointers-introduced-in-c11"><a class="header" href="#smart-pointers-introduced-in-c11">Smart Pointers Introduced in C++11</a></h2>
+<p>C++11 introduced <strong>three main smart pointers</strong> as <strong>class templates</strong>:</p>
+<h3 id="1-stdunique_ptr"><a class="header" href="#1-stdunique_ptr">1. <code>std::unique_ptr</code></a></h3>
+<p>A smart pointer that provides exclusive ownership of a resource, ensuring only one pointer can own it at a time.</p>
+<h3 id="2-stdshared_ptr"><a class="header" href="#2-stdshared_ptr">2. <code>std::shared_ptr</code></a></h3>
+<p>A smart pointer that allows multiple pointers to share ownership of the same resource using reference counting.</p>
+<h3 id="3-stdweak_ptr"><a class="header" href="#3-stdweak_ptr">3. <code>std::weak_ptr</code></a></h3>
+<p>A non-owning smart pointer that holds a reference to a resource managed by <code>std::shared_ptr</code>, useful for breaking circular references.</p>
+<h2 id="key-benefits-1"><a class="header" href="#key-benefits-1">Key Benefits</a></h2>
 <ul>
-<li>Memory consumption grows continuously</li>
-<li>System performance degrades</li>
-<li>Eventually: out-of-memory crashes</li>
+<li><strong>Automatic resource management</strong>: Resources are automatically released when no longer needed</li>
+<li><strong>Exception safety</strong>: Memory is properly released even if exceptions occur</li>
+<li><strong>No overhead for unique ownership</strong>: <code>std::unique_ptr</code> has zero-cost abstraction</li>
+<li><strong>Clear ownership semantics</strong>: Code intent is explicit about who owns the resource</li>
 </ul>
-<p>Even if you remember to call <code>delete</code>, exceptions can still cause leaks:</p>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;stdexcept&gt;
-
-void some_function() {
-    throw std::runtime_error("Something went wrong");
-}
-
-void bad_function(int data) {
-    int* rawPtr = new int(data);  // Allocate memory
-    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
-    some_function();  // Exception thrown here! 
-    delete rawPtr;    // This line NEVER executes! ❌
-}
-
-int main() {
-    try {
-        bad_function(10);
-    } catch (const std::exception&amp; e) {
-        std::cerr &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; '\n';
-    }
-    return 0;
-}
-</code></pre>
-<p><strong>Compile and run with Valgrind:</strong></p>
-<pre><code class="language-bash">g++ -g -O0 exception_leak.cpp -o exception_leak
-valgrind --leak-check=full ./exception_leak
-</code></pre>
-<h3 id="valgrind-report---observe-the-exception-leak"><a class="header" href="#valgrind-report---observe-the-exception-leak">Valgrind Report - Observe the Exception Leak:</a></h3>
-<pre><code>data: 10
-Caught: Something went wrong
-==3106542== 
-==3106542== HEAP SUMMARY:
-==3106542==     in use at exit: 4 bytes in 1 blocks
-==3106542==   total heap usage: 4 allocs, 3 frees, 73,804 bytes allocated
-==3106542== 
-==3106542== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
-==3106542==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
-==3106542==    by 0x109381: bad_function(int) (memory_leak_exc.cpp:9)
-==3106542==    by 0x1093FD: main (memory_leak_exc.cpp:17)
-==3106542== 
-==3106542== LEAK SUMMARY:
-==3106542==    definitely lost: 4 bytes in 1 blocks
-==3106542==    indirectly lost: 0 bytes in 0 blocks
-==3106542==      possibly lost: 0 bytes in 0 blocks
-==3106542==    still reachable: 0 bytes in 0 blocks
-==3106542==         suppressed: 0 bytes in 0 blocks
-==3106542== 
-==3106542== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
-</code></pre>
-<h3 id="the-surprising-result"><a class="header" href="#the-surprising-result">The Surprising Result:</a></h3>
-<p><strong>Observation:</strong> Even though we have <code>delete rawPtr</code> in the code, the memory still leaked!</p>
-<ul>
-<li><strong>“4 bytes in 1 blocks are definitely lost”</strong> - Memory leaked despite <code>delete</code> being present</li>
-<li>The exception caused the function to exit <strong>before</strong> reaching <code>delete</code></li>
-<li>Leak originated at line 9 (the <code>new</code> statement)</li>
-</ul>
-<h3 id="exception-execution-flow"><a class="header" href="#exception-execution-flow">Exception Execution Flow:</a></h3>
-<pre><code>Step 1: int* rawPtr = new int(data)
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│  Function    │              │              │
-│  Stack Frame │              │  [4 bytes]   │
-│              │              │  value: 10   │
-│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
-│              │              │              │
-└──────────────┘              └──────────────┘
-
-
-Step 2: some_function() throws exception ⚡
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
-│              │              │              │
-└──────────────┘              └──────────────┘
-    ⚡ Exception!               Still allocated!
-
-
-Step 3: Stack unwinding begins
-        (cleaning up local variables)
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  rawPtr      │      ?       │  [10]        │
-│ (being       │              │              │
-│  destroyed)  │              │              │
-└──────────────┘              └──────────────┘
-  Pointer about to die        Memory still there!
-  delete rawPtr NEVER runs!
-
-
-Step 4: Function exited via exception
-
-    STACK                           HEAP
-┌──────────────┐              ┌──────────────┐
-│              │              │              │
-│  [destroyed] │      X       │  [LEAKED!]   │
-│              │              │  value: 10   │
-└──────────────┘              └──────────────┘
-  rawPtr destroyed!           Memory orphaned!
-  delete line skipped!        No way to free it! ❌
-</code></pre>
-<p><strong>What happened:</strong></p>
-<ol>
-<li>Memory is allocated with <code>new</code></li>
-<li>Exception is thrown in <code>some_function()</code></li>
-<li><strong>Stack unwinding</strong> begins (C++ cleans up local objects)</li>
-<li><code>rawPtr</code> (the pointer variable) is destroyed during unwinding</li>
-<li>The <code>delete rawPtr</code> line is <strong>never reached</strong></li>
-<li>The allocated memory has <strong>no way to be freed</strong></li>
-</ol>
-<h2 id="the-problems-with-manual-memory-management"><a class="header" href="#the-problems-with-manual-memory-management">The Problems with Manual Memory Management</a></h2>
-<p>Managing heap memory manually with <code>new</code>/<code>delete</code> is <strong>error-prone</strong> because:</p>
-<h3 id="problem-1-easy-to-forget"><a class="header" href="#problem-1-easy-to-forget">Problem 1: Easy to Forget</a></h3>
-<pre><code class="language-cpp">void process() {
-    int* data = new int[1000];
-    // ... lots of code ...
-    // Did you remember to delete[]? ❌
-}
-</code></pre>
-<p><strong>Issue:</strong> In complex functions with multiple return paths, it’s easy to forget <code>delete</code>.</p>
-<h3 id="problem-2-exception-safety-is-hard"><a class="header" href="#problem-2-exception-safety-is-hard">Problem 2: Exception Safety is Hard</a></h3>
-<pre><code class="language-cpp">void process() {
-    int* data = new int[1000];
-    // Any function here might throw! ⚡
-    complexOperation();  // Exception?
-    delete[] data;  // Might never execute!
-}
-</code></pre>
-<p><strong>Issue:</strong> Any exception between <code>new</code> and <code>delete</code> causes a leak.</p>
-<h3 id="problem-3-multiple-exit-points"><a class="header" href="#problem-3-multiple-exit-points">Problem 3: Multiple Exit Points</a></h3>
-<pre><code class="language-cpp">void process(bool condition) {
-    int* data = new int[1000];
-    if (condition) {
-        return;  // Oops, forgot delete! ❌
-    }
-    // ... more code ...
-    if (errorOccurred) {
-        return;  // Oops again! ❌
-    }
-    delete[] data;  // Only this path is safe
-}
-</code></pre>
-<p><strong>Issue:</strong> Each return path needs its own <code>delete</code>.</p>
-<h3 id="problem-4-ownership-is-unclear"><a class="header" href="#problem-4-ownership-is-unclear">Problem 4: Ownership is Unclear</a></h3>
-<pre><code class="language-cpp">int* createData();  // Who deletes this?
-void process(int* data);  // Does this take ownership?
-int* getData();  // Should caller delete?
-</code></pre>
-<p><strong>Issue:</strong> Unclear who is responsible for freeing memory.</p>
-<h3 id="detection-tools-you-can-use-to-findout-memory-leaks"><a class="header" href="#detection-tools-you-can-use-to-findout-memory-leaks">Detection Tools you can use to findout memory leaks</a></h3>
-<ul>
-<li><strong>Valgrind</strong> - Detects memory leaks at runtime</li>
-<li><strong>AddressSanitizer</strong> - Fast leak detection during testing</li>
-<li><strong>Static analyzers</strong> - Clang-Tidy, Cppcheck find potential leaks</li>
-</ul>
-<p><strong>Uhh So many problems, is there anyway these problems can be fixed.</strong>
-<strong>Yes the answer to all these problems is Smart pointers introduced in C++11 based on the RAII concept.</strong></p>
+<h2 id="quick-comparison"><a class="header" href="#quick-comparison">Quick Comparison</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Smart Pointer</th><th>Ownership</th><th>Use Case</th></tr>
+</thead>
+<tbody>
+<tr><td><code>std::unique_ptr</code></td><td>Exclusive</td><td>Single owner scenarios</td></tr>
+<tr><td><code>std::shared_ptr</code></td><td>Shared</td><td>Multiple owners of the same object</td></tr>
+<tr><td><code>std::weak_ptr</code></td><td>Non-owning</td><td>Breaking circular references</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 
