@@ -18,7 +18,9 @@ Stack Memory                  Heap Memory
 ```
 
 C++ does **not** have automatic garbage collection. 
+
 If you allocate memory with `new`, you **must** free it with `delete`. 
+
 If you forget, that memory is **permanently lost** until your program terminates - this is called a **memory leak**.
 
 
