@@ -551,7 +551,7 @@ int main() {
 - No raw pointers exist in intermediate states
 - No possibility of a leak between allocation and `unique_ptr` construction
 
-### Detailed Example: Demonstrating the Safety
+### Improved and safe version using `std::make_unique`
 
 ```cpp
 #include <memory>
