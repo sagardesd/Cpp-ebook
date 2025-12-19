@@ -17,7 +17,9 @@ Stack Memory                  Heap Memory
    out of scope)
 ```
 
-**Key Point:** C++ does **not** have automatic garbage collection. If you allocate memory with `new`, you **must** free it with `delete`. If you forget, that memory is **permanently lost** until your program terminates - this is called a **memory leak**.
+C++ does **not** have automatic garbage collection. 
+If you allocate memory with `new`, you **must** free it with `delete`. 
+If you forget, that memory is **permanently lost** until your program terminates - this is called a **memory leak**.
 
 
 Let's start with an example where the prgram calls new to allocate memory and delete to free the memory:
