@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Range Based for loops (&gt;&#x3D; C++11)</title>
+        <title>Manual managment of heap allocated memory</title>
 
 
         <!-- Custom HTML head -->
@@ -175,347 +175,380 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="c11-range-based-for-loops"><a class="header" href="#c11-range-based-for-loops">C++11 Range-Based For Loops</a></h1>
-<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
-<p>The range-based <code>for</code> loop, introduced in C++11, provides a simpler, more readable syntax for iterating over elements of a range, such as arrays, standard library containers, and custom types that satisfy the necessary requirements.</p>
-<h2 id="basic-syntax"><a class="header" href="#basic-syntax">Basic Syntax</a></h2>
-<pre><code class="language-cpp">for (declaration : expression) {
-    // loop statement(s)
-}
+                        <h1 id="understanding-dynamic-memory-leaks"><a class="header" href="#understanding-dynamic-memory-leaks">Understanding Dynamic memory leaks</a></h1>
+<h2 id="dynamic-memory-allocation-in-c"><a class="header" href="#dynamic-memory-allocation-in-c">Dynamic Memory Allocation in C++</a></h2>
+<p>In C++, when you need to allocate memory dynamically (at runtime), you use the <code>new</code> operator to get memory from the <strong>heap</strong>. Unlike stack memory, heap memory is <strong>not automatically managed</strong> - you must manually free it using the <code>delete</code> operator.</p>
+<pre><code>Stack Memory                  Heap Memory
+┌──────────────┐             ┌──────────────────┐
+│ Automatic    │             │ Manual Management│
+│ Cleaned up   │             │ YOU must call    │
+│ automatically│             │ delete!          │
+└──────────────┘             └──────────────────┘
+       ↑                              ↑
+  int x = 5;                  int* p = new int(5);
+  (destroyed when            (YOU must delete p)
+   out of scope)
 </code></pre>
-<p>Where <code>declaration</code> is <code>type variable</code>:</p>
-<pre><code class="language-cpp">for (type variable : expression) {
-    // loop statement(s)
-}
-</code></pre>
-<ul>
-<li><strong><code>type</code></strong>: The type of the elements (can be explicit like <code>int</code>, <code>std::string</code>, or use <code>auto</code>)</li>
-<li><strong><code>variable</code></strong>: The name of the variable that will hold each element</li>
-<li><strong><code>declaration</code></strong>: The complete variable declaration (<code>type variable</code>), whose type must be compatible with the element type of the sequence. The <code>auto</code> keyword is highly recommended here.</li>
-<li><strong><code>expression</code></strong>: The range to iterate over (e.g., an array, a <code>std::vector</code>, <code>std::string</code>, or an initializer list).</li>
-</ul>
+<p>C++ does <strong>not</strong> have automatic garbage collection.</p>
+<p>If you allocate memory with <code>new</code>, you <strong>must</strong> free it with <code>delete</code>.</p>
+<p>If you forget, that memory is <strong>permanently lost</strong> until your program terminates - this is called a <strong>memory leak</strong>.</p>
+<p>Let’s start with an example where the prgram calls new to allocate memory and delete to free the memory:</p>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;vector&gt;
-#include &lt;string&gt;
+
+void good_function(int data) {
+    int* rawPtr = new int(data);  // 1. Allocate memory from heap
+    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
+    delete rawPtr;  // 2. Free the memory 
+}
 
 int main() {
-    // Vector
-    std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
-    for (int num : numbers) {
-        std::cout &lt;&lt; num &lt;&lt; " ";
-    }
-    std::cout &lt;&lt; std::endl;
-    
-    // C-style array
-    int arr[] = {10, 20, 30, 40};
-    for (int value : arr) {
-        std::cout &lt;&lt; value &lt;&lt; " ";
-    }
-    std::cout &lt;&lt; std::endl;
-    
-    // String (iterates over characters)
-    std::string text = "Hello";
-    for (char c : text) {
-        std::cout &lt;&lt; c &lt;&lt; " ";
-    }
-    std::cout &lt;&lt; std::endl;
-    
-    // Initializer list
-    for (double d : {1.1, 2.2, 3.3}) {
-        std::cout &lt;&lt; d &lt;&lt; " ";
-    }
-    std::cout &lt;&lt; std::endl;
-    
+    good_function(10);
     return 0;
 }
 </code></pre>
-<h3 id="comparison-old-vs-new-syntax"><a class="header" href="#comparison-old-vs-new-syntax">Comparison: Old vs. New Syntax</a></h3>
-<pre><code class="language-cpp">std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+<p><strong>Compile and run with Valgrind:</strong></p>
+<pre><code class="language-bash">g++ -g -O0 good_example.cpp -o good_example
+valgrind --leak-check=full ./good_example
+</code></pre>
+<p><strong>Valgrind Report (No Leaks):</strong></p>
+<pre><code>==3102717== HEAP SUMMARY:
+==3102717==     in use at exit: 0 bytes in 0 blocks
+==3102717==   total heap usage: 3 allocs, 3 frees, 73,732 bytes allocated
+==3102717== 
+==3102717== All heap blocks were freed -- no leaks are possible
+==3102717== 
+==3102717== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+</code></pre>
+<p><strong>Memory Lifecycle:</strong></p>
+<pre><code>Step 1: int* rawPtr = new int(data)
 
-// Old way with index
-for (size_t i = 0; i &lt; numbers.size(); i++) {
-    std::cout &lt;&lt; numbers[i] &lt;&lt; " ";
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│  Function    │              │              │
+│  Stack Frame │              │  [4 bytes]   │
+│              │              │  value: 10   │
+│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
+│  (address)   │              │              │
+└──────────────┘              └──────────────┘
+    ↑                              ↑
+  Lives here               Lives here until
+  (automatic)              delete is called
+
+
+Step 2: Using *rawPtr
+    
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
+│  (pointer)   │              │              │
+└──────────────┘              └──────────────┘
+                              Access via pointer
+
+
+Step 3: delete rawPtr ✅
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr      │      X       │  [freed]     │
+│  (dangling)  │              │              │
+└──────────────┘              └──────────────┘
+                              Memory returned to OS
+
+
+Step 4: Function exits
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  [destroyed] │              │  [free]      │
+│              │              │              │
+└──────────────┘              └──────────────┘
+    Stack cleaned up          No leak! ✅
+</code></pre>
+<p>Now let’s see what happens when you forget to call <code>delete</code>:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+void bad_function(int data) {
+    int* rawPtr = new int(data);  // Allocate memory from heap
+    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
+    // Forgot to delete! 
 }
 
-// Old way with iterators
-for (std::vector&lt;int&gt;::iterator it = numbers.begin(); it != numbers.end(); ++it) {
-    std::cout &lt;&lt; *it &lt;&lt; " ";
-}
-
-// Range-based for loop (much cleaner!)
-for (int num : numbers) {
-    std::cout &lt;&lt; num &lt;&lt; " ";
+int main() {
+    bad_function(10);
+    return 0;
 }
 </code></pre>
-<h3 id="using-auto-keyword"><a class="header" href="#using-auto-keyword">Using <code>auto</code> Keyword</a></h3>
-<p>With the introduction of <code>auto</code> keyword in C++11, using auto in Range based for loops we can greatly reduce complexity as
-the porgrammer does not have to explicitly know the type of the entry in the containers or ranges.
-Simply use <code>auto</code> instead of the type.
-Compiler will deduce the type automatically from auto.</p>
-<pre><code class="language-cpp">std::vector&lt;std::string&gt; words = {"hello", "world", "C++11"};
-
-// Read-only, makes copies
-for (auto word : words) {
-    std::cout &lt;&lt; word &lt;&lt; " ";
-}
+<p><strong>Compile and run with Valgrind:</strong></p>
+<pre><code class="language-bash">g++ -g -O0 forgot_delete.cpp -o forgot_delete
+valgrind --leak-check=full ./forgot_delete
 </code></pre>
-<h3 id="using-references"><a class="header" href="#using-references">Using References</a></h3>
-<p>So <code>auto&amp;</code> can be used as well to get reference for entries that programmer can modify.</p>
-<pre><code class="language-cpp">std::vector&lt;std::string&gt; words = {"hello", "world"};
-
-// Read-only, no copies (efficient for large objects)
-for (const auto&amp; word : words) {
-    std::cout &lt;&lt; word &lt;&lt; " ";
-}
-
-// Modify elements
-for (auto&amp; word : words) {
-    word += "!";  // modifies the actual elements
-}
+<p><strong>Valgrind Report - Observe the Memory Leak:</strong></p>
+<pre><code>==3102369== HEAP SUMMARY:
+==3102369==     in use at exit: 4 bytes in 1 blocks
+==3102369==   total heap usage: 3 allocs, 2 frees, 73,732 bytes allocated
+==3102369== 
+==3102369== Searching for pointers to 1 not-freed blocks
+==3102369== Checked 147,280 bytes
+==3102369== 
+==3102369== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==3102369==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==3102369==    by 0x109201: bad_function(int) (memory_leak.cpp:5)
+==3102369==    by 0x10925D: main (memory_leak.cpp:10)
+==3102369== 
+==3102369== LEAK SUMMARY:
+==3102369==    definitely lost: 4 bytes in 1 blocks
+==3102369==    indirectly lost: 0 bytes in 0 blocks
+==3102369==      possibly lost: 0 bytes in 0 blocks
+==3102369==    still reachable: 0 bytes in 0 blocks
+==3102369==         suppressed: 0 bytes in 0 blocks
+==3102369== 
+==3102369== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
 </code></pre>
-<h2 id="how-it-works-under-the-hood"><a class="header" href="#how-it-works-under-the-hood">How It Works Under the Hood</a></h2>
-<h3 id="the-mechanism"><a class="header" href="#the-mechanism">The Mechanism</a></h3>
-<p>The range-based for loop is essentially syntactic sugar that the compiler translates into a standard <code>for</code> loop that relies explicitly on iterators. This is why the underlying data structure needs <code>begin()</code> and <code>end()</code> functions.</p>
-<h3 id="compiler-transformation"><a class="header" href="#compiler-transformation">Compiler Transformation</a></h3>
-<p>The C++ code you write:</p>
-<pre><code class="language-cpp">for (const auto&amp; element : container) {
-    // user code
-}
+<h3 id="memory-lifecycle"><a class="header" href="#memory-lifecycle">Memory Lifecycle:</a></h3>
+<pre><code>Step 1: int* rawPtr = new int(data)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│  Function    │              │              │
+│  Stack Frame │              │  [4 bytes]   │
+│              │              │  value: 10   │
+│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
+│  (address)   │              │              │
+└──────────────┘              └──────────────┘
+    ↑                              ↑
+  Lives here               Lives here until
+  (automatic)              delete is called
+
+
+Step 2: Using *rawPtr
+    
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
+│  (pointer)   │              │              │
+└──────────────┘              └──────────────┘
+                              Access via pointer
+
+
+Step 3: Function exits (NO delete called!) ❌
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  [destroyed] │      X       │  [LEAKED!]   │
+│              │              │  value: 10   │
+└──────────────┘              └──────────────┘
+  rawPtr is gone!             Memory orphaned!
+  (pointer destroyed)         No way to free it!
+
+
+Step 4: Program continues
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│              │              │  [LEAKED]    │
+│              │              │  4 bytes     │
+└──────────────┘              └──────────────┘
+                              Permanently lost! ❌
 </code></pre>
-<p>Is internally transformed by the compiler into something conceptually similar to:</p>
-<pre><code class="language-cpp">{
-    auto&amp;&amp; __range = container;
-    auto __begin = begin(__range); // Calls the begin() function
-    auto __end = end(__range);     // Calls the end() function
-
-    for (; __begin != __end; ++__begin) {
-        const auto&amp; element = *__begin; // Uses operator* on the iterator
-        // ... user loop body ...
-    }
-}
-</code></pre>
-<h3 id="why-iterators-are-necessary"><a class="header" href="#why-iterators-are-necessary">Why Iterators Are Necessary</a></h3>
-<p>The loop requires the <code>begin()</code> and <code>end()</code> functions to define the boundaries and the traversal logic:</p>
-<ul>
-<li><strong><code>begin()</code></strong>: Establishes the starting point of the iteration.</li>
-<li><strong><code>end()</code></strong>: Defines the termination condition (the loop stops when the current iterator equals the <code>end</code> iterator).</li>
-<li><strong>Iterators</strong>: The objects returned by these functions handle the mechanics of accessing (<code>operator*</code>) and moving to the next element (<code>operator++</code>).</li>
-</ul>
-<p>Without <code>begin()</code> and <code>end()</code>, the compiler has no standardized way to obtain the starting and ending iterators required for this translation process to work.</p>
-<h2 id="working-with-different-container-types"><a class="header" href="#working-with-different-container-types">Working with Different Container Types</a></h2>
-<h3 id="standard-containers"><a class="header" href="#standard-containers">Standard Containers</a></h3>
-<pre><code class="language-cpp">#include &lt;vector&gt;
-#include &lt;list&gt;
-#include &lt;map&gt;
-
-// Vector
-std::vector&lt;int&gt; vec = {1, 2, 3};
-for (auto v : vec) {
-    std::cout &lt;&lt; v &lt;&lt; " ";
-}
-
-// List
-std::list&lt;double&gt; lst = {1.1, 2.2, 3.3};
-for (const auto&amp; l : lst) {
-    std::cout &lt;&lt; l &lt;&lt; " ";
-}
-
-// Map
-std::map&lt;std::string, int&gt; ages = {{"Alice", 30}, {"Bob", 25}};
-for (const auto&amp; pair : ages) {
-    std::cout &lt;&lt; pair.first &lt;&lt; ": " &lt;&lt; pair.second &lt;&lt; std::endl;
-}
-</code></pre>
-<h3 id="static-arrays"><a class="header" href="#static-arrays">Static Arrays</a></h3>
-<p>The range-based <code>for</code> loop works seamlessly with static (fixed-size) arrays because the compiler knows the exact size at compile time.</p>
-<pre><code class="language-cpp">int static_array[] = {10, 20, 30, 40, 50};
-
-for (int x : static_array) {
-    std::cout &lt;&lt; x &lt;&lt; " ";
-}
-</code></pre>
-<p><strong>How It Works:</strong></p>
-<p>When you declare a static array, the compiler internally tracks both the memory location and the number of elements. The compiler calculates:</p>
+<p><strong>The Problem:</strong> When <code>bad_function()</code> exits:</p>
 <ol>
-<li><strong><code>begin()</code></strong>: The array name (decays to a pointer to the first element)</li>
-<li><strong><code>end()</code></strong>: Uses pointer arithmetic with the known size (<code>array + size</code>)</li>
+<li>The local variable <code>rawPtr</code> is destroyed (it’s on the stack)</li>
+<li>But the memory it pointed to (on the heap) is <strong>not</strong> freed</li>
+<li>There’s now <strong>no way</strong> to access or free that memory</li>
+<li>The 4 bytes are <strong>permanently lost</strong> until the program terminates</li>
 </ol>
-<p>The compiler treats it like:</p>
-<pre><code class="language-cpp">auto* __begin = static_array;
-auto* __end = static_array + 5; // '5' is known at compile time
-</code></pre>
-<h2 id="dynamic-arrays-allocated-with-new"><a class="header" href="#dynamic-arrays-allocated-with-new">Dynamic Arrays (Allocated with <code>new</code>)</a></h2>
-<h3 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h3>
-<p>You cannot use a range-based <code>for</code> loop directly on a dynamically allocated array using <code>new</code>, because the compiler only sees a raw pointer (<code>int*</code>) and doesn’t know the size.</p>
-<pre><code class="language-cpp">int* dynamicArray = new int[5];
-// for (int x : dynamicArray) {} // Error: 'begin' was not found
-</code></pre>
-<p>Raw pointers don’t have <code>begin()</code> or <code>end()</code> member functions, and the compiler cannot determine the array size at compile time.</p>
-<h3 id="the-solution-using-standard-library-helpers"><a class="header" href="#the-solution-using-standard-library-helpers">The Solution: Using Standard Library Helpers</a></h3>
-<p>You must explicitly provide the range boundaries using standard library functions.</p>
-<h4 id="using-stdrangessubrange-c20"><a class="header" href="#using-stdrangessubrange-c20">Using <code>std::ranges::subrange</code> (C++20)</a></h4>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;ranges&gt;
-
-int main() {
-    size_t size = 5;
-    int* dynamicArray = new int[size];
-
-    // Initialize the array
-    for (size_t i = 0; i &lt; size; ++i) {
-        dynamicArray[i] = i * 10;
+<h3 id="why-this-matters-at-scale"><a class="header" href="#why-this-matters-at-scale">Why This Matters at Scale:</a></h3>
+<pre><code class="language-cpp">int main() {
+    for (int i = 0; i &lt; 1000000; i++) {
+        bad_function(i);  // Leaks 4 bytes EVERY call!
     }
-
-    // Explicitly define the range using pointer arithmetic
-    for (int x : std::ranges::subrange(dynamicArray, dynamicArray + size)) {
-        std::cout &lt;&lt; x &lt;&lt; " "; // Output: 0 10 20 30 40
-    }
-    std::cout &lt;&lt; std::endl;
-
-    delete[] dynamicArray;
+    // Total leaked: 4 MB of memory!
     return 0;
 }
 </code></pre>
-<h4 id="using-stdspan-c20---recommended"><a class="header" href="#using-stdspan-c20---recommended">Using <code>std::span</code> (C++20 - Recommended)</a></h4>
+<p>In a long-running application:</p>
+<ul>
+<li>Memory consumption grows continuously</li>
+<li>System performance degrades</li>
+<li>Eventually: out-of-memory crashes</li>
+</ul>
+<p>Even if you remember to call <code>delete</code>, exceptions can still cause leaks:</p>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
-#include &lt;span&gt;
+#include &lt;stdexcept&gt;
+
+void some_function() {
+    throw std::runtime_error("Something went wrong");
+}
+
+void bad_function(int data) {
+    int* rawPtr = new int(data);  // Allocate memory
+    std::cout &lt;&lt; "data: " &lt;&lt; *rawPtr &lt;&lt; std::endl;
+    some_function();  // Exception thrown here! 
+    delete rawPtr;    // This line NEVER executes! ❌
+}
 
 int main() {
-    size_t size = 5;
-    int* dynamicArray = new int[size];
-
-    for (size_t i = 0; i &lt; size; ++i) {
-        dynamicArray[i] = i * 10;
+    try {
+        bad_function(10);
+    } catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; '\n';
     }
-
-    // Wrap the pointer and size in a span
-    std::span&lt;int&gt; span_of_array(dynamicArray, size);
-    for (int x : span_of_array) {
-        std::cout &lt;&lt; x &lt;&lt; " "; // Output: 0 10 20 30 40
-    }
-    std::cout &lt;&lt; std::endl;
-
-    delete[] dynamicArray;
     return 0;
 }
 </code></pre>
-<p>By using <code>std::ranges::subrange</code> or <code>std::span</code>, you wrap your raw pointer and size into a type that satisfies the range concept (it has <code>begin()</code> and <code>end()</code> member functions), allowing the range-based <code>for</code> loop to work correctly.</p>
-<h2 id="custom-classes-and-the-range-concept"><a class="header" href="#custom-classes-and-the-range-concept">Custom Classes and the Range Concept</a></h2>
-<p>To use a custom class with a range-based <code>for</code> loop, the class must satisfy the range concept.</p>
-<h3 id="requirements"><a class="header" href="#requirements">Requirements</a></h3>
-<p>Your class must provide:</p>
+<p><strong>Compile and run with Valgrind:</strong></p>
+<pre><code class="language-bash">g++ -g -O0 exception_leak.cpp -o exception_leak
+valgrind --leak-check=full ./exception_leak
+</code></pre>
+<h3 id="valgrind-report---observe-the-exception-leak"><a class="header" href="#valgrind-report---observe-the-exception-leak">Valgrind Report - Observe the Exception Leak:</a></h3>
+<pre><code>data: 10
+Caught: Something went wrong
+==3106542== 
+==3106542== HEAP SUMMARY:
+==3106542==     in use at exit: 4 bytes in 1 blocks
+==3106542==   total heap usage: 4 allocs, 3 frees, 73,804 bytes allocated
+==3106542== 
+==3106542== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==3106542==    at 0x4849013: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==3106542==    by 0x109381: bad_function(int) (memory_leak_exc.cpp:9)
+==3106542==    by 0x1093FD: main (memory_leak_exc.cpp:17)
+==3106542== 
+==3106542== LEAK SUMMARY:
+==3106542==    definitely lost: 4 bytes in 1 blocks
+==3106542==    indirectly lost: 0 bytes in 0 blocks
+==3106542==      possibly lost: 0 bytes in 0 blocks
+==3106542==    still reachable: 0 bytes in 0 blocks
+==3106542==         suppressed: 0 bytes in 0 blocks
+==3106542== 
+==3106542== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+</code></pre>
+<h3 id="the-surprising-result"><a class="header" href="#the-surprising-result">The Surprising Result:</a></h3>
+<p><strong>Observation:</strong> Even though we have <code>delete rawPtr</code> in the code, the memory still leaked!</p>
+<ul>
+<li><strong>“4 bytes in 1 blocks are definitely lost”</strong> - Memory leaked despite <code>delete</code> being present</li>
+<li>The exception caused the function to exit <strong>before</strong> reaching <code>delete</code></li>
+<li>Leak originated at line 9 (the <code>new</code> statement)</li>
+</ul>
+<h3 id="exception-execution-flow"><a class="header" href="#exception-execution-flow">Exception Execution Flow:</a></h3>
+<pre><code>Step 1: int* rawPtr = new int(data)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│  Function    │              │              │
+│  Stack Frame │              │  [4 bytes]   │
+│              │              │  value: 10   │
+│  rawPtr ─────┼──────────────┼─&gt;  [int]     │
+│              │              │              │
+└──────────────┘              └──────────────┘
+
+
+Step 2: some_function() throws exception ⚡
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr ─────┼──────────────┼─&gt;  [10]      │
+│              │              │              │
+└──────────────┘              └──────────────┘
+    ⚡ Exception!               Still allocated!
+
+
+Step 3: Stack unwinding begins
+        (cleaning up local variables)
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  rawPtr      │      ?       │  [10]        │
+│ (being       │              │              │
+│  destroyed)  │              │              │
+└──────────────┘              └──────────────┘
+  Pointer about to die        Memory still there!
+  delete rawPtr NEVER runs!
+
+
+Step 4: Function exited via exception
+
+    STACK                           HEAP
+┌──────────────┐              ┌──────────────┐
+│              │              │              │
+│  [destroyed] │      X       │  [LEAKED!]   │
+│              │              │  value: 10   │
+└──────────────┘              └──────────────┘
+  rawPtr destroyed!           Memory orphaned!
+  delete line skipped!        No way to free it! ❌
+</code></pre>
+<p><strong>What happened:</strong></p>
 <ol>
-<li>
-<p><strong><code>begin()</code> and <code>end()</code> functions</strong>, either as:</p>
-<ul>
-<li>Member functions, or</li>
-<li>Non-member functions in the same namespace (found via argument-dependent lookup)</li>
-</ul>
-</li>
-<li>
-<p><strong>An iterator type</strong> that supports:</p>
-<ul>
-<li><code>operator*</code> (dereference)</li>
-<li><code>operator!=</code> (inequality comparison)</li>
-<li>Pre-increment <code>operator++</code></li>
-</ul>
-</li>
+<li>Memory is allocated with <code>new</code></li>
+<li>Exception is thrown in <code>some_function()</code></li>
+<li><strong>Stack unwinding</strong> begins (C++ cleans up local objects)</li>
+<li><code>rawPtr</code> (the pointer variable) is destroyed during unwinding</li>
+<li>The <code>delete rawPtr</code> line is <strong>never reached</strong></li>
+<li>The allocated memory has <strong>no way to be freed</strong></li>
 </ol>
-<h3 id="example-custom-container"><a class="header" href="#example-custom-container">Example: Custom Container</a></h3>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-
-class SimpleContainer {
-private:
-    int data[5] = {1, 2, 3, 4, 5};
-
-public:
-    // Iterator class
-    class Iterator {
-    private:
-        int* ptr;
-    
-    public:
-        Iterator(int* p) : ptr(p) {}
-        
-        // Dereference operator
-        int&amp; operator*() { return *ptr; }
-        
-        // Pre-increment operator
-        Iterator&amp; operator++() {
-            ++ptr;
-            return *this;
-        }
-        
-        // Inequality comparison
-        bool operator!=(const Iterator&amp; other) const {
-            return ptr != other.ptr;
-        }
-    };
-
-    // begin() function
-    Iterator begin() { return Iterator(data); }
-    
-    // end() function
-    Iterator end() { return Iterator(data + 5); }
-};
-
-int main() {
-    SimpleContainer container;
-    
-    for (int value : container) {
-        std::cout &lt;&lt; value &lt;&lt; " "; // Output: 1 2 3 4 5
+<h2 id="the-problems-with-manual-memory-management"><a class="header" href="#the-problems-with-manual-memory-management">The Problems with Manual Memory Management</a></h2>
+<p>Managing heap memory manually with <code>new</code>/<code>delete</code> is <strong>error-prone</strong> because:</p>
+<h3 id="problem-1-easy-to-forget"><a class="header" href="#problem-1-easy-to-forget">Problem 1: Easy to Forget</a></h3>
+<pre><code class="language-cpp">void process() {
+    int* data = new int[1000];
+    // ... lots of code ...
+    // Did you remember to delete[]? ❌
+}
+</code></pre>
+<p><strong>Issue:</strong> In complex functions with multiple return paths, it’s easy to forget <code>delete</code>.</p>
+<h3 id="problem-2-exception-safety-is-hard"><a class="header" href="#problem-2-exception-safety-is-hard">Problem 2: Exception Safety is Hard</a></h3>
+<pre><code class="language-cpp">void process() {
+    int* data = new int[1000];
+    // Any function here might throw! ⚡
+    complexOperation();  // Exception?
+    delete[] data;  // Might never execute!
+}
+</code></pre>
+<p><strong>Issue:</strong> Any exception between <code>new</code> and <code>delete</code> causes a leak.</p>
+<h3 id="problem-3-multiple-exit-points"><a class="header" href="#problem-3-multiple-exit-points">Problem 3: Multiple Exit Points</a></h3>
+<pre><code class="language-cpp">void process(bool condition) {
+    int* data = new int[1000];
+    if (condition) {
+        return;  // Oops, forgot delete! ❌
     }
-    std::cout &lt;&lt; std::endl;
-    
-    return 0;
+    // ... more code ...
+    if (errorOccurred) {
+        return;  // Oops again! ❌
+    }
+    delete[] data;  // Only this path is safe
 }
 </code></pre>
-<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
-<h3 id="use-const-auto-for-read-only-access"><a class="header" href="#use-const-auto-for-read-only-access">Use <code>const auto&amp;</code> for Read-Only Access</a></h3>
-<p>When you don’t need to modify elements and want to avoid copying (especially for large objects):</p>
-<pre><code class="language-cpp">std::vector&lt;std::string&gt; large_strings = {"very", "long", "strings"};
-
-for (const auto&amp; str : large_strings) {
-    std::cout &lt;&lt; str &lt;&lt; " ";
-}
+<p><strong>Issue:</strong> Each return path needs its own <code>delete</code>.</p>
+<h3 id="problem-4-ownership-is-unclear"><a class="header" href="#problem-4-ownership-is-unclear">Problem 4: Ownership is Unclear</a></h3>
+<pre><code class="language-cpp">int* createData();  // Who deletes this?
+void process(int* data);  // Does this take ownership?
+int* getData();  // Should caller delete?
 </code></pre>
-<h3 id="use-auto-for-modifications"><a class="header" href="#use-auto-for-modifications">Use <code>auto&amp;</code> for Modifications</a></h3>
-<p>When you need to modify the elements in place:</p>
-<pre><code class="language-cpp">std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
-
-for (auto&amp; num : numbers) {
-    num *= 2;  // doubles each element
-}
-</code></pre>
-<h3 id="use-plain-auto-for-copies"><a class="header" href="#use-plain-auto-for-copies">Use Plain <code>auto</code> for Copies</a></h3>
-<p>When you explicitly want to work with copies:</p>
-<pre><code class="language-cpp">std::vector&lt;int&gt; numbers = {1, 2, 3};
-
-for (auto num : numbers) {
-    num *= 2;  // modifies the copy, not the original
-}
-</code></pre>
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
-<p>Range-based for loops provide:</p>
+<p><strong>Issue:</strong> Unclear who is responsible for freeing memory.</p>
+<h3 id="detection-tools-you-can-use-to-findout-memory-leaks"><a class="header" href="#detection-tools-you-can-use-to-findout-memory-leaks">Detection Tools you can use to findout memory leaks</a></h3>
 <ul>
-<li><strong>Cleaner syntax</strong>: No need for explicit iterators or index management</li>
-<li><strong>Less error-prone</strong>: Eliminates off-by-one errors and iterator mistakes</li>
-<li><strong>More readable</strong>: Intent is immediately clear</li>
-<li><strong>Flexible</strong>: Works with standard containers, arrays, and custom types</li>
+<li><strong>Valgrind</strong> - Detects memory leaks at runtime</li>
+<li><strong>AddressSanitizer</strong> - Fast leak detection during testing</li>
+<li><strong>Static analyzers</strong> - Clang-Tidy, Cppcheck find potential leaks</li>
 </ul>
-<p>The key requirement is that the range must provide <code>begin()</code> and <code>end()</code> functions that return iterators supporting the basic iterator operations.</p>
+<p><strong>Uhh So many problems, is there anyway these problems can be fixed.</strong>
+<strong>Yes the answer to all these problems is Smart pointers introduced in C++11 based on the RAII concept.</strong></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="decltype.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="raii.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="in_class_initialization.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -523,13 +556,10 @@ for (auto num : numbers) {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="decltype.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="raii.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="in_class_initialization.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                    </a>
             </nav>
 
         </div>
