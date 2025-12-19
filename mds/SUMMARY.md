@@ -41,3 +41,4 @@
 - [std::initializer_list (>= C++11)](./initializer-list.md)
 - [Designated initialization (>= C++20)](./designated_initialization.md)
 - [RAII - Resource Acquisition Is Initialization](./raii.md)
+  - [Manual managment of heap allocated memory](./memory_leak.md)   
