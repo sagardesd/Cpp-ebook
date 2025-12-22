@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-180c238e.js";
+            window.path_to_searchindex_js = "searchindex-4456cf98.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-032976a8.js"></script>
@@ -25880,7 +25880,7 @@ int main() {
     }  // res destroyed here
     
     // DANGER: dangling points to freed memory!
-    // dangling-&gt;doWork();  // ⚠️ UNDEFINED BEHAVIOR
+    // dangling-&gt;doWork();  // UNDEFINED BEHAVIOR
     
     return 0;
 }
@@ -26013,52 +26013,6 @@ int main() {
 </table>
 </div>
 <hr>
-<h2 id="using-the-managed-resource"><a class="header" href="#using-the-managed-resource">Using the Managed Resource</a></h2>
-<p>Accessing the resource through a <code>shared_ptr</code> is the same as with raw pointers:</p>
-<pre><code class="language-cpp">#include &lt;memory&gt;
-#include &lt;iostream&gt;
-#include &lt;string&gt;
-
-class Person {
-public:
-    Person(const std::string&amp; name, int age) : name_(name), age_(age) {}
-    
-    void display() const {
-        std::cout &lt;&lt; name_ &lt;&lt; " is " &lt;&lt; age_ &lt;&lt; " years old\n";
-    }
-    
-    std::string getName() const { return name_; }
-private:
-    std::string name_;
-    int age_;
-};
-
-int main() {
-    std::shared_ptr&lt;Person&gt; person = std::make_shared&lt;Person&gt;("Alice", 30);
-    
-    // operator*() - dereference to get the object
-    Person&amp; ref = *person;
-    std::cout &lt;&lt; ref.getName() &lt;&lt; "\n";
-    
-    // operator-&gt;() - access members directly
-    person-&gt;display();
-    
-    // Passing to functions
-    auto greet = [](const std::shared_ptr&lt;Person&gt;&amp; p) {
-        std::cout &lt;&lt; "Hello, " &lt;&lt; p-&gt;getName() &lt;&lt; "!\n";
-    };
-    
-    greet(person);
-    
-    return 0;
-}
-
-// Output:
-// Alice
-// Alice is 30 years old
-// Hello, Alice!
-</code></pre>
-<hr>
 <h2 id="stdweak_ptr-non-owning-observer"><a class="header" href="#stdweak_ptr-non-owning-observer">std::weak_ptr<t>: Non-Owning Observer</t></a></h2>
 <h3 id="introduction-the-circular-reference-problem"><a class="header" href="#introduction-the-circular-reference-problem">Introduction: The Circular Reference Problem</a></h3>
 <p>Before diving into <code>weak_ptr</code>, let’s understand the problem it solves. Consider this scenario:</p>
@@ -26075,7 +26029,7 @@ int main() {
     node1-&gt;next = node2;  // node1 → node2
     node2-&gt;prev = node1;  // node2 → node1
     
-    // ⚠️ MEMORY LEAK!
+    // MEMORY LEAK!
     // node1 keeps node2 alive
     // node2 keeps node1 alive
     // Neither can be deleted!
@@ -26308,7 +26262,7 @@ class Node {
 public:
     std::string data;
     std::shared_ptr&lt;Node&gt; next;  // Owning reference
-    std::weak_ptr&lt;Node&gt; prev;    // Non-owning reference ✅
+    std::weak_ptr&lt;Node&gt; prev;    // Non-owning reference
     
     Node(const std::string&amp; d) : data(d) {
         std::cout &lt;&lt; "Node '" &lt;&lt; data &lt;&lt; "' created\n";
@@ -26380,7 +26334,7 @@ if (auto locked = weak.lock()) {
     locked-&gt;process();  // Safe
 }
 
-// ❌ Wrong - race condition
+// Wrong - race condition
 if (!weak.expired()) {
     auto locked = weak.lock();  // Object might be deleted here!
     locked-&gt;process();
@@ -27182,7 +27136,7 @@ std::shared_ptr&lt;int&gt; s;  // 16 bytes
 <li>Consider pass-by-reference to avoid copying</li>
 </ul>
 <hr>
-<h2 id="summary-key-points-about-shared_ptr"><a class="header" href="#summary-key-points-about-shared_ptr">Summary: Key Points About shared_ptr</a></h2>
+<h2 id="summary-shared_ptrt"><a class="header" href="#summary-shared_ptrt">Summary: <code>shared_ptr&lt;T&gt;</code></a></h2>
 <h3 id="core-concepts"><a class="header" href="#core-concepts">Core Concepts</a></h3>
 <ul>
 <li><strong>Shared ownership</strong>: Multiple <code>shared_ptr</code> instances can own the same resource</li>
