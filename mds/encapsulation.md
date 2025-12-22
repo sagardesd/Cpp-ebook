@@ -1047,11 +1047,11 @@ public:
 
 **Encapsulation** is one of the fundamental pillars of object-oriented programming. It provides:
 
-- ✅ **Data Protection** - Private members prevent unauthorized access
-- ✅ **Controlled Access** - Public methods with validation ensure data integrity
-- ✅ **Flexibility** - Internal implementation can change without affecting external code
-- ✅ **Security** - Sensitive data remains hidden
-- ✅ **Maintainability** - Easier to debug and modify
+- **Data Protection** - Private members prevent unauthorized access
+- **Controlled Access** - Public methods with validation ensure data integrity
+- **Flexibility** - Internal implementation can change without affecting external code
+- **Security** - Sensitive data remains hidden
+- **Maintainability** - Easier to debug and modify
 
 ### Key Takeaways
 
