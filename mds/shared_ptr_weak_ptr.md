@@ -475,13 +475,13 @@ std::shared_ptr<T> ptr(new T(), deleter);
 
 | Situation | Use Custom Deleter |
 |-----------|-------------------|
-| Standard heap allocation | ✅ Use `make_shared` |
-| Arrays | ✅ Use `shared_ptr<T[]>` (C++17+) or custom deleter |
-| C API resources | ✅ Custom deleter with C cleanup function |
-| File handles | ✅ Custom deleter with `fclose` |
-| Special cleanup logic | ✅ Custom deleter |
-| Stack objects | ✅ No-op deleter |
-| Logging/debugging | ✅ Custom deleter with logging |
+| Standard heap allocation | Use `make_shared` |
+| Arrays | Use `shared_ptr<T[]>` (C++17+) or custom deleter |
+| C API resources | Custom deleter with C cleanup function |
+| File handles | Custom deleter with `fclose` |
+| Special cleanup logic | Custom deleter |
+| Stack objects | No-op deleter |
+| Logging/debugging | Custom deleter with logging |
 
 ---
 
