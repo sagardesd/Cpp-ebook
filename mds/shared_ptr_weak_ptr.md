@@ -14,7 +14,7 @@ This is where `std::shared_ptr<T>` comes in. Unlike `unique_ptr<T>`, which enfor
 
 `std::shared_ptr<T>` consists of two main components: a **data pointer** and a **control block pointer**.
 
-<Add diagram>
+![shared_ptr](./images/shared_ptr.png)
 
 ### Key Characteristics
 
@@ -48,14 +48,14 @@ std::shared_ptr<int> ptr3 = ptr1;  // count = 3
 
 ---
 
-### Single shared_ptr Diagram
+### Single shared_ptr
 
 When you create: `std::shared_ptr<int> ptr = std::make_shared<int>(42);`
 
-<Add daigram>
+![Single shared_ptr](./images/1_shared_ptr.png)
 
 
-### Three shared_ptr Sharing Same Resource Diagram
+### Three shared_ptr Sharing Same Resource
 
 When you do:
 ```cpp
@@ -64,7 +64,7 @@ std::shared_ptr<int> ptr2 = ptr1;  // Copy
 std::shared_ptr<int> ptr3 = ptr1;  // Copy
 ```             
 
-<Add diagram> 
+![3 shared_ptr](./images/3_shared_ptr.png)
 
 **Key Point**: All 3 shared_ptr point to the SAME Control Block!
 - When ANY one is copied, ref_count increments
