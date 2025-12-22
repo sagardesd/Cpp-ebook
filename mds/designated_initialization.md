@@ -22,29 +22,29 @@ In C++20, the definition of an aggregate was slightly simplified and refined. A 
 ### Examples of Aggregate Types
 
 ```cpp
-// ✅ Valid aggregate - simple struct
+// Valid aggregate - simple struct
 struct Point {
     int x;
     int y;
 };
 
-// ✅ Valid aggregate - with default member initializers
+// Valid aggregate - with default member initializers
 struct Config {
     int timeout = 30;
     bool verbose = false;
     std::string mode = "auto";
 };
 
-// ✅ Valid aggregate - nested aggregates
+// Valid aggregate - nested aggregates
 struct Rectangle {
     Point topLeft;
     Point bottomRight;
 };
 
-// ✅ Valid aggregate - array
+// Valid aggregate - array
 int numbers[5];
 
-// ✅ Valid aggregate - with public base class (C++17+)
+// Valid aggregate - with public base class (C++17+)
 struct Base {
     int base_value;
 };
@@ -57,13 +57,13 @@ struct Derived : Base {
 ### Examples of Non-Aggregate Types
 
 ```cpp
-// ❌ NOT an aggregate - has user-provided constructor
+// NOT an aggregate - has user-provided constructor
 struct WithConstructor {
     int x;
     WithConstructor() : x(0) {}
 };
 
-// ❌ NOT an aggregate - has private members
+// NOT an aggregate - has private members
 struct WithPrivate {
 private:
     int x;
@@ -71,19 +71,19 @@ public:
     int y;
 };
 
-// ❌ NOT an aggregate - has virtual function
+// NOT an aggregate - has virtual function
 struct WithVirtual {
     int x;
     virtual void process() {}
 };
 
-// ❌ NOT an aggregate - has private base class
+// NOT an aggregate - has private base class
 struct Base { int x; };
 struct NotAggregate : private Base {
     int y;
 };
 
-// ❌ NOT an aggregate - has protected members
+// NOT an aggregate - has protected members
 class WithProtected {
 protected:
     int x;
@@ -147,11 +147,11 @@ struct Data {
     int c;
 };
 
-// ✅ Correct - follows declaration order
+// Correct - follows declaration order
 Data d1{.a = 1, .b = 2, .c = 3};
 Data d2{.a = 1, .c = 3};           // OK: skipping b
 
-// ❌ Error - out of order
+// Error - out of order
 Data d3{.c = 3, .a = 1};           // Compilation error!
 Data d4{.b = 2, .a = 1};           // Compilation error!
 ```
@@ -164,13 +164,13 @@ struct Point {
     int y;
 };
 
-// ✅ All designated
+// All designated
 Point p1{.x = 10, .y = 20};
 
-// ✅ All non-designated
+// All non-designated
 Point p2{10, 20};
 
-// ❌ Error - cannot mix
+// Error - cannot mix
 Point p3{10, .y = 20};             // Compilation error!
 Point p4{.x = 10, 20};             // Compilation error!
 ```
@@ -182,7 +182,7 @@ struct Data {
     int value;
 };
 
-// ❌ Error - duplicate initialization
+// Error - duplicate initialization
 Data d{.value = 10, .value = 20};  // Compilation error!
 ```
 
@@ -292,10 +292,10 @@ struct WithConstructor {
     WithConstructor(int a, int b) : x(a), y(b) {}
 };
 
-// ❌ Error - designated initialization not allowed
+// Error - designated initialization not allowed
 WithConstructor obj{.x = 10, .y = 20};  // Compilation error!
 
-// ✅ Must use constructor
+// Must use constructor
 WithConstructor obj(10, 20);            // OK
 ```
 
@@ -313,10 +313,10 @@ public:
     int getY() const { return y; }
 };
 
-// ❌ Error - not an aggregate due to private members
+// Error - not an aggregate due to private members
 WithPrivate obj{.x = 10, .y = 20};      // Compilation error!
 
-// ✅ Must use constructor
+// Must use constructor
 WithPrivate obj(10, 20);                // OK
 ```
 
@@ -330,10 +330,10 @@ struct WithVirtual {
     virtual void process() { /* ... */ }
 };
 
-// ❌ Error - not an aggregate due to virtual function
+// Error - not an aggregate due to virtual function
 WithVirtual obj{.x = 10, .y = 20};      // Compilation error!
 
-// ✅ Must use default initialization or constructor
+// Must use default initialization or constructor
 WithVirtual obj;                        // OK (default initialization)
 obj.x = 10;
 obj.y = 20;
@@ -511,13 +511,13 @@ struct Point {
 };
 
 // C++ requires declaration order
-Point p1{.z = 30, .x = 10};              // ❌ Error in C++
+Point p1{.z = 30, .x = 10};              // Error in C++
 
 // C++ doesn't allow mixing
-Point p2{.x = 10, 20, 30};               // ❌ Error in C++
+Point p2{.x = 10, 20, 30};               // Error in C++
 
 // C++ doesn't support array designated initializers
-int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
+int arr[10] = {[0] = 1, [5] = 2};        // Error in C++
 ```
 
 **Why stricter in C++?** The restrictions maintain consistency with C++'s stronger type system and make the code more predictable and less error-prone.
@@ -527,7 +527,7 @@ int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
 ### 1. Use for Configuration and Options
 
 ```cpp
-// ✅ Perfect use case
+// Perfect use case
 struct Config {
     std::string database_url = "localhost:5432";
     int pool_size = 10;
@@ -540,7 +540,7 @@ Config cfg{.database_url = "prod.db.com", .pool_size = 50};
 ### 2. Combine with Default Member Initializers
 
 ```cpp
-// ✅ Provides sensible defaults, easy to override
+// Provides sensible defaults, easy to override
 struct Settings {
     int value = 100;
     bool flag = false;
@@ -572,10 +572,10 @@ ComplexOptions opts{.opt3 = 5, .opt6 = 10};
 struct Point { int x; int y; };
 
 // Traditional initialization is fine here
-Point p{10, 20};  // ✅ Clear enough
+Point p{10, 20};  // Clear enough
 
 // Designated might be overkill
-Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
+Point p{.x = 10, .y = 20};  // Also fine, but more verbose
 ```
 
 ## Summary
