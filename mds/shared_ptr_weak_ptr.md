@@ -196,9 +196,7 @@ Custom deleters are useful when:
 std::shared_ptr<T> ptr(new T(), custom_deleter);
 ```
 
----
-
-### Use Case 1: Managing FILE* with Custom Deleter
+Consider this Example of **Managing FILE with Custom Deleter**
 
 ```cpp
 #include <memory>
@@ -235,7 +233,7 @@ int main() {
 
 ---
 
-### Use Case 2: Managing Arrays with delete[]
+### Managing Arrays with delete[]
 
 When you allocate an array with `new[]`, you need to delete it with `delete[]`, not `delete`. A custom deleter ensures proper cleanup:
 
@@ -292,59 +290,8 @@ int main() {
 }
 ```
 
----
 
-### Use Case 3: Managing C API Resources
-
-Many C libraries have their own allocation and deallocation functions:
-
-```cpp
-#include <memory>
-#include <iostream>
-
-// Simulating a C API
-struct Connection {
-    int id;
-};
-
-Connection* createConnection(int id) {
-    std::cout << "Opening connection " << id << "\n";
-    Connection* conn = new Connection{id};
-    return conn;
-}
-
-void closeConnection(Connection* conn) {
-    if (conn) {
-        std::cout << "Closing connection " << conn->id << "\n";
-        delete conn;
-    }
-}
-
-int main() {
-    // Custom deleter for C API
-    auto connDeleter = [](Connection* conn) {
-        closeConnection(conn);
-    };
-    
-    std::shared_ptr<Connection> conn(
-        createConnection(42),
-        connDeleter
-    );
-    
-    std::cout << "Using connection " << conn->id << "\n";
-    
-    return 0;
-}
-
-// Output:
-// Opening connection 42
-// Using connection 42
-// Closing connection 42
-```
-
----
-
-### Use Case 4: No-Op Deleter (Stack Objects)
+### No-Op Deleter (Stack Objects)
 
 Sometimes you want to use shared_ptr with objects you don't own (like stack-allocated objects). You need a no-op deleter:
 
@@ -395,58 +342,6 @@ int main() {
 
 ---
 
-### Use Case 5: Logging Deleter
-
-Custom deleters can also perform logging or other side effects:
-
-```cpp
-#include <memory>
-#include <iostream>
-#include <chrono>
-
-class Resource {
-public:
-    Resource(int id) : id_(id), 
-        created_(std::chrono::steady_clock::now()) {
-        std::cout << "Resource " << id_ << " acquired\n";
-    }
-    ~Resource() {
-        std::cout << "Resource " << id_ << " released\n";
-    }
-    int getId() const { return id_; }
-private:
-    int id_;
-    std::chrono::steady_clock::time_point created_;
-};
-
-int main() {
-    auto loggingDeleter = [](Resource* res) {
-        if (res) {
-            std::cout << "Deleting resource " << res->getId() 
-                      << " (with logging)\n";
-            delete res;
-        }
-    };
-    
-    std::shared_ptr<Resource> res(
-        new Resource(100),
-        loggingDeleter
-    );
-    
-    std::cout << "Using resource...\n";
-    
-    return 0;
-}
-
-// Output:
-// Resource 100 acquired
-// Using resource...
-// Deleting resource 100 (with logging)
-// Resource 100 released
-```
-
----
-
 ### Custom Deleter Syntax Summary
 
 ```cpp
@@ -470,7 +365,7 @@ std::shared_ptr<T> ptr(new T(), deleter);
 
 ---
 
-### When to Use Custom Deleters
+### Some situation where usage of Custom Deleters is needed
 
 | Situation | Use Custom Deleter |
 |-----------|-------------------|
@@ -1987,22 +1882,6 @@ std::shared_ptr<int> arr(new int[100], arrayDeleter);
 
 ---
 
-## When to Use shared_ptr vs unique_ptr vs weak_ptr
-
-| Situation | Use |
-|-----------|-----|
-| Single clear owner | `unique_ptr` |
-| Multiple owners needed | `shared_ptr` |
-| Transferring ownership | `unique_ptr` (move) |
-| Shared state across objects | `shared_ptr` |
-| Observer pattern (non-owning) | `weak_ptr` |
-| Breaking circular references | `weak_ptr` |
-| Return from factory | `unique_ptr` (can convert to `shared_ptr`) |
-| Temporary non-owning access | Raw pointer from `get()` |
-| Performance critical, single owner | `unique_ptr` |
-
----
-
 ## Common Pitfalls and Solutions
 
 ### Pitfall 1: Creating Multiple Control Blocks
@@ -2168,5 +2047,19 @@ std::shared_ptr<int> s;  // 16 bytes
 - **Disadvantages**: Higher memory overhead, atomic operations cost, potential circular references
 
 ---
+
+## When to Use shared_ptr vs unique_ptr vs weak_ptr
+
+| Situation | Use |
+|-----------|-----|
+| Single clear owner | `unique_ptr` |
+| Multiple owners needed | `shared_ptr` |
+| Transferring ownership | `unique_ptr` (move) |
+| Shared state across objects | `shared_ptr` |
+| Observer pattern (non-owning) | `weak_ptr` |
+| Breaking circular references | `weak_ptr` |
+| Return from factory | `unique_ptr` (can convert to `shared_ptr`) |
+| Temporary non-owning access | Raw pointer from `get()` |
+| Performance critical, single owner | `unique_ptr` |
 
 `std::shared_ptr` is a powerful tool for managing shared ownership of resources. Use it when you genuinely need multiple owners, but prefer `unique_ptr` when single ownership is sufficient.
