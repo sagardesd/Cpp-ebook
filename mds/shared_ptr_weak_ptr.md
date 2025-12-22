@@ -857,57 +857,6 @@ int main() {
 
 ---
 
-## Using the Managed Resource
-
-Accessing the resource through a `shared_ptr` is the same as with raw pointers:
-
-```cpp
-#include <memory>
-#include <iostream>
-#include <string>
-
-class Person {
-public:
-    Person(const std::string& name, int age) : name_(name), age_(age) {}
-    
-    void display() const {
-        std::cout << name_ << " is " << age_ << " years old\n";
-    }
-    
-    std::string getName() const { return name_; }
-private:
-    std::string name_;
-    int age_;
-};
-
-int main() {
-    std::shared_ptr<Person> person = std::make_shared<Person>("Alice", 30);
-    
-    // operator*() - dereference to get the object
-    Person& ref = *person;
-    std::cout << ref.getName() << "\n";
-    
-    // operator->() - access members directly
-    person->display();
-    
-    // Passing to functions
-    auto greet = [](const std::shared_ptr<Person>& p) {
-        std::cout << "Hello, " << p->getName() << "!\n";
-    };
-    
-    greet(person);
-    
-    return 0;
-}
-
-// Output:
-// Alice
-// Alice is 30 years old
-// Hello, Alice!
-```
-
----
-
 ## std::weak_ptr<T>: Non-Owning Observer
 
 ### Introduction: The Circular Reference Problem
