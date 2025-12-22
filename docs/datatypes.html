@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-ad9b8321.js";
+            window.path_to_searchindex_js = "searchindex-82c944cc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-032976a8.js"></script>
@@ -203,18 +203,18 @@ double price = 19.99;   // Storing a decimal number
 char grade = 'A';       // Storing a single character
 </code></pre>
 <h3 id="variable-naming-rules"><a class="header" href="#variable-naming-rules">Variable Naming Rules</a></h3>
-<p>✅ <strong>Allowed:</strong></p>
+<p><strong>Allowed:</strong></p>
 <ul>
 <li>Start with a letter (a-z, A-Z) or underscore (_)</li>
 <li>Contain letters, digits, and underscores</li>
 <li>Examples: <code>age</code>, <code>student_name</code>, <code>price2</code>, <code>_count</code></li>
 </ul>
-<p>❌ <strong>Not Allowed:</strong></p>
+<p><strong>Not Allowed:</strong></p>
 <ul>
-<li>Start with a digit: <code>2names</code> ❌</li>
-<li>Contain spaces: <code>student name</code> ❌</li>
-<li>Use C++ keywords: <code>int</code>, <code>return</code>, <code>class</code> ❌</li>
-<li>Special characters: <code>price$</code>, <code>name@</code> ❌</li>
+<li>Start with a digit: <code>2names</code></li>
+<li>Contain spaces: <code>student name</code></li>
+<li>Use C++ keywords: <code>int</code>, <code>return</code>, <code>class</code></li>
+<li>Special characters: <code>price$</code>, <code>name@</code></li>
 </ul>
 <h3 id="best-naming-practices"><a class="header" href="#best-naming-practices">Best Naming Practices</a></h3>
 <pre><code class="language-cpp">// Good - descriptive names
@@ -233,7 +233,7 @@ char c = 'J';    // What does 'c' mean?
 <p>C++ has several built-in data types. Let’s explore each category:</p>
 <h3 id="1-integer-types-whole-numbers"><a class="header" href="#1-integer-types-whole-numbers">1. Integer Types (Whole Numbers)</a></h3>
 <p>These store whole numbers without decimal points.</p>
-<p><strong>⚠️ Important Note:</strong> The size of integer types can vary depending on your platform (32-bit vs 64-bit system, compiler, operating system). The table below shows typical sizes, but always verify on your system using <code>sizeof()</code>.</p>
+<p><strong>Important Note:</strong> The size of integer types can vary depending on your platform (32-bit vs 64-bit system, compiler, operating system). The table below shows typical sizes, but always verify on your system using <code>sizeof()</code>.</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -508,10 +508,10 @@ int main() {
 <h3 id="decision-guide"><a class="header" href="#decision-guide">Decision Guide</a></h3>
 <p><strong>1. Need to store whole numbers (no decimals)?</strong></p>
 <ul>
-<li>✅ Small numbers (-32,768 to 32,767): <code>short</code></li>
-<li>✅ Regular numbers: <code>int</code> (MOST COMMON)</li>
-<li>✅ Very large numbers: <code>long</code> or <code>long long</code></li>
-<li>✅ Only positive numbers: Add <code>unsigned</code></li>
+<li>Small numbers (-32,768 to 32,767): <code>short</code></li>
+<li>Regular numbers: <code>int</code> (MOST COMMON)</li>
+<li>Very large numbers: <code>long</code> or <code>long long</code></li>
+<li>Only positive numbers: Add <code>unsigned</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">int studentID = 12345;        // Student IDs
@@ -520,9 +520,9 @@ long long accountNumber = 9876543210123456LL; // Bank accounts
 </code></pre>
 <p><strong>2. Need decimal numbers?</strong></p>
 <ul>
-<li>✅ Use <code>double</code> (99% of cases)</li>
-<li>✅ Use <code>float</code> only if memory is critical</li>
-<li>✅ Use <code>long double</code> for extreme precision</li>
+<li>Use <code>double</code> (99% of cases)</li>
+<li>Use <code>float</code> only if memory is critical</li>
+<li>Use <code>long double</code> for extreme precision</li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">double price = 29.99;          // Prices, measurements
@@ -531,7 +531,7 @@ float gamePosition = 10.5f;    // Game coordinates (memory critical)
 </code></pre>
 <p><strong>3. Need a single character?</strong></p>
 <ul>
-<li>✅ Use <code>char</code></li>
+<li>Use <code>char</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">char menuChoice = 'A';         // Menu selections
@@ -539,7 +539,7 @@ char yesNo = 'Y';              // Simple yes/no
 </code></pre>
 <p><strong>4. Need text (words/sentences)?</strong></p>
 <ul>
-<li>✅ Use <code>string</code></li>
+<li>Use <code>string</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">string username = "alice123";
@@ -548,7 +548,7 @@ string address = "123 Main St, City";
 </code></pre>
 <p><strong>5. Need true/false?</strong></p>
 <ul>
-<li>✅ Use <code>bool</code></li>
+<li>Use <code>bool</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">bool isLoggedIn = true;
@@ -582,7 +582,7 @@ unsigned int transactionCount = 523;
 <hr>
 <p><a id="best-practices"></a></p>
 <h2 id="common-mistakes-and-best-practices"><a class="header" href="#common-mistakes-and-best-practices">Common Mistakes and Best Practices</a></h2>
-<h3 id="-common-mistakes"><a class="header" href="#-common-mistakes">❌ Common Mistakes</a></h3>
+<h3 id="common-mistakes"><a class="header" href="#common-mistakes">Common Mistakes</a></h3>
 <p><strong>1. Integer Division:</strong></p>
 <pre><code class="language-cpp">int a = 5, b = 2;
 int result = a / b;        // result = 2 (not 2.5!)
@@ -614,7 +614,7 @@ int count = 0;        // Always initialize
 <pre><code class="language-cpp">int price = 19.99;    // price = 19 (decimal lost!)
 // Should use: double price = 19.99;
 </code></pre>
-<h3 id="-best-practices"><a class="header" href="#-best-practices">✅ Best Practices</a></h3>
+<h3 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h3>
 <p><strong>1. Always Initialize Variables:</strong></p>
 <pre><code class="language-cpp">int count = 0;
 double total = 0.0;
@@ -698,7 +698,6 @@ int main() {
 <li>Choose data types based on what you’re storing</li>
 <li>Use meaningful variable names</li>
 </ul>
-<p>With this foundation, you’re ready to write C++ programs that handle different types of data effectively! 🚀</p>
 
                     </main>
 

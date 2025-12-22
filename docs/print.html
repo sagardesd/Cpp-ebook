@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-ad9b8321.js";
+            window.path_to_searchindex_js = "searchindex-82c944cc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-032976a8.js"></script>
@@ -192,7 +192,7 @@
 <li><a href="#data-types">Data Types in C++</a></li>
 <li><a href="#input-output">Input and Output</a></li>
 <li><a href="#choosing-right-type">Choosing the Right Data Type</a></li>
-<li><a href="#best-practices">Common Mistakes and Best Practices</a></li>
+<li><a href="#best-practices-1">Common Mistakes and Best Practices</a></li>
 </ol>
 <hr>
 <p><a id="introduction"></a></p>
@@ -212,18 +212,18 @@ double price = 19.99;   // Storing a decimal number
 char grade = 'A';       // Storing a single character
 </code></pre>
 <h3 id="variable-naming-rules"><a class="header" href="#variable-naming-rules">Variable Naming Rules</a></h3>
-<p>✅ <strong>Allowed:</strong></p>
+<p><strong>Allowed:</strong></p>
 <ul>
 <li>Start with a letter (a-z, A-Z) or underscore (_)</li>
 <li>Contain letters, digits, and underscores</li>
 <li>Examples: <code>age</code>, <code>student_name</code>, <code>price2</code>, <code>_count</code></li>
 </ul>
-<p>❌ <strong>Not Allowed:</strong></p>
+<p><strong>Not Allowed:</strong></p>
 <ul>
-<li>Start with a digit: <code>2names</code> ❌</li>
-<li>Contain spaces: <code>student name</code> ❌</li>
-<li>Use C++ keywords: <code>int</code>, <code>return</code>, <code>class</code> ❌</li>
-<li>Special characters: <code>price$</code>, <code>name@</code> ❌</li>
+<li>Start with a digit: <code>2names</code></li>
+<li>Contain spaces: <code>student name</code></li>
+<li>Use C++ keywords: <code>int</code>, <code>return</code>, <code>class</code></li>
+<li>Special characters: <code>price$</code>, <code>name@</code></li>
 </ul>
 <h3 id="best-naming-practices"><a class="header" href="#best-naming-practices">Best Naming Practices</a></h3>
 <pre><code class="language-cpp">// Good - descriptive names
@@ -242,7 +242,7 @@ char c = 'J';    // What does 'c' mean?
 <p>C++ has several built-in data types. Let’s explore each category:</p>
 <h3 id="1-integer-types-whole-numbers"><a class="header" href="#1-integer-types-whole-numbers">1. Integer Types (Whole Numbers)</a></h3>
 <p>These store whole numbers without decimal points.</p>
-<p><strong>⚠️ Important Note:</strong> The size of integer types can vary depending on your platform (32-bit vs 64-bit system, compiler, operating system). The table below shows typical sizes, but always verify on your system using <code>sizeof()</code>.</p>
+<p><strong>Important Note:</strong> The size of integer types can vary depending on your platform (32-bit vs 64-bit system, compiler, operating system). The table below shows typical sizes, but always verify on your system using <code>sizeof()</code>.</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -517,10 +517,10 @@ int main() {
 <h3 id="decision-guide"><a class="header" href="#decision-guide">Decision Guide</a></h3>
 <p><strong>1. Need to store whole numbers (no decimals)?</strong></p>
 <ul>
-<li>✅ Small numbers (-32,768 to 32,767): <code>short</code></li>
-<li>✅ Regular numbers: <code>int</code> (MOST COMMON)</li>
-<li>✅ Very large numbers: <code>long</code> or <code>long long</code></li>
-<li>✅ Only positive numbers: Add <code>unsigned</code></li>
+<li>Small numbers (-32,768 to 32,767): <code>short</code></li>
+<li>Regular numbers: <code>int</code> (MOST COMMON)</li>
+<li>Very large numbers: <code>long</code> or <code>long long</code></li>
+<li>Only positive numbers: Add <code>unsigned</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">int studentID = 12345;        // Student IDs
@@ -529,9 +529,9 @@ long long accountNumber = 9876543210123456LL; // Bank accounts
 </code></pre>
 <p><strong>2. Need decimal numbers?</strong></p>
 <ul>
-<li>✅ Use <code>double</code> (99% of cases)</li>
-<li>✅ Use <code>float</code> only if memory is critical</li>
-<li>✅ Use <code>long double</code> for extreme precision</li>
+<li>Use <code>double</code> (99% of cases)</li>
+<li>Use <code>float</code> only if memory is critical</li>
+<li>Use <code>long double</code> for extreme precision</li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">double price = 29.99;          // Prices, measurements
@@ -540,7 +540,7 @@ float gamePosition = 10.5f;    // Game coordinates (memory critical)
 </code></pre>
 <p><strong>3. Need a single character?</strong></p>
 <ul>
-<li>✅ Use <code>char</code></li>
+<li>Use <code>char</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">char menuChoice = 'A';         // Menu selections
@@ -548,7 +548,7 @@ char yesNo = 'Y';              // Simple yes/no
 </code></pre>
 <p><strong>4. Need text (words/sentences)?</strong></p>
 <ul>
-<li>✅ Use <code>string</code></li>
+<li>Use <code>string</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">string username = "alice123";
@@ -557,7 +557,7 @@ string address = "123 Main St, City";
 </code></pre>
 <p><strong>5. Need true/false?</strong></p>
 <ul>
-<li>✅ Use <code>bool</code></li>
+<li>Use <code>bool</code></li>
 </ul>
 <p><strong>Examples:</strong></p>
 <pre><code class="language-cpp">bool isLoggedIn = true;
@@ -591,7 +591,7 @@ unsigned int transactionCount = 523;
 <hr>
 <p><a id="best-practices"></a></p>
 <h2 id="common-mistakes-and-best-practices"><a class="header" href="#common-mistakes-and-best-practices">Common Mistakes and Best Practices</a></h2>
-<h3 id="-common-mistakes"><a class="header" href="#-common-mistakes">❌ Common Mistakes</a></h3>
+<h3 id="common-mistakes"><a class="header" href="#common-mistakes">Common Mistakes</a></h3>
 <p><strong>1. Integer Division:</strong></p>
 <pre><code class="language-cpp">int a = 5, b = 2;
 int result = a / b;        // result = 2 (not 2.5!)
@@ -623,7 +623,7 @@ int count = 0;        // Always initialize
 <pre><code class="language-cpp">int price = 19.99;    // price = 19 (decimal lost!)
 // Should use: double price = 19.99;
 </code></pre>
-<h3 id="-best-practices"><a class="header" href="#-best-practices">✅ Best Practices</a></h3>
+<h3 id="best-practices-1"><a class="header" href="#best-practices-1">Best Practices</a></h3>
 <p><strong>1. Always Initialize Variables:</strong></p>
 <pre><code class="language-cpp">int count = 0;
 double total = 0.0;
@@ -707,7 +707,6 @@ int main() {
 <li>Choose data types based on what you’re storing</li>
 <li>Use meaningful variable names</li>
 </ul>
-<p>With this foundation, you’re ready to write C++ programs that handle different types of data effectively! 🚀</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="control-flow-in-c"><a class="header" href="#control-flow-in-c">Control Flow in C++</a></h1>
 <h2 id="table-of-contents-1"><a class="header" href="#table-of-contents-1">Table of Contents</a></h2>
@@ -717,7 +716,7 @@ int main() {
 <li><a href="#switch-case">Switch Case Statement</a></li>
 <li><a href="#loops">Loops</a></li>
 <li><a href="#break-continue">Break and Continue</a></li>
-<li><a href="#best-practices-1">Best Practices</a></li>
+<li><a href="#best-practices-2">Best Practices</a></li>
 <li><a href="#practice-problems">Practice Problems</a></li>
 </ol>
 <hr>
@@ -1890,7 +1889,7 @@ for (int i = 1; i &lt;= 3; i++) {
 // 3,1 3,3
 </code></pre>
 <hr>
-<h2 id="best-practices-1"><a class="header" href="#best-practices-1">Best Practices</a></h2>
+<h2 id="best-practices-2"><a class="header" href="#best-practices-2">Best Practices</a></h2>
 <h3 id="1-choosing-the-right-control-structure"><a class="header" href="#1-choosing-the-right-control-structure">1. Choosing the Right Control Structure</a></h3>
 <pre><code class="language-cpp">// ✅ Use switch for multiple discrete values
 switch (menuChoice) {
@@ -5110,11 +5109,11 @@ public:
 <h2 id="summary-5"><a class="header" href="#summary-5">Summary</a></h2>
 <p><strong>Encapsulation</strong> is one of the fundamental pillars of object-oriented programming. It provides:</p>
 <ul>
-<li>✅ <strong>Data Protection</strong> - Private members prevent unauthorized access</li>
-<li>✅ <strong>Controlled Access</strong> - Public methods with validation ensure data integrity</li>
-<li>✅ <strong>Flexibility</strong> - Internal implementation can change without affecting external code</li>
-<li>✅ <strong>Security</strong> - Sensitive data remains hidden</li>
-<li>✅ <strong>Maintainability</strong> - Easier to debug and modify</li>
+<li><strong>Data Protection</strong> - Private members prevent unauthorized access</li>
+<li><strong>Controlled Access</strong> - Public methods with validation ensure data integrity</li>
+<li><strong>Flexibility</strong> - Internal implementation can change without affecting external code</li>
+<li><strong>Security</strong> - Sensitive data remains hidden</li>
+<li><strong>Maintainability</strong> - Easier to debug and modify</li>
 </ul>
 <h3 id="key-takeaways-1"><a class="header" href="#key-takeaways-1">Key Takeaways</a></h3>
 <ol>
@@ -6095,7 +6094,7 @@ public:
 </code></pre>
 </li>
 </ol>
-<h3 id="best-practices-2"><a class="header" href="#best-practices-2">Best Practices</a></h3>
+<h3 id="best-practices-3"><a class="header" href="#best-practices-3">Best Practices</a></h3>
 <p>✓ <strong>DO:</strong> Use initializer lists for all member variables</p>
 <pre><code class="language-cpp">class Person {
     std::string name;
@@ -11368,7 +11367,7 @@ public:
 </ul>
 </li>
 <li><a href="#benefits-of-override-keyword">Benefits of Override Keyword</a></li>
-<li><a href="#best-practices-3">Best Practices</a></li>
+<li><a href="#best-practices-4">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="what-is-the-override-keyword"><a class="header" href="#what-is-the-override-keyword">What is the Override Keyword?</a></h2>
@@ -11599,7 +11598,7 @@ public:
 </ol>
 <p><a href="#table-of-contents-11">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-3"><a class="header" href="#best-practices-3">Best Practices</a></h2>
+<h2 id="best-practices-4"><a class="header" href="#best-practices-4">Best Practices</a></h2>
 <ol>
 <li><strong>Always use <code>override</code></strong> when you intend to override a virtual function</li>
 <li><strong>Use <code>virtual</code> only in base classes</strong> for the initial declaration</li>
@@ -12716,7 +12715,7 @@ int main() {
 </li>
 <li><a href="#binary-vs-unary-operators">Binary vs Unary Operators</a></li>
 <li><a href="#more-operator-overloading-examples">More Operator Overloading Examples</a></li>
-<li><a href="#best-practices-4">Best Practices</a></li>
+<li><a href="#best-practices-5">Best Practices</a></li>
 </ul>
 <hr>
 <h2 id="what-is-operator-overloading"><a class="header" href="#what-is-operator-overloading">What is Operator Overloading?</a></h2>
@@ -13231,7 +13230,7 @@ if (a || b) {
 </code></pre>
 <p><a href="#table-of-contents-14">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-4"><a class="header" href="#best-practices-4">Best Practices</a></h2>
+<h2 id="best-practices-5"><a class="header" href="#best-practices-5">Best Practices</a></h2>
 <h3 id="1-make-operators-obvious"><a class="header" href="#1-make-operators-obvious">1. Make Operators Obvious</a></h3>
 <p>The operation should be intuitive when reading the code. If someone sees <code>a + b</code>, they should have a good idea what it means.</p>
 <h3 id="2-stay-consistent-with-built-in-types"><a class="header" href="#2-stay-consistent-with-built-in-types">2. Stay Consistent with Built-in Types</a></h3>
@@ -13921,7 +13920,7 @@ Container&lt;string&gt; c2("Hello");
 <li><a href="#the-solution">The Solution</a></li>
 <li><a href="#alternative-solutions">Alternative Solutions</a></li>
 <li><a href="#common-errors-and-how-to-fix-them">Common Errors and How to Fix Them</a></li>
-<li><a href="#best-practices-5">Best Practices</a></li>
+<li><a href="#best-practices-6">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
@@ -14361,7 +14360,7 @@ class A {
 </code></pre>
 <p><a href="#table-of-contents-17">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-5"><a class="header" href="#best-practices-5">Best Practices</a></h2>
+<h2 id="best-practices-6"><a class="header" href="#best-practices-6">Best Practices</a></h2>
 <h3 id="-do"><a class="header" href="#-do">✅ DO</a></h3>
 <ol>
 <li>
@@ -17599,7 +17598,7 @@ clang++ -std=c++20 program.cpp -o program
 </li>
 <li><a href="#tmp-is-turing-complete">TMP is Turing Complete</a></li>
 <li><a href="#benefits-and-drawbacks">Benefits and Drawbacks</a></li>
-<li><a href="#best-practices-6">Best Practices</a></li>
+<li><a href="#best-practices-7">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="from-variadic-templates-to-template-metaprogramming"><a class="header" href="#from-variadic-templates-to-template-metaprogramming">From Variadic Templates to Template Metaprogramming</a></h2>
@@ -17841,7 +17840,7 @@ Fib(20) = 6765
 </ol>
 <p><a href="#table-of-contents-24">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-6"><a class="header" href="#best-practices-6">Best Practices</a></h2>
+<h2 id="best-practices-7"><a class="header" href="#best-practices-7">Best Practices</a></h2>
 <ol>
 <li><strong>Use TMP when it provides clear benefits</strong>: Don’t use it just because you can</li>
 <li><strong>Prefer <code>constexpr</code> for modern C++</strong>: C++11’s <code>constexpr</code> is often simpler and clearer(Will be covered in detail in a separate chatpter)</li>
@@ -17901,7 +17900,7 @@ Will be covered in detail in separate chapter.</p>
 <li><a href="#c20-constinit">C++20: constinit</a></li>
 <li><a href="#practical-examples-2">Practical Examples</a></li>
 <li><a href="#benefits-of-modern-compile-time-programming">Benefits of Modern Compile-Time Programming</a></li>
-<li><a href="#best-practices-7">Best Practices</a></li>
+<li><a href="#best-practices-8">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="introduction-3"><a class="header" href="#introduction-3">Introduction</a></h2>
@@ -18546,7 +18545,7 @@ int main() {
 </div>
 <p><a href="#table-of-contents-25">↑ Back to Table of Contents</a></p>
 <hr>
-<h2 id="best-practices-7"><a class="header" href="#best-practices-7">Best Practices</a></h2>
+<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
 <ol>
 <li><strong>Use <code>constexpr</code> by default</strong> for functions that can be compile-time</li>
 <li><strong>Use <code>consteval</code></strong> when you want to guarantee compile-time evaluation</li>
@@ -19143,7 +19142,7 @@ a.get_pixel(1, 1);   // NOT OK: might crash
 int w = a.width;     // NOT OK: undefined value
 </code></pre>
 <hr>
-<h2 id="best-practices-8"><a class="header" href="#best-practices-8">Best Practices</a></h2>
+<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
 <h3 id="when-to-use-stdmove"><a class="header" href="#when-to-use-stdmove">When to Use std::move</a></h3>
 <h4 id="good-use-cases"><a class="header" href="#good-use-cases">Good use cases:</a></h4>
 <p><strong>1. You know for certain the object won’t be used again</strong></p>
@@ -20185,7 +20184,7 @@ auto str = "Hello"s;
 <li><a href="#evolution-in-c17">Evolution in C++17</a></li>
 <li><a href="#evolution-in-c20">Evolution in C++20</a></li>
 <li><a href="#common-pitfalls">Common Pitfalls</a></li>
-<li><a href="#best-practices-9">Best Practices</a></li>
+<li><a href="#best-practices-10">Best Practices</a></li>
 </ol>
 <hr>
 <h2 id="what-is-decltype"><a class="header" href="#what-is-decltype">What is decltype?</a></h2>
@@ -20569,7 +20568,7 @@ decltype(true ? 0 : 1)   // int (both operands are prvalues)
 decltype(a &gt; b ? a : 0)  // int (mixed: unifies to prvalue)
 </code></pre>
 <hr>
-<h2 id="best-practices-9"><a class="header" href="#best-practices-9">Best Practices</a></h2>
+<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
 <h3 id="1-use-decltypeauto-for-perfect-return-type-forwarding"><a class="header" href="#1-use-decltypeauto-for-perfect-return-type-forwarding">1. Use decltype(auto) for Perfect Return Type Forwarding</a></h3>
 <pre><code class="language-cpp">// Good: Preserves exact return type
 template&lt;typename Func, typename... Args&gt;
@@ -20957,7 +20956,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="best-practices-10"><a class="header" href="#best-practices-10">Best Practices</a></h2>
+<h2 id="best-practices-11"><a class="header" href="#best-practices-11">Best Practices</a></h2>
 <h3 id="use-const-auto-for-read-only-access"><a class="header" href="#use-const-auto-for-read-only-access">Use <code>const auto&amp;</code> for Read-Only Access</a></h3>
 <p>When you don’t need to modify elements and want to avoid copying (especially for large objects):</p>
 <pre><code class="language-cpp">std::vector&lt;std::string&gt; large_strings = {"very", "long", "strings"};
@@ -21531,7 +21530,7 @@ public:
 // Out-of-class definition still needed for static non-const (pre-C++17)
 int MemberTypes::static_value = 50;
 </code></pre>
-<h2 id="best-practices-11"><a class="header" href="#best-practices-11">Best Practices</a></h2>
+<h2 id="best-practices-12"><a class="header" href="#best-practices-12">Best Practices</a></h2>
 <h3 id="1-use-in-class-initialization-for-defaults"><a class="header" href="#1-use-in-class-initialization-for-defaults">1. Use In-Class Initialization for Defaults</a></h3>
 <pre><code class="language-cpp">// ✅ Good: Clear default values
 class Config {
@@ -21850,7 +21849,7 @@ Data d3{10, .c = 30};           // ERROR: cannot mix styles
 Point p1{10, 20};   // Always worked
 Point p2(10, 20);   // C++20: now also works for aggregates
 </code></pre>
-<h2 id="best-practices-12"><a class="header" href="#best-practices-12">Best Practices</a></h2>
+<h2 id="best-practices-13"><a class="header" href="#best-practices-13">Best Practices</a></h2>
 <h3 id="when-to-use-uniform-initialization"><a class="header" href="#when-to-use-uniform-initialization">When to Use Uniform Initialization</a></h3>
 <p><strong>Prefer uniform initialization when:</strong></p>
 <ul>
@@ -22349,29 +22348,29 @@ int main() {
 </table>
 </div>
 <h3 id="examples-of-aggregate-types"><a class="header" href="#examples-of-aggregate-types">Examples of Aggregate Types</a></h3>
-<pre><code class="language-cpp">// ✅ Valid aggregate - simple struct
+<pre><code class="language-cpp">// Valid aggregate - simple struct
 struct Point {
     int x;
     int y;
 };
 
-// ✅ Valid aggregate - with default member initializers
+// Valid aggregate - with default member initializers
 struct Config {
     int timeout = 30;
     bool verbose = false;
     std::string mode = "auto";
 };
 
-// ✅ Valid aggregate - nested aggregates
+// Valid aggregate - nested aggregates
 struct Rectangle {
     Point topLeft;
     Point bottomRight;
 };
 
-// ✅ Valid aggregate - array
+// Valid aggregate - array
 int numbers[5];
 
-// ✅ Valid aggregate - with public base class (C++17+)
+// Valid aggregate - with public base class (C++17+)
 struct Base {
     int base_value;
 };
@@ -22381,13 +22380,13 @@ struct Derived : Base {
 };
 </code></pre>
 <h3 id="examples-of-non-aggregate-types"><a class="header" href="#examples-of-non-aggregate-types">Examples of Non-Aggregate Types</a></h3>
-<pre><code class="language-cpp">// ❌ NOT an aggregate - has user-provided constructor
+<pre><code class="language-cpp">// NOT an aggregate - has user-provided constructor
 struct WithConstructor {
     int x;
     WithConstructor() : x(0) {}
 };
 
-// ❌ NOT an aggregate - has private members
+// NOT an aggregate - has private members
 struct WithPrivate {
 private:
     int x;
@@ -22395,19 +22394,19 @@ public:
     int y;
 };
 
-// ❌ NOT an aggregate - has virtual function
+// NOT an aggregate - has virtual function
 struct WithVirtual {
     int x;
     virtual void process() {}
 };
 
-// ❌ NOT an aggregate - has private base class
+// NOT an aggregate - has private base class
 struct Base { int x; };
 struct NotAggregate : private Base {
     int y;
 };
 
-// ❌ NOT an aggregate - has protected members
+// NOT an aggregate - has protected members
 class WithProtected {
 protected:
     int x;
@@ -22456,11 +22455,11 @@ Point p3{.z = 30};                        // x and y get default values
     int c;
 };
 
-// ✅ Correct - follows declaration order
+// Correct - follows declaration order
 Data d1{.a = 1, .b = 2, .c = 3};
 Data d2{.a = 1, .c = 3};           // OK: skipping b
 
-// ❌ Error - out of order
+// Error - out of order
 Data d3{.c = 3, .a = 1};           // Compilation error!
 Data d4{.b = 2, .a = 1};           // Compilation error!
 </code></pre>
@@ -22470,13 +22469,13 @@ Data d4{.b = 2, .a = 1};           // Compilation error!
     int y;
 };
 
-// ✅ All designated
+// All designated
 Point p1{.x = 10, .y = 20};
 
-// ✅ All non-designated
+// All non-designated
 Point p2{10, 20};
 
-// ❌ Error - cannot mix
+// Error - cannot mix
 Point p3{10, .y = 20};             // Compilation error!
 Point p4{.x = 10, 20};             // Compilation error!
 </code></pre>
@@ -22485,7 +22484,7 @@ Point p4{.x = 10, 20};             // Compilation error!
     int value;
 };
 
-// ❌ Error - duplicate initialization
+// Error - duplicate initialization
 Data d{.value = 10, .value = 20};  // Compilation error!
 </code></pre>
 <h3 id="practical-examples-3"><a class="header" href="#practical-examples-3">Practical Examples</a></h3>
@@ -22577,10 +22576,10 @@ render({.antialias = 8});
     WithConstructor(int a, int b) : x(a), y(b) {}
 };
 
-// ❌ Error - designated initialization not allowed
+// Error - designated initialization not allowed
 WithConstructor obj{.x = 10, .y = 20};  // Compilation error!
 
-// ✅ Must use constructor
+// Must use constructor
 WithConstructor obj(10, 20);            // OK
 </code></pre>
 <h3 id="example-2-type-with-private-members"><a class="header" href="#example-2-type-with-private-members">Example 2: Type with Private Members</a></h3>
@@ -22595,10 +22594,10 @@ public:
     int getY() const { return y; }
 };
 
-// ❌ Error - not an aggregate due to private members
+// Error - not an aggregate due to private members
 WithPrivate obj{.x = 10, .y = 20};      // Compilation error!
 
-// ✅ Must use constructor
+// Must use constructor
 WithPrivate obj(10, 20);                // OK
 </code></pre>
 <h3 id="example-3-type-with-virtual-functions"><a class="header" href="#example-3-type-with-virtual-functions">Example 3: Type with Virtual Functions</a></h3>
@@ -22609,10 +22608,10 @@ WithPrivate obj(10, 20);                // OK
     virtual void process() { /* ... */ }
 };
 
-// ❌ Error - not an aggregate due to virtual function
+// Error - not an aggregate due to virtual function
 WithVirtual obj{.x = 10, .y = 20};      // Compilation error!
 
-// ✅ Must use default initialization or constructor
+// Must use default initialization or constructor
 WithVirtual obj;                        // OK (default initialization)
 obj.x = 10;
 obj.y = 20;
@@ -22760,18 +22759,18 @@ int arr[10] = {[0] = 1, [5] = 2, [9] = 3};      // OK in C
 };
 
 // C++ requires declaration order
-Point p1{.z = 30, .x = 10};              // ❌ Error in C++
+Point p1{.z = 30, .x = 10};              // Error in C++
 
 // C++ doesn't allow mixing
-Point p2{.x = 10, 20, 30};               // ❌ Error in C++
+Point p2{.x = 10, 20, 30};               // Error in C++
 
 // C++ doesn't support array designated initializers
-int arr[10] = {[0] = 1, [5] = 2};        // ❌ Error in C++
+int arr[10] = {[0] = 1, [5] = 2};        // Error in C++
 </code></pre>
 <p><strong>Why stricter in C++?</strong> The restrictions maintain consistency with C++’s stronger type system and make the code more predictable and less error-prone.</p>
-<h2 id="best-practices-13"><a class="header" href="#best-practices-13">Best Practices</a></h2>
+<h2 id="best-practices-14"><a class="header" href="#best-practices-14">Best Practices</a></h2>
 <h3 id="1-use-for-configuration-and-options"><a class="header" href="#1-use-for-configuration-and-options">1. Use for Configuration and Options</a></h3>
-<pre><code class="language-cpp">// ✅ Perfect use case
+<pre><code class="language-cpp">// Perfect use case
 struct Config {
     std::string database_url = "localhost:5432";
     int pool_size = 10;
@@ -22781,7 +22780,7 @@ struct Config {
 Config cfg{.database_url = "prod.db.com", .pool_size = 50};
 </code></pre>
 <h3 id="2-combine-with-default-member-initializers"><a class="header" href="#2-combine-with-default-member-initializers">2. Combine with Default Member Initializers</a></h3>
-<pre><code class="language-cpp">// ✅ Provides sensible defaults, easy to override
+<pre><code class="language-cpp">// Provides sensible defaults, easy to override
 struct Settings {
     int value = 100;
     bool flag = false;
@@ -22807,10 +22806,10 @@ ComplexOptions opts{.opt3 = 5, .opt6 = 10};
 <pre><code class="language-cpp">struct Point { int x; int y; };
 
 // Traditional initialization is fine here
-Point p{10, 20};  // ✅ Clear enough
+Point p{10, 20};  // Clear enough
 
 // Designated might be overkill
-Point p{.x = 10, .y = 20};  // ✅ Also fine, but more verbose
+Point p{.x = 10, .y = 20};  // Also fine, but more verbose
 </code></pre>
 <h2 id="summary-17"><a class="header" href="#summary-17">Summary</a></h2>
 <p>Designated initialization is a powerful C++20 feature that makes code more readable, maintainable, and less error-prone. It works exclusively with aggregate types, which are simple data structures without user-provided constructors, private members, or virtual functions.</p>
@@ -24647,7 +24646,7 @@ int main() {
 <li><strong>Enables cleanup without destruction</strong>: You can explicitly release a resource before the <code>unique_ptr</code> goes out of scope</li>
 </ul>
 <hr>
-<h3 id="best-practices-14"><a class="header" href="#best-practices-14">Best Practices</a></h3>
+<h3 id="best-practices-15"><a class="header" href="#best-practices-15">Best Practices</a></h3>
 <ol>
 <li><strong>Use <code>std::make_unique</code> by default</strong> when possible</li>
 <li><strong>Use <code>new</code> with <code>std::unique_ptr</code> when</strong>:
@@ -27030,7 +27029,7 @@ std::shared_ptr&lt;int&gt; s;  // 16 bytes
 <li><strong>Copyable and movable</strong>: Unlike <code>unique_ptr</code>, copying is the normal operation</li>
 <li><strong>Control block</strong>: Stores reference count and deletion information</li>
 </ul>
-<h3 id="best-practices-15"><a class="header" href="#best-practices-15">Best Practices</a></h3>
+<h3 id="best-practices-16"><a class="header" href="#best-practices-16">Best Practices</a></h3>
 <p><strong>DO:</strong></p>
 <ul>
 <li>Use <code>std::make_shared&lt;T&gt;</code> for creation (when possible)</li>
