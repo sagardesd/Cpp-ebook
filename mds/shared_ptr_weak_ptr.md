@@ -1,6 +1,5 @@
 # std::shared_ptr<T>: Shared Ownership of Resources
-
-## Introduction: Why Multiple Owners?
+---
 
 When working with `unique_ptr<T>`, you have exclusive ownership - only one pointer can own a resource at a time. But what if multiple parts of your program legitimately need to own the same resource? What if you have a design where several objects should collectively manage a resource's lifetime?
 
