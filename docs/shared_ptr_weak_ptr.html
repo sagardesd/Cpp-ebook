@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-4456cf98.js";
+            window.path_to_searchindex_js = "searchindex-ad9b8321.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-032976a8.js"></script>
@@ -331,8 +331,7 @@ int main() {
 <p><strong>Note</strong>: You <strong>cannot</strong> use <code>make_shared</code> with custom deleters. You must use the <code>shared_ptr</code> constructor with <code>new</code>.</p>
 <pre><code class="language-cpp">std::shared_ptr&lt;T&gt; ptr(new T(), custom_deleter);
 </code></pre>
-<hr>
-<h3 id="use-case-1-managing-file-with-custom-deleter"><a class="header" href="#use-case-1-managing-file-with-custom-deleter">Use Case 1: Managing FILE* with Custom Deleter</a></h3>
+<p>Consider this Example of <strong>Managing FILE with Custom Deleter</strong></p>
 <pre><code class="language-cpp">#include &lt;memory&gt;
 #include &lt;iostream&gt;
 #include &lt;cstdio&gt;
@@ -365,7 +364,7 @@ int main() {
 // Closing file
 </code></pre>
 <hr>
-<h3 id="use-case-2-managing-arrays-with-delete"><a class="header" href="#use-case-2-managing-arrays-with-delete">Use Case 2: Managing Arrays with delete[]</a></h3>
+<h3 id="managing-arrays-with-delete"><a class="header" href="#managing-arrays-with-delete">Managing Arrays with delete[]</a></h3>
 <p>When you allocate an array with <code>new[]</code>, you need to delete it with <code>delete[]</code>, not <code>delete</code>. A custom deleter ensures proper cleanup:</p>
 <pre><code class="language-cpp">#include &lt;memory&gt;
 #include &lt;iostream&gt;
@@ -415,53 +414,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<hr>
-<h3 id="use-case-3-managing-c-api-resources"><a class="header" href="#use-case-3-managing-c-api-resources">Use Case 3: Managing C API Resources</a></h3>
-<p>Many C libraries have their own allocation and deallocation functions:</p>
-<pre><code class="language-cpp">#include &lt;memory&gt;
-#include &lt;iostream&gt;
-
-// Simulating a C API
-struct Connection {
-    int id;
-};
-
-Connection* createConnection(int id) {
-    std::cout &lt;&lt; "Opening connection " &lt;&lt; id &lt;&lt; "\n";
-    Connection* conn = new Connection{id};
-    return conn;
-}
-
-void closeConnection(Connection* conn) {
-    if (conn) {
-        std::cout &lt;&lt; "Closing connection " &lt;&lt; conn-&gt;id &lt;&lt; "\n";
-        delete conn;
-    }
-}
-
-int main() {
-    // Custom deleter for C API
-    auto connDeleter = [](Connection* conn) {
-        closeConnection(conn);
-    };
-    
-    std::shared_ptr&lt;Connection&gt; conn(
-        createConnection(42),
-        connDeleter
-    );
-    
-    std::cout &lt;&lt; "Using connection " &lt;&lt; conn-&gt;id &lt;&lt; "\n";
-    
-    return 0;
-}
-
-// Output:
-// Opening connection 42
-// Using connection 42
-// Closing connection 42
-</code></pre>
-<hr>
-<h3 id="use-case-4-no-op-deleter-stack-objects"><a class="header" href="#use-case-4-no-op-deleter-stack-objects">Use Case 4: No-Op Deleter (Stack Objects)</a></h3>
+<h3 id="no-op-deleter-stack-objects"><a class="header" href="#no-op-deleter-stack-objects">No-Op Deleter (Stack Objects)</a></h3>
 <p>Sometimes you want to use shared_ptr with objects you don’t own (like stack-allocated objects). You need a no-op deleter:</p>
 <pre><code class="language-cpp">#include &lt;memory&gt;
 #include &lt;iostream&gt;
@@ -507,53 +460,6 @@ int main() {
 // Service 1 destroyed
 </code></pre>
 <hr>
-<h3 id="use-case-5-logging-deleter"><a class="header" href="#use-case-5-logging-deleter">Use Case 5: Logging Deleter</a></h3>
-<p>Custom deleters can also perform logging or other side effects:</p>
-<pre><code class="language-cpp">#include &lt;memory&gt;
-#include &lt;iostream&gt;
-#include &lt;chrono&gt;
-
-class Resource {
-public:
-    Resource(int id) : id_(id), 
-        created_(std::chrono::steady_clock::now()) {
-        std::cout &lt;&lt; "Resource " &lt;&lt; id_ &lt;&lt; " acquired\n";
-    }
-    ~Resource() {
-        std::cout &lt;&lt; "Resource " &lt;&lt; id_ &lt;&lt; " released\n";
-    }
-    int getId() const { return id_; }
-private:
-    int id_;
-    std::chrono::steady_clock::time_point created_;
-};
-
-int main() {
-    auto loggingDeleter = [](Resource* res) {
-        if (res) {
-            std::cout &lt;&lt; "Deleting resource " &lt;&lt; res-&gt;getId() 
-                      &lt;&lt; " (with logging)\n";
-            delete res;
-        }
-    };
-    
-    std::shared_ptr&lt;Resource&gt; res(
-        new Resource(100),
-        loggingDeleter
-    );
-    
-    std::cout &lt;&lt; "Using resource...\n";
-    
-    return 0;
-}
-
-// Output:
-// Resource 100 acquired
-// Using resource...
-// Deleting resource 100 (with logging)
-// Resource 100 released
-</code></pre>
-<hr>
 <h3 id="custom-deleter-syntax-summary"><a class="header" href="#custom-deleter-syntax-summary">Custom Deleter Syntax Summary</a></h3>
 <pre><code class="language-cpp">// Lambda deleter
 std::shared_ptr&lt;T&gt; ptr(new T(), [](T* p) { delete p; });
@@ -573,7 +479,7 @@ std::function&lt;void(T*)&gt; deleter = [](T* p) { delete p; };
 std::shared_ptr&lt;T&gt; ptr(new T(), deleter);
 </code></pre>
 <hr>
-<h3 id="when-to-use-custom-deleters"><a class="header" href="#when-to-use-custom-deleters">When to Use Custom Deleters</a></h3>
+<h3 id="some-situation-where-usage-of-custom-deleters-is-needed"><a class="header" href="#some-situation-where-usage-of-custom-deleters-is-needed">Some situation where usage of Custom Deleters is needed</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -1914,26 +1820,6 @@ auto arrayDeleter = [](int* arr) {
 std::shared_ptr&lt;int&gt; arr(new int[100], arrayDeleter);
 </code></pre>
 <hr>
-<h2 id="when-to-use-shared_ptr-vs-unique_ptr-vs-weak_ptr"><a class="header" href="#when-to-use-shared_ptr-vs-unique_ptr-vs-weak_ptr">When to Use shared_ptr vs unique_ptr vs weak_ptr</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Situation</th><th>Use</th></tr>
-</thead>
-<tbody>
-<tr><td>Single clear owner</td><td><code>unique_ptr</code></td></tr>
-<tr><td>Multiple owners needed</td><td><code>shared_ptr</code></td></tr>
-<tr><td>Transferring ownership</td><td><code>unique_ptr</code> (move)</td></tr>
-<tr><td>Shared state across objects</td><td><code>shared_ptr</code></td></tr>
-<tr><td>Observer pattern (non-owning)</td><td><code>weak_ptr</code></td></tr>
-<tr><td>Breaking circular references</td><td><code>weak_ptr</code></td></tr>
-<tr><td>Return from factory</td><td><code>unique_ptr</code> (can convert to <code>shared_ptr</code>)</td></tr>
-<tr><td>Temporary non-owning access</td><td>Raw pointer from <code>get()</code></td></tr>
-<tr><td>Performance critical, single owner</td><td><code>unique_ptr</code></td></tr>
-</tbody>
-</table>
-</div>
-<hr>
 <h2 id="common-pitfalls-and-solutions"><a class="header" href="#common-pitfalls-and-solutions">Common Pitfalls and Solutions</a></h2>
 <h3 id="pitfall-1-creating-multiple-control-blocks"><a class="header" href="#pitfall-1-creating-multiple-control-blocks">Pitfall 1: Creating Multiple Control Blocks</a></h3>
 <p><strong>Problem:</strong></p>
@@ -2079,6 +1965,25 @@ std::shared_ptr&lt;int&gt; s;  // 16 bytes
 <li><strong>Disadvantages</strong>: Higher memory overhead, atomic operations cost, potential circular references</li>
 </ul>
 <hr>
+<h2 id="when-to-use-shared_ptr-vs-unique_ptr-vs-weak_ptr"><a class="header" href="#when-to-use-shared_ptr-vs-unique_ptr-vs-weak_ptr">When to Use shared_ptr vs unique_ptr vs weak_ptr</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Situation</th><th>Use</th></tr>
+</thead>
+<tbody>
+<tr><td>Single clear owner</td><td><code>unique_ptr</code></td></tr>
+<tr><td>Multiple owners needed</td><td><code>shared_ptr</code></td></tr>
+<tr><td>Transferring ownership</td><td><code>unique_ptr</code> (move)</td></tr>
+<tr><td>Shared state across objects</td><td><code>shared_ptr</code></td></tr>
+<tr><td>Observer pattern (non-owning)</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Breaking circular references</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Return from factory</td><td><code>unique_ptr</code> (can convert to <code>shared_ptr</code>)</td></tr>
+<tr><td>Temporary non-owning access</td><td>Raw pointer from <code>get()</code></td></tr>
+<tr><td>Performance critical, single owner</td><td><code>unique_ptr</code></td></tr>
+</tbody>
+</table>
+</div>
 <p><code>std::shared_ptr</code> is a powerful tool for managing shared ownership of resources. Use it when you genuinely need multiple owners, but prefer <code>unique_ptr</code> when single ownership is sufficient.</p>
 
                     </main>
