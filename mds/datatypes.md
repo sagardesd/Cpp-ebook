@@ -39,16 +39,16 @@ char grade = 'A';       // Storing a single character
 
 ### Variable Naming Rules
 
-✅ **Allowed:**
+**Allowed:**
 - Start with a letter (a-z, A-Z) or underscore (_)
 - Contain letters, digits, and underscores
 - Examples: `age`, `student_name`, `price2`, `_count`
 
-❌ **Not Allowed:**
-- Start with a digit: `2names` ❌
-- Contain spaces: `student name` ❌
-- Use C++ keywords: `int`, `return`, `class` ❌
-- Special characters: `price$`, `name@` ❌
+**Not Allowed:**
+- Start with a digit: `2names`
+- Contain spaces: `student name`
+- Use C++ keywords: `int`, `return`, `class`
+- Special characters: `price$`, `name@`
 
 ### Best Naming Practices
 
@@ -75,7 +75,7 @@ C++ has several built-in data types. Let's explore each category:
 
 These store whole numbers without decimal points.
 
-**⚠️ Important Note:** The size of integer types can vary depending on your platform (32-bit vs 64-bit system, compiler, operating system). The table below shows typical sizes, but always verify on your system using `sizeof()`.
+**Important Note:** The size of integer types can vary depending on your platform (32-bit vs 64-bit system, compiler, operating system). The table below shows typical sizes, but always verify on your system using `sizeof()`.
 
 | Type | Typical Size | Typical Range | When to Use |
 |------|--------------|---------------|-------------|
@@ -407,10 +407,10 @@ int main() {
 ### Decision Guide
 
 **1. Need to store whole numbers (no decimals)?**
-- ✅ Small numbers (-32,768 to 32,767): `short`
-- ✅ Regular numbers: `int` (MOST COMMON)
-- ✅ Very large numbers: `long` or `long long`
-- ✅ Only positive numbers: Add `unsigned`
+- Small numbers (-32,768 to 32,767): `short`
+- Regular numbers: `int` (MOST COMMON)
+- Very large numbers: `long` or `long long`
+- Only positive numbers: Add `unsigned`
 
 **Examples:**
 ```cpp
@@ -420,9 +420,9 @@ long long accountNumber = 9876543210123456LL; // Bank accounts
 ```
 
 **2. Need decimal numbers?**
-- ✅ Use `double` (99% of cases)
-- ✅ Use `float` only if memory is critical
-- ✅ Use `long double` for extreme precision
+- Use `double` (99% of cases)
+- Use `float` only if memory is critical
+- Use `long double` for extreme precision
 
 **Examples:**
 ```cpp
@@ -432,7 +432,7 @@ float gamePosition = 10.5f;    // Game coordinates (memory critical)
 ```
 
 **3. Need a single character?**
-- ✅ Use `char`
+- Use `char`
 
 **Examples:**
 ```cpp
@@ -441,7 +441,7 @@ char yesNo = 'Y';              // Simple yes/no
 ```
 
 **4. Need text (words/sentences)?**
-- ✅ Use `string`
+- Use `string`
 
 **Examples:**
 ```cpp
@@ -451,7 +451,7 @@ string address = "123 Main St, City";
 ```
 
 **5. Need true/false?**
-- ✅ Use `bool`
+- Use `bool`
 
 **Examples:**
 ```cpp
@@ -496,7 +496,7 @@ unsigned int transactionCount = 523;
 <a id="best-practices"></a>
 ## Common Mistakes and Best Practices
 
-### ❌ Common Mistakes
+### Common Mistakes
 
 **1. Integer Division:**
 ```cpp
@@ -537,7 +537,7 @@ int price = 19.99;    // price = 19 (decimal lost!)
 // Should use: double price = 19.99;
 ```
 
-### ✅ Best Practices
+### Best Practices
 
 **1. Always Initialize Variables:**
 ```cpp
@@ -633,5 +633,3 @@ int main() {
 - Always initialize your variables
 - Choose data types based on what you're storing
 - Use meaningful variable names
-
-With this foundation, you're ready to write C++ programs that handle different types of data effectively! 🚀
