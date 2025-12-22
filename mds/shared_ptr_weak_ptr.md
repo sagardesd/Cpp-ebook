@@ -711,7 +711,7 @@ int main() {
     }  // res destroyed here
     
     // DANGER: dangling points to freed memory!
-    // dangling->doWork();  // ⚠️ UNDEFINED BEHAVIOR
+    // dangling->doWork();  // UNDEFINED BEHAVIOR
     
     return 0;
 }
@@ -928,7 +928,7 @@ int main() {
     node1->next = node2;  // node1 → node2
     node2->prev = node1;  // node2 → node1
     
-    // ⚠️ MEMORY LEAK!
+    // MEMORY LEAK!
     // node1 keeps node2 alive
     // node2 keeps node1 alive
     // Neither can be deleted!
@@ -1203,7 +1203,7 @@ class Node {
 public:
     std::string data;
     std::shared_ptr<Node> next;  // Owning reference
-    std::weak_ptr<Node> prev;    // Non-owning reference ✅
+    std::weak_ptr<Node> prev;    // Non-owning reference
     
     Node(const std::string& d) : data(d) {
         std::cout << "Node '" << data << "' created\n";
@@ -1276,7 +1276,7 @@ if (auto locked = weak.lock()) {
     locked->process();  // Safe
 }
 
-// ❌ Wrong - race condition
+// Wrong - race condition
 if (!weak.expired()) {
     auto locked = weak.lock();  // Object might be deleted here!
     locked->process();
@@ -2186,7 +2186,7 @@ std::shared_ptr<int> s;  // 16 bytes
 
 ---
 
-## Summary: Key Points About shared_ptr
+## Summary: `shared_ptr<T>`
 
 ### Core Concepts
 - **Shared ownership**: Multiple `shared_ptr` instances can own the same resource
