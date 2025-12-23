@@ -278,21 +278,21 @@ template<typename T>        // ← Template declaration (required!)
 
 ### Key Points for External Definitions
 
-✅ **Must include:**
+**Must include:**
 - `template<typename T>` before each function
 - Class name with template parameter: `Box<T>::`
 - Same signature as declaration
 
-❌ **Common mistakes:**
+**Common mistakes:**
 ```cpp
-// ❌ WRONG: Missing template declaration
+// WRONG: Missing template declaration
 T Box<T>::retrieve() const { }
 
-// ❌ WRONG: Missing template parameter on class name
+// WRONG: Missing template parameter on class name
 template<typename T>
 T Box::retrieve() const { }
 
-// ✅ CORRECT
+// CORRECT
 template<typename T>
 T Box<T>::retrieve() const { }
 ```
@@ -476,8 +476,8 @@ Understanding this distinction is crucial because:
 
 1. **You cannot declare a variable of type `Box`** — you must specify the type parameter
    ```cpp
-   Box myBox;        // ❌ ERROR: Template parameter missing
-   Box<int> myBox;   // ✅ CORRECT: Specific type
+   Box myBox;        // ERROR: Template parameter missing
+   Box<int> myBox;   // CORRECT: Specific type
    ```
 
 2. **Each instantiated type is independent**
