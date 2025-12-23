@@ -1,0 +1,1011 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>CRTP (Curiously Recurring Template Pattern)</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-ff1866a2.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-1afcbef9.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="crtp-curiously-recurring-template-pattern-in-c"><a class="header" href="#crtp-curiously-recurring-template-pattern-in-c">CRTP (Curiously Recurring Template Pattern) in C++</a></h1>
+<hr>
+<h2 id="the-one-way-knowledge-of-inheritance"><a class="header" href="#the-one-way-knowledge-of-inheritance">The One-Way Knowledge of Inheritance</a></h2>
+<p>Standard inheritance creates a hierarchy where knowledge only flows downward:</p>
+<p><strong>Derived Knows Base:</strong>
+When you derive a class, it inherits all members (functions and variables) from its parent. It can see and use <code>public</code> and <code>protected</code> members of the Base class directly.</p>
+<pre><code class="language-cpp">class Base {
+protected:
+    int value;
+public:
+    void baseFunction() { }
+};
+
+class Derived : public Base {
+public:
+    void derivedFunction() {
+        value = 10;          // Can access Base's protected member
+        baseFunction();      // Can call Base's function
+    }
+};
+</code></pre>
+<p><strong>Base Has No Knowledge of Derived:</strong>
+The Base class is defined independently. It has absolutely no idea which classes will inherit from it later.</p>
+<pre><code class="language-cpp">class Base {
+public:
+    void callDerived() {
+        // ERROR: Base doesn't know about Derived
+        // derivedFunction();  // Won't compile!
+    }
+};
+
+class Derived : public Base {
+public:
+    void derivedFunction() {
+        std::cout &lt;&lt; "Derived function called\n";
+    }
+};
+</code></pre>
+<h3 id="the-access-problem"><a class="header" href="#the-access-problem">The “Access” Problem</a></h3>
+<p>If you have a <code>Base</code> object or pointer, you cannot access functions that only exist in <code>Derived</code>:</p>
+<pre><code class="language-cpp">int main() {
+    Derived d;
+    Base* ptr = &amp;d;
+    
+    // ptr-&gt;derivedFunction();  // ERROR: Base doesn't know this function
+}
+</code></pre>
+<p>In standard OOP, to allow the Base class to “call” a derived function, you must use <strong>Virtual Functions</strong>:</p>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void process() = 0;  // Pure virtual
+};
+
+class Derived : public Base {
+public:
+    void process() override {
+        std::cout &lt;&lt; "Processing in Derived\n";
+    }
+};
+
+int main() {
+    Base* ptr = new Derived();
+    ptr-&gt;process();  // Works! Calls Derived::process()
+    delete ptr;
+}
+</code></pre>
+<p>This function dispatch at runtime is <strong>dynamic polymorphism</strong>.
+Its really neat feature and very usefull.
+But in performance critical system it can be an overhead as well.
+How ?</p>
+<h3 id="the-cost-of-virtual-functions"><a class="header" href="#the-cost-of-virtual-functions">The Cost of Virtual Functions</a></h3>
+<p>However, virtual functions come with a “hidden” cost:</p>
+<ol>
+<li><strong>V-Table Lookups:</strong> The program must look up the correct function at runtime through a virtual table (vtable).</li>
+<li><strong>Inlining Failure:</strong> Compilers often cannot optimize or “inline” virtual calls, making them slower.</li>
+<li><strong>Memory Overhead:</strong> Each object with virtual functions carries a hidden pointer to the vtable (typically 8 bytes on 64-bit systems).</li>
+</ol>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void foo() { }
+};
+
+// Behind the scenes, compiler generates something like:
+// - Global vtable for Base
+// - Each Base object contains a hidden vptr (pointer to vtable)
+// - Function calls: obj-&gt;vptr-&gt;vtable[index]()
+</code></pre>
+<p><strong>Performance Impact:</strong></p>
+<ul>
+<li>Direct call: ~1-2 CPU cycles</li>
+<li>Virtual call: ~5-10 CPU cycles (vtable lookup + indirect jump)</li>
+<li>Lost inlining opportunities mean further optimizations are blocked</li>
+</ul>
+<p>Let’s revisit what is our goal here:</p>
+<ul>
+<li><strong>Derived class objects can invoke base class functions</strong></li>
+<li><strong>Base class functions need to call derived class methods</strong> (without virtuals) (How ?)</li>
+</ul>
+<p><strong>Question:</strong> How can we make the base class function (invoked using derive class object) able to call derived class methods ?</p>
+<p><strong>Answer:</strong> The base class function needs to have <strong>knowledge of the exact derived class type at compile time</strong>.</p>
+<p>If we can achieve that, we get <strong>static polymorphism</strong> – polymorphic behavior resolved at compile time with zero runtime overhead!</p>
+<h3 id="what-about-templates--can-we-use-it-for-to-solve-this-problem-"><a class="header" href="#what-about-templates--can-we-use-it-for-to-solve-this-problem-">What about Templates ? Can we use it for to solve this problem ?</a></h3>
+<p>What if we create a base class that <strong>takes the derived class type as its template parameter</strong>?</p>
+<p>This way the Base class has idea about the exact type of the Derived class at compile time and our problem solved.</p>
+<p>This is exactly what <strong>CRTP (Curiously Recurring Template Pattern)</strong> is!</p>
+<hr>
+<h2 id="what-is-crtp"><a class="header" href="#what-is-crtp">What is CRTP?</a></h2>
+<p>CRTP is a pattern that achieves <strong>static polymorphism</strong> by passing the type of a derived class to a base class. In the Curiously Recurring Template Pattern, a class (let’s call it <code>Derived</code>) inherits from a class template (let’s call it <code>Base</code>) that has been specialized specifically with <code>Derived</code> as its template argument. This enables the base class to have knowledge of the derived class type at compile time, eliminating the runtime overhead of virtual function calls while maintaining polymorphic behavior.</p>
+<pre><code class="language-cpp">// Step 1: Define a template base class that takes a type T
+template&lt;typename T&gt;
+class Base {
+    // Base is a template - T will be the derived class type
+};
+
+// Step 2: Derived class inherits from Base, passing its own type as T
+class Derived : public Base&lt;Derived&gt; {
+    //                      ^^^^^^^^
+    // Derived passes itself as the template argument!
+};
+</code></pre>
+<p>This creates a <strong>curious recursive relationship</strong> where:</p>
+<ol>
+<li><code>Derived</code> inherits from <code>Base&lt;Derived&gt;</code></li>
+<li>Inside <code>Base</code>, the template parameter <code>T</code> is actually <code>Derived</code></li>
+<li><code>Base&lt;Derived&gt;</code> knows the exact type <code>Derived</code> at compile time</li>
+<li><code>Base&lt;Derived&gt;</code> can call <code>Derived</code>’s methods using <code>static_cast&lt;T*&gt;(this)</code></li>
+</ol>
+<pre><code>                     Base&lt;T&gt;
+                  (Template Class)
+                        △
+                        │ T = Derived
+                        │
+                     Derived
+              (Inherits from Base&lt;Derived&gt;)
+                        │
+                        ├─→ static_cast&lt;Derived*&gt;(this)
+                        │
+                   Compile-time
+                  Polymorphism
+                  (Zero overhead)
+</code></pre>
+<h3 id="the-magic-is-compile-time-downcasting"><a class="header" href="#the-magic-is-compile-time-downcasting">The Magic is Compile-Time Downcasting</a></h3>
+<pre><code class="language-cpp">// Base class template - T will be the derived class type
+template&lt;typename T&gt;
+class Base {
+public:
+    void interface() {
+        // Cast 'this' to T* (which is Derived*) at compile time
+        static_cast&lt;T*&gt;(this)-&gt;implementation();
+    }
+};
+
+// Derived inherits from Base&lt;Derived&gt;
+// So inside Base, T is Derived
+class Derived : public Base&lt;Derived&gt; {
+public:
+    void implementation() {
+        std::cout &lt;&lt; "Derived implementation called!\n";
+    }
+};
+
+int main() {
+    Derived d;
+    d.interface();  // Base::interface() calls Derived::implementation()
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Derived implementation called!
+</code></pre>
+<p><strong>What happened?</strong></p>
+<ol>
+<li>We call <code>d.interface()</code> which is defined in <code>Base&lt;Derived&gt;</code></li>
+<li>Inside <code>Base</code>, the template parameter <code>T</code> is <code>Derived</code></li>
+<li>We do <code>static_cast&lt;T*&gt;(this)</code> which becomes <code>static_cast&lt;Derived*&gt;(this)</code></li>
+<li>This cast is resolved at <strong>compile time</strong> (zero runtime cost!)</li>
+<li>We call <code>implementation()</code> on the derived class directly</li>
+<li>Compiler can <strong>inline</strong> the entire call chain for maximum performance</li>
+</ol>
+<hr>
+<h2 id="basic-crtp-implementation-example-template-method-pattern"><a class="header" href="#basic-crtp-implementation-example-template-method-pattern">Basic CRTP Implementation Example: Template Method Pattern</a></h2>
+<p>The Template Method Pattern is a behavioral design pattern where the base class defines the skeleton of an algorithm, and derived classes provide specific implementations for certain steps. While this pattern can be achieved using dynamic polymorphism with virtual functions, CRTP offers a compile-time alternative with zero runtime overhead.
+Lets look at both.</p>
+<h3 id="comparison-virtual-functions-vs-crtp"><a class="header" href="#comparison-virtual-functions-vs-crtp">Comparison: Virtual Functions vs CRTP</a></h3>
+<p>Let’s first look at the traditional approach using dynamic polymorphism, then explore how CRTP implements the same pattern.</p>
+<h3 id="approach-1-virtual-functions-dynamic-polymorphism"><a class="header" href="#approach-1-virtual-functions-dynamic-polymorphism">Approach 1: Virtual Functions (Dynamic Polymorphism)</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+#include &lt;vector&gt;
+
+// Abstract base class with virtual functions
+class DataProcessor {
+public:
+    // The template method - defines the algorithm structure
+    void process() {
+        read();
+        processImpl();  // Virtual dispatch
+        write();
+    }
+    
+    virtual ~DataProcessor() = default;
+    
+private:
+    void read() {
+        std::cout &lt;&lt; "[DataProcessor] Reading data...\n";
+    }
+    
+    void write() {
+        std::cout &lt;&lt; "[DataProcessor] Writing results...\n";
+    }
+    
+protected:
+    virtual void processImpl() = 0;  // Pure virtual - customization point
+};
+
+// Concrete implementation for CSV data
+class CSVProcessor : public DataProcessor {
+protected:
+    void processImpl() override {
+        std::cout &lt;&lt; "[CSVProcessor] Processing CSV format\n";
+        std::cout &lt;&lt; "  - Parsing comma-separated values\n";
+    }
+};
+
+// Concrete implementation for JSON data
+class JSONProcessor : public DataProcessor {
+protected:
+    void processImpl() override {
+        std::cout &lt;&lt; "[JSONProcessor] Processing JSON format\n";
+        std::cout &lt;&lt; "  - Parsing JSON structure\n";
+    }
+};
+
+int main() {
+    // Can store different types via base class pointers
+    std::vector&lt;std::unique_ptr&lt;DataProcessor&gt;&gt; processors;
+    processors.push_back(std::make_unique&lt;CSVProcessor&gt;());
+    processors.push_back(std::make_unique&lt;JSONProcessor&gt;());
+    
+    for (auto&amp; proc : processors) {
+        proc-&gt;process();  // Virtual dispatch at runtime
+        std::cout &lt;&lt; "\n";
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>[DataProcessor] Reading data...
+[CSVProcessor] Processing CSV format
+  - Parsing comma-separated values
+[DataProcessor] Writing results...
+
+[DataProcessor] Reading data...
+[JSONProcessor] Processing JSON format
+  - Parsing JSON structure
+[DataProcessor] Writing results...
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Uses virtual function for runtime dispatch</li>
+<li>Can store heterogeneous types in containers</li>
+<li>Runtime overhead from vtable lookup</li>
+<li>More flexible for dynamic scenarios</li>
+</ul>
+<h3 id="approach-2-crtp-static-polymorphism"><a class="header" href="#approach-2-crtp-static-polymorphism">Approach 2: CRTP (Static Polymorphism)</a></h3>
+<p>Now let’s implement the same pattern using CRTP. The key difference is that the base class knows the derived type at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// CRTP Base class that defines the template method pattern
+template&lt;typename Derived&gt;
+class DataProcessor {
+public:
+    // The template method - defines the algorithm structure
+    void process() {
+        read();
+        static_cast&lt;Derived*&gt;(this)-&gt;processImpl();  // Compile-time dispatch
+        write();
+    }
+    
+private:
+    void read() {
+        std::cout &lt;&lt; "[DataProcessor] Reading data...\n";
+    }
+    
+    void write() {
+        std::cout &lt;&lt; "[DataProcessor] Writing results...\n";
+    }
+};
+
+// Concrete implementation for CSV data
+class CSVProcessor : public DataProcessor&lt;CSVProcessor&gt; {
+public:
+    void processImpl() {
+        std::cout &lt;&lt; "[CSVProcessor] Processing CSV format\n";
+        std::cout &lt;&lt; "  - Parsing comma-separated values\n";
+    }
+};
+
+// Concrete implementation for JSON data
+class JSONProcessor : public DataProcessor&lt;JSONProcessor&gt; {
+public:
+    void processImpl() {
+        std::cout &lt;&lt; "[JSONProcessor] Processing JSON format\n";
+        std::cout &lt;&lt; "  - Parsing JSON structure\n";
+    }
+};
+
+// Concrete implementation for XML data
+class XMLProcessor : public DataProcessor&lt;XMLProcessor&gt; {
+public:
+    void processImpl() {
+        std::cout &lt;&lt; "[XMLProcessor] Processing XML format\n";
+        std::cout &lt;&lt; "  - Parsing XML tags\n";
+    }
+};
+
+int main() {
+    CSVProcessor csv;
+    csv.process();
+    
+    std::cout &lt;&lt; "\n";
+    
+    JSONProcessor json;
+    json.process();
+    
+    std::cout &lt;&lt; "\n";
+    
+    XMLProcessor xml;
+    xml.process();
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>[DataProcessor] Reading data...
+[CSVProcessor] Processing CSV format
+  - Parsing comma-separated values
+[DataProcessor] Writing results...
+
+[DataProcessor] Reading data...
+[JSONProcessor] Processing JSON format
+  - Parsing JSON structure
+[DataProcessor] Writing results...
+
+[DataProcessor] Reading data...
+[XMLProcessor] Processing XML format
+  - Parsing XML tags
+[DataProcessor] Writing results...
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>No virtual functions required</li>
+<li>Compile-time type resolution via <code>static_cast</code></li>
+<li>Cannot store different types in a single container (trade-off)</li>
+<li>Zero runtime overhead for polymorphic dispatch</li>
+<li>Compiler can fully inline the call chain</li>
+</ul>
+<h3 id="key-differences"><a class="header" href="#key-differences">Key Differences</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Virtual Functions</th><th>CRTP</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Dispatch Type</strong></td><td>Runtime (dynamic)</td><td>Compile-time (static)</td></tr>
+<tr><td><strong>Polymorphic Containers</strong></td><td>Yes</td><td>No</td></tr>
+<tr><td><strong>Virtual Function Overhead</strong></td><td>Yes (~5-10 CPU cycles)</td><td>None</td></tr>
+<tr><td><strong>Inlining</strong></td><td>Limited</td><td>Full inlining possible</td></tr>
+<tr><td><strong>Type Flexibility</strong></td><td>High (runtime types)</td><td>Low (compile-time types)</td></tr>
+<tr><td><strong>Memory Overhead</strong></td><td>vtable pointer per object</td><td>None</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Virtual Functions - Runtime Dispatch:</strong></p>
+<pre><code>    Base class (with virtual methods)
+           △
+           │ Virtual call
+           │ (Runtime decision)
+           │
+    ┌──────┴──────┐
+    │             │
+Derived1      Derived2
+    │             │
+    └──────┬──────┘
+           │ vtable lookup at runtime
+           │ Indirect jump (5-10 cycles)
+           ▼
+     Actual Method
+</code></pre>
+<p><strong>CRTP - Compile-time Dispatch:</strong></p>
+<pre><code>    Base&lt;T&gt; (Template class)
+           △
+           │ T = Concrete type
+           │ (Known at compile time)
+           │
+    ┌──────┴──────┐
+    │             │
+  Base&lt;      Base&lt;
+ Derived1&gt;  Derived2&gt;
+    │             │
+    └──────┬──────┘
+           │ static_cast&lt;T*&gt;(this)
+           │ Resolved at compile time
+           │ Full inlining possible
+           ▼
+     Actual Method
+   (Zero overhead)
+</code></pre>
+<h3 id="when-to-use-each"><a class="header" href="#when-to-use-each">When to Use Each</a></h3>
+<p><strong>Use Virtual Functions when:</strong></p>
+<ul>
+<li>You need to store different derived types in containers</li>
+<li>Types are determined at runtime</li>
+<li>Flexibility is more important than peak performance</li>
+<li>You’re building extensible plugin systems</li>
+</ul>
+<p><strong>Use CRTP when:</strong></p>
+<ul>
+<li>You know all types at compile time</li>
+<li>Performance-critical code needs zero overhead</li>
+<li>You don’t need heterogeneous containers</li>
+<li>You want compiler optimization benefits</li>
+</ul>
+<hr>
+<h2 id="performance-comparison-crtp-vs-virtual-functions"><a class="header" href="#performance-comparison-crtp-vs-virtual-functions">Performance Comparison: CRTP vs Virtual Functions</a></h2>
+<p>One of the key advantages of CRTP is its superior performance characteristics compared to virtual functions. Let’s examine this with concrete benchmarks.</p>
+<h3 id="benchmark-setup"><a class="header" href="#benchmark-setup">Benchmark Setup</a></h3>
+<p>The following benchmark compares the performance of CRTP against traditional virtual functions. The test scenario involves:</p>
+<ul>
+<li><strong>3,000 shapes</strong> (1,000 circles, 1,000 rectangles, 1,000 triangles)</li>
+<li><strong>10,000 iterations</strong> performing calculations</li>
+<li><strong>60,000,000 total function calls</strong> (<code>area()</code> and <code>perimeter()</code> on each shape)</li>
+<li><strong>5 runs</strong> for statistical accuracy</li>
+</ul>
+<p>The code implements both approaches identically in terms of logic, with the only difference being the polymorphism mechanism: virtual functions vs. CRTP.</p>
+<h3 id="benchmark-code"><a class="header" href="#benchmark-code">Benchmark Code</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;chrono&gt;
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &lt;cmath&gt;
+#include &lt;iomanip&gt;
+
+// ============================================================================
+// APPROACH 1: Virtual Functions (Polymorphism with Runtime Dispatch)
+// ============================================================================
+
+class ShapeVirtual {
+public:
+    virtual ~ShapeVirtual() = default;
+    virtual double area() const = 0;
+    virtual double perimeter() const = 0;
+};
+
+class CircleVirtual : public ShapeVirtual {
+private:
+    double radius_;
+public:
+    CircleVirtual(double r) : radius_(r) {}
+    double area() const override { 
+        return 3.14159 * radius_ * radius_; 
+    }
+    double perimeter() const override { 
+        return 2 * 3.14159 * radius_; 
+    }
+};
+
+class RectangleVirtual : public ShapeVirtual {
+private:
+    double width_, height_;
+public:
+    RectangleVirtual(double w, double h) : width_(w), height_(h) {}
+    double area() const override { 
+        return width_ * height_; 
+    }
+    double perimeter() const override { 
+        return 2 * (width_ + height_); 
+    }
+};
+
+class TriangleVirtual : public ShapeVirtual {
+private:
+    double a_, b_, c_;
+public:
+    TriangleVirtual(double a, double b, double c) : a_(a), b_(b), c_(c) {}
+    double area() const override {
+        double s = (a_ + b_ + c_) / 2;
+        return std::sqrt(s * (s - a_) * (s - b_) * (s - c_));
+    }
+    double perimeter() const override { 
+        return a_ + b_ + c_; 
+    }
+};
+
+// ============================================================================
+// APPROACH 2: CRTP (Curiously Recurring Template Pattern)
+// ============================================================================
+
+template &lt;typename Derived&gt;
+class ShapeCRTP {
+public:
+    double area() const {
+        return static_cast&lt;const Derived*&gt;(this)-&gt;area_impl();
+    }
+    
+    double perimeter() const {
+        return static_cast&lt;const Derived*&gt;(this)-&gt;perimeter_impl();
+    }
+    
+    ~ShapeCRTP() = default;
+};
+
+class CircleCRTP : public ShapeCRTP&lt;CircleCRTP&gt; {
+private:
+    double radius_;
+public:
+    CircleCRTP(double r) : radius_(r) {}
+    
+    double area_impl() const { 
+        return 3.14159 * radius_ * radius_; 
+    }
+    
+    double perimeter_impl() const { 
+        return 2 * 3.14159 * radius_; 
+    }
+};
+
+class RectangleCRTP : public ShapeCRTP&lt;RectangleCRTP&gt; {
+private:
+    double width_, height_;
+public:
+    RectangleCRTP(double w, double h) : width_(w), height_(h) {}
+    
+    double area_impl() const { 
+        return width_ * height_; 
+    }
+    
+    double perimeter_impl() const { 
+        return 2 * (width_ + height_); 
+    }
+};
+
+class TriangleCRTP : public ShapeCRTP&lt;TriangleCRTP&gt; {
+private:
+    double a_, b_, c_;
+public:
+    TriangleCRTP(double a, double b, double c) : a_(a), b_(b), c_(c) {}
+    
+    double area_impl() const {
+        double s = (a_ + b_ + c_) / 2;
+        return std::sqrt(s * (s - a_) * (s - b_) * (s - c_));
+    }
+    
+    double perimeter_impl() const { 
+        return a_ + b_ + c_; 
+    }
+};
+
+// ============================================================================
+// BENCHMARK FUNCTIONS
+// ============================================================================
+
+long long benchmarkVirtual() {
+    std::vector&lt;std::unique_ptr&lt;ShapeVirtual&gt;&gt; shapes;
+    
+    // Create mixed shapes
+    for (int i = 0; i &lt; 1000; ++i) {
+        shapes.push_back(std::make_unique&lt;CircleVirtual&gt;(5.0 + i*0.001));
+        shapes.push_back(std::make_unique&lt;RectangleVirtual&gt;(4.0 + i*0.001, 6.0));
+        shapes.push_back(std::make_unique&lt;TriangleVirtual&gt;(3.0, 4.0, 5.0 + i*0.001));
+    }
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    volatile double totalArea = 0;
+    volatile double totalPerimeter = 0;
+    
+    for (int iteration = 0; iteration &lt; 10000; ++iteration) {
+        double scale = 1.0 + iteration * 0.0001;
+        for (const auto&amp; shape : shapes) {
+            totalArea += shape-&gt;area() * scale;
+            totalPerimeter += shape-&gt;perimeter() * scale;
+        }
+    }
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - start).count();
+}
+
+long long benchmarkCRTP() {
+    std::vector&lt;CircleCRTP&gt; circles; circles.reserve(1000);
+    std::vector&lt;RectangleCRTP&gt; rects; rects.reserve(1000);
+    std::vector&lt;TriangleCRTP&gt; tris; tris.reserve(1000);
+
+    for (int i = 0; i &lt; 1000; ++i) {
+        circles.emplace_back(5.0 + i*0.001);
+        rects.emplace_back(4.0 + i*0.001, 6.0);
+        tris.emplace_back(3.0, 4.0, 5.0 + i*0.001);
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+    volatile double totalArea = 0, totalPerimeter = 0;
+
+    for (int iteration = 0; iteration &lt; 10000; ++iteration) {
+        double scale = 1.0 + iteration * 0.0001;
+
+        for (const auto&amp; c : circles) {
+            totalArea += c.area() * scale;
+            totalPerimeter += c.perimeter() * scale;
+        }
+        for (const auto&amp; r : rects) {
+            totalArea += r.area() * scale;
+            totalPerimeter += r.perimeter() * scale;
+        }
+        for (const auto&amp; t : tris) {
+            totalArea += t.area() * scale;
+            totalPerimeter += t.perimeter() * scale;
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - start).count();
+}
+
+// ============================================================================
+// MAIN - RUN BENCHMARKS
+// ============================================================================
+
+int main() {
+    std::cout &lt;&lt; "\n";
+    std::cout &lt;&lt; "╔════════════════════════════════════════════════════════╗\n";
+    std::cout &lt;&lt; "║     CRTP vs Virtual Functions - Performance Benchmark  ║\n";
+    std::cout &lt;&lt; "╚════════════════════════════════════════════════════════╝\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Scenario: 3000 shapes (1000 of each type), 10000 iterations\n";
+    std::cout &lt;&lt; "Each iteration calls area() and perimeter() on all shapes\n";
+    std::cout &lt;&lt; "Total function calls: 3000 × 2 × 10000 = 60,000,000 calls\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Running benchmarks 5 times each for accuracy...\n\n";
+    
+    long long virtualTotal = 0;
+    long long crptTotal = 0;
+    
+    for (int run = 1; run &lt;= 5; ++run) {
+        long long vTime = benchmarkVirtual();
+        long long cTime = benchmarkCRTP();
+        
+        virtualTotal += vTime;
+        crptTotal += cTime;
+        
+        std::cout &lt;&lt; "Run " &lt;&lt; run &lt;&lt; ": Virtual=" &lt;&lt; std::setw(3) &lt;&lt; vTime 
+                  &lt;&lt; "ms | CRTP=" &lt;&lt; std::setw(3) &lt;&lt; cTime &lt;&lt; "ms\n";
+    }
+    
+    double avgVirtual = virtualTotal / 5.0;
+    double avgCRTP = crptTotal / 5.0;
+    double improvement = ((avgVirtual - avgCRTP) / avgVirtual) * 100.0;
+    double speedup = avgVirtual / avgCRTP;
+    
+    std::cout &lt;&lt; "\n";
+    std::cout &lt;&lt; "╔════════════════════════════════════════════════════════╗\n";
+    std::cout &lt;&lt; "║                    RESULTS SUMMARY                     ║\n";
+    std::cout &lt;&lt; "╚════════════════════════════════════════════════════════╝\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Virtual Functions (Average):  " &lt;&lt; std::fixed &lt;&lt; std::setprecision(1) 
+              &lt;&lt; avgVirtual &lt;&lt; " ms\n";
+    std::cout &lt;&lt; "CRTP (Average):               " &lt;&lt; avgCRTP &lt;&lt; " ms\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Performance Improvement:      " &lt;&lt; improvement &lt;&lt; "%\n";
+    std::cout &lt;&lt; "Speedup Factor:               " &lt;&lt; std::setprecision(2) &lt;&lt; speedup &lt;&lt; "x faster\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "═══════════════════════════════════════════════════════════\n\n";
+    
+    return 0;
+}
+</code></pre>
+<h3 id="benchmark-results"><a class="header" href="#benchmark-results">Benchmark Results</a></h3>
+<pre><code>╔════════════════════════════════════════════════════════╗
+║     CRTP vs Virtual Functions - Performance Benchmark  ║
+╚════════════════════════════════════════════════════════╝
+
+Scenario: 3000 shapes (1000 of each type), 10000 iterations
+Each iteration calls area() and perimeter() on all shapes
+Total function calls: 3000 × 2 × 10000 = 60,000,000 calls
+
+Running benchmarks 5 times each for accuracy...
+
+Run 1: Virtual= 55ms | CRTP= 29ms
+Run 2: Virtual= 35ms | CRTP= 25ms
+Run 3: Virtual= 34ms | CRTP= 25ms
+Run 4: Virtual= 34ms | CRTP= 25ms
+Run 5: Virtual= 35ms | CRTP= 25ms
+
+╔════════════════════════════════════════════════════════╗
+║                    RESULTS SUMMARY                     ║
+╚════════════════════════════════════════════════════════╝
+
+Virtual Functions (Average):  38.6 ms
+CRTP (Average):               25.8 ms
+
+Performance Improvement:      33.2%
+Speedup Factor:               1.50x faster
+
+═══════════════════════════════════════════════════════════
+</code></pre>
+<h3 id="analysis"><a class="header" href="#analysis">Analysis</a></h3>
+<p><strong>Important Note:</strong> Benchmark results are highly dependent on the compiler, optimization flags, CPU architecture, and runtime environment. This benchmark was compiled with:</p>
+<pre><code>g++ -O3 -std=c++17 benchmark.cpp -o benchmark
+</code></pre>
+<p>These results are provided to showcase that CRTP can offer significant performance advantages in certain scenarios, particularly with modern optimizers and aggressive optimization levels like <code>-O3</code>. Your actual results may vary significantly depending on your compiler version, optimization flags, CPU architecture, and runtime environment. It’s always recommended to profile your own code with your specific toolchain and hardware.</p>
+<p>The benchmark results clearly demonstrate CRTP’s performance advantage in this scenario:</p>
+<p><strong>33.2% Performance Improvement</strong> over virtual functions on 60 million function calls. The CRTP approach achieves a <strong>1.50x speedup</strong>, completing the same workload in approximately two-thirds the time of the virtual function approach.</p>
+<p>This significant performance gain stems from several factors:</p>
+<ol>
+<li>
+<p><strong>No vtable lookups:</strong> CRTP eliminates runtime table lookups entirely, replacing them with compile-time type resolution.</p>
+</li>
+<li>
+<p><strong>Full inlining:</strong> The compiler can aggressively inline CRTP calls since the target function is known at compile time. Virtual function calls are typically not inlined due to the indirection involved.</p>
+</li>
+<li>
+<p><strong>Better cache locality:</strong> Without vtable pointers, objects have smaller memory footprints and better cache behavior.</p>
+</li>
+<li>
+<p><strong>Optimizer friendly:</strong> The compiler has complete visibility into the call chain and can apply more aggressive optimizations.</p>
+</li>
+</ol>
+<p><strong>Performance Comparison Visualization:</strong></p>
+<pre><code>    Virtual Functions  │  CRTP
+    ─────────────────────────────
+    38.6 ms (100%)     │  25.8 ms (67%)
+    ██████████         │  ███████
+    
+    Slower ←────────────┼────────→ Faster
+                       │
+              33.2% improvement
+              1.50x speedup
+</code></pre>
+<p>The results show that while the theoretical overhead per virtual call is 5-10 CPU cycles, in real-world scenarios with modern optimizers, the actual impact can be even more substantial when considering inlining opportunities and cache effects.</p>
+<hr>
+<h2 id="crtp-limitations"><a class="header" href="#crtp-limitations">CRTP Limitations</a></h2>
+<p>One of the most significant limitations of CRTP is its inability to store different derived types in the same container. This stems from a fundamental constraint: each specialization of a CRTP base template is a completely different type. For example, <code>Shape&lt;Circle&gt;</code> and <code>Shape&lt;Square&gt;</code> are entirely different types with no common base class, making it impossible to store both in a single container through polymorphic pointers or references.</p>
+<p>Additionally, CRTP requires all types to be known at compile time, limiting its use in scenarios where types are determined dynamically at runtime, such as plugin systems or highly extensible architectures.</p>
+<p>These limitations will be explored in detail in a separate chapter on CRTP limitations and hybrid approaches that combine CRTP with dynamic polymorphism for maximum flexibility and performance.</p>
+<hr>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>This tutorial covers the fundamentals of CRTP and how it enables static polymorphism with concrete performance advantages.</p>
+<h3 id="real-world-projects-using-crtp"><a class="header" href="#real-world-projects-using-crtp">Real-World Projects Using CRTP</a></h3>
+<p>Several high-performance and widely-used open-source projects leverage CRTP extensively:</p>
+<p><strong>ClickHouse (Column-oriented Database)</strong></p>
+<ul>
+<li>One of the fastest open-source analytical databases</li>
+<li>Uses CRTP extensively for query optimization and column processing</li>
+<li>Achieves extreme performance through compile-time specialization</li>
+<li>CRTP enables efficient data type handling without virtual function overhead</li>
+</ul>
+<p><strong>Eigen (Linear Algebra Library)</strong></p>
+<ul>
+<li>Industry-standard C++ library for matrices and vectors</li>
+<li>Uses expression templates with CRTP for lazy evaluation</li>
+<li>Avoids temporary object creation in complex mathematical expressions</li>
+<li>Powers machine learning frameworks like TensorFlow</li>
+</ul>
+<p><strong>High-Frequency Trading (HFT) Systems</strong></p>
+<ul>
+<li>Critical latency-sensitive applications in financial markets</li>
+<li>CRTP is a core pattern in order routing and risk management systems</li>
+<li>Eliminates vtable overhead for microsecond-critical operations</li>
+<li>Used in systems that process millions of orders per second</li>
+</ul>
+<p><strong>Boost C++ Libraries</strong></p>
+<ul>
+<li>Various Boost libraries use CRTP for type-safe, zero-overhead abstractions</li>
+<li>Examples include Boost.Asio (networking) and Boost.Range</li>
+</ul>
+<p><strong>Apache Arrow</strong></p>
+<ul>
+<li>Data processing framework used in big data ecosystems</li>
+<li>Uses CRTP for efficient memory layout and data type handling</li>
+</ul>
+<p>These projects demonstrate that CRTP is not just an academic pattern but a proven technique used in the most demanding, performance-critical applications in the industry.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="shared_ptr_weak_ptr.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="shared_ptr_weak_ptr.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

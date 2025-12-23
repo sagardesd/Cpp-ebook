@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-529bd2b2.js";
+            window.path_to_searchindex_js = "searchindex-ff1866a2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-3b7d879a.js"></script>
+        <script src="toc-1afcbef9.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -27206,6 +27206,20 @@ class Derived : public Base&lt;Derived&gt; {
 <li><code>Base&lt;Derived&gt;</code> knows the exact type <code>Derived</code> at compile time</li>
 <li><code>Base&lt;Derived&gt;</code> can call <code>Derived</code>’s methods using <code>static_cast&lt;T*&gt;(this)</code></li>
 </ol>
+<pre><code>                     Base&lt;T&gt;
+                  (Template Class)
+                        △
+                        │ T = Derived
+                        │
+                     Derived
+              (Inherits from Base&lt;Derived&gt;)
+                        │
+                        ├─→ static_cast&lt;Derived*&gt;(this)
+                        │
+                   Compile-time
+                  Polymorphism
+                  (Zero overhead)
+</code></pre>
 <h3 id="the-magic-is-compile-time-downcasting"><a class="header" href="#the-magic-is-compile-time-downcasting">The Magic is Compile-Time Downcasting</a></h3>
 <pre><code class="language-cpp">// Base class template - T will be the derived class type
 template&lt;typename T&gt;
@@ -27434,6 +27448,41 @@ int main() {
 </tbody>
 </table>
 </div>
+<p><strong>Virtual Functions - Runtime Dispatch:</strong></p>
+<pre><code>    Base class (with virtual methods)
+           △
+           │ Virtual call
+           │ (Runtime decision)
+           │
+    ┌──────┴──────┐
+    │             │
+Derived1      Derived2
+    │             │
+    └──────┬──────┘
+           │ vtable lookup at runtime
+           │ Indirect jump (5-10 cycles)
+           ▼
+     Actual Method
+</code></pre>
+<p><strong>CRTP - Compile-time Dispatch:</strong></p>
+<pre><code>    Base&lt;T&gt; (Template class)
+           △
+           │ T = Concrete type
+           │ (Known at compile time)
+           │
+    ┌──────┴──────┐
+    │             │
+  Base&lt;      Base&lt;
+ Derived1&gt;  Derived2&gt;
+    │             │
+    └──────┬──────┘
+           │ static_cast&lt;T*&gt;(this)
+           │ Resolved at compile time
+           │ Full inlining possible
+           ▼
+     Actual Method
+   (Zero overhead)
+</code></pre>
 <h3 id="when-to-use-each"><a class="header" href="#when-to-use-each">When to Use Each</a></h3>
 <p><strong>Use Virtual Functions when:</strong></p>
 <ul>
@@ -27450,187 +27499,334 @@ int main() {
 <li>You want compiler optimization benefits</li>
 </ul>
 <hr>
-<h2 id="crtp-limitations-and-hybrid-approach"><a class="header" href="#crtp-limitations-and-hybrid-approach">CRTP Limitations and Hybrid Approach</a></h2>
-<h3 id="the-container-problem-with-crtp"><a class="header" href="#the-container-problem-with-crtp">The Container Problem with CRTP</a></h3>
-<p>One of the most significant limitations of CRTP is its inability to store different derived types in the same container. This stems from a fundamental constraint: each specialization of a CRTP base template is a completely different type.</p>
-<pre><code class="language-cpp">template&lt;typename T&gt;
-class Shape {
-public:
-    void draw() {
-        static_cast&lt;T*&gt;(this)-&gt;drawImpl();
-    }
-};
-
-class Circle : public Shape&lt;Circle&gt; {
-public:
-    void drawImpl() { std::cout &lt;&lt; "Drawing Circle\n"; }
-};
-
-class Square : public Shape&lt;Square&gt; {
-public:
-    void drawImpl() { std::cout &lt;&lt; "Drawing Square\n"; }
-};
-
-int main() {
-    std::vector&lt;Shape&lt;Circle&gt;&gt; shapes;  // Can only store Circles
-    
-    // This doesn't work:
-    // std::vector&lt;Shape&lt;??&gt;&gt; shapes;  // What type goes here?
-    // shapes.push_back(Circle());  // Type mismatch
-    // shapes.push_back(Square());  // Different type!
-}
-</code></pre>
-<p>The problem is that <code>Shape&lt;Circle&gt;</code> and <code>Shape&lt;Square&gt;</code> are entirely different types. There’s no common base class between them, making it impossible to store both in a single container. CRTP achieves zero-overhead abstraction at the cost of losing the flexibility to work with different derived types polymorphically through a single pointer or reference.</p>
-<h3 id="dynamic-polymorphism-the-container-advantage"><a class="header" href="#dynamic-polymorphism-the-container-advantage">Dynamic Polymorphism: The Container Advantage</a></h3>
-<p>Dynamic polymorphism with virtual functions solves this problem elegantly:</p>
-<pre><code class="language-cpp">class Shape {  // Non-template base
-public:
-    virtual void draw() = 0;
-    virtual ~Shape() = default;
-};
-
-class Circle : public Shape {
-public:
-    void draw() override { std::cout &lt;&lt; "Drawing Circle\n"; }
-};
-
-class Square : public Shape {
-public:
-    void draw() override { std::cout &lt;&lt; "Drawing Square\n"; }
-};
-
-int main() {
-    // Works perfectly! Can store any Shape derived class
-    std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt; shapes;
-    shapes.push_back(std::make_unique&lt;Circle&gt;());
-    shapes.push_back(std::make_unique&lt;Square&gt;());
-    shapes.push_back(std::make_unique&lt;Circle&gt;());
-    
-    for (auto&amp; shape : shapes) {
-        shape-&gt;draw();  // Calls correct derived implementation
-    }
-}
-</code></pre>
-<p><strong>Output:</strong></p>
-<pre><code>Drawing Circle
-Drawing Square
-Drawing Circle
-</code></pre>
-<p>This is the classic trade-off: dynamic polymorphism gives flexibility and runtime behavior variation at the cost of vtable lookups and lost inlining opportunities.</p>
-<h3 id="the-hybrid-approach-best-of-both-worlds"><a class="header" href="#the-hybrid-approach-best-of-both-worlds">The Hybrid Approach: Best of Both Worlds</a></h3>
-<p>The hybrid approach combines CRTP with dynamic polymorphism to gain the benefits of both. The idea is to create a non-template abstract base class that uses virtual functions, while individual implementations use CRTP internally for performance-critical operations.</p>
+<h2 id="performance-comparison-crtp-vs-virtual-functions"><a class="header" href="#performance-comparison-crtp-vs-virtual-functions">Performance Comparison: CRTP vs Virtual Functions</a></h2>
+<p>One of the key advantages of CRTP is its superior performance characteristics compared to virtual functions. Let’s examine this with concrete benchmarks.</p>
+<h3 id="benchmark-setup"><a class="header" href="#benchmark-setup">Benchmark Setup</a></h3>
+<p>The following benchmark compares the performance of CRTP against traditional virtual functions. The test scenario involves:</p>
+<ul>
+<li><strong>3,000 shapes</strong> (1,000 circles, 1,000 rectangles, 1,000 triangles)</li>
+<li><strong>10,000 iterations</strong> performing calculations</li>
+<li><strong>60,000,000 total function calls</strong> (<code>area()</code> and <code>perimeter()</code> on each shape)</li>
+<li><strong>5 runs</strong> for statistical accuracy</li>
+</ul>
+<p>The code implements both approaches identically in terms of logic, with the only difference being the polymorphism mechanism: virtual functions vs. CRTP.</p>
+<h3 id="benchmark-code"><a class="header" href="#benchmark-code">Benchmark Code</a></h3>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;chrono&gt;
 #include &lt;vector&gt;
 #include &lt;memory&gt;
+#include &lt;cmath&gt;
+#include &lt;iomanip&gt;
 
-// Abstract base class using virtual functions
-class Shape {
+// ============================================================================
+// APPROACH 1: Virtual Functions (Polymorphism with Runtime Dispatch)
+// ============================================================================
+
+class ShapeVirtual {
 public:
-    virtual void draw() = 0;
-    virtual ~Shape() = default;
+    virtual ~ShapeVirtual() = default;
+    virtual double area() const = 0;
+    virtual double perimeter() const = 0;
 };
 
-// CRTP base for common functionality
-template&lt;typename Derived&gt;
-class ShapeImpl : public Shape {
-protected:
-    // CRTP allows static polymorphism for internal operations
-    void internalSetup() {
-        static_cast&lt;Derived*&gt;(this)-&gt;setup();
-    }
-    
-    void internalCleanup() {
-        static_cast&lt;Derived*&gt;(this)-&gt;cleanup();
-    }
-};
-
-class Circle : public ShapeImpl&lt;Circle&gt; {
+class CircleVirtual : public ShapeVirtual {
 private:
     double radius_;
-    
-    void setup() {
-        std::cout &lt;&lt; "  [Circle] Initializing radius\n";
-    }
-    
-    void cleanup() {
-        std::cout &lt;&lt; "  [Circle] Cleaning up radius\n";
-    }
-    
-    friend class ShapeImpl&lt;Circle&gt;;
-    
 public:
-    Circle(double r) : radius_(r) { }
-    
-    void draw() override {
-        std::cout &lt;&lt; "Drawing Circle with radius " &lt;&lt; radius_ &lt;&lt; "\n";
-        internalSetup();
-        internalCleanup();
+    CircleVirtual(double r) : radius_(r) {}
+    double area() const override { 
+        return 3.14159 * radius_ * radius_; 
+    }
+    double perimeter() const override { 
+        return 2 * 3.14159 * radius_; 
     }
 };
 
-class Square : public ShapeImpl&lt;Square&gt; {
+class RectangleVirtual : public ShapeVirtual {
 private:
-    double side_;
-    
-    void setup() {
-        std::cout &lt;&lt; "  [Square] Initializing side\n";
-    }
-    
-    void cleanup() {
-        std::cout &lt;&lt; "  [Square] Cleaning up side\n";
-    }
-    
-    friend class ShapeImpl&lt;Square&gt;;
-    
+    double width_, height_;
 public:
-    Square(double s) : side_(s) { }
-    
-    void draw() override {
-        std::cout &lt;&lt; "Drawing Square with side " &lt;&lt; side_ &lt;&lt; "\n";
-        internalSetup();
-        internalCleanup();
+    RectangleVirtual(double w, double h) : width_(w), height_(h) {}
+    double area() const override { 
+        return width_ * height_; 
+    }
+    double perimeter() const override { 
+        return 2 * (width_ + height_); 
     }
 };
+
+class TriangleVirtual : public ShapeVirtual {
+private:
+    double a_, b_, c_;
+public:
+    TriangleVirtual(double a, double b, double c) : a_(a), b_(b), c_(c) {}
+    double area() const override {
+        double s = (a_ + b_ + c_) / 2;
+        return std::sqrt(s * (s - a_) * (s - b_) * (s - c_));
+    }
+    double perimeter() const override { 
+        return a_ + b_ + c_; 
+    }
+};
+
+// ============================================================================
+// APPROACH 2: CRTP (Curiously Recurring Template Pattern)
+// ============================================================================
+
+template &lt;typename Derived&gt;
+class ShapeCRTP {
+public:
+    double area() const {
+        return static_cast&lt;const Derived*&gt;(this)-&gt;area_impl();
+    }
+    
+    double perimeter() const {
+        return static_cast&lt;const Derived*&gt;(this)-&gt;perimeter_impl();
+    }
+    
+    ~ShapeCRTP() = default;
+};
+
+class CircleCRTP : public ShapeCRTP&lt;CircleCRTP&gt; {
+private:
+    double radius_;
+public:
+    CircleCRTP(double r) : radius_(r) {}
+    
+    double area_impl() const { 
+        return 3.14159 * radius_ * radius_; 
+    }
+    
+    double perimeter_impl() const { 
+        return 2 * 3.14159 * radius_; 
+    }
+};
+
+class RectangleCRTP : public ShapeCRTP&lt;RectangleCRTP&gt; {
+private:
+    double width_, height_;
+public:
+    RectangleCRTP(double w, double h) : width_(w), height_(h) {}
+    
+    double area_impl() const { 
+        return width_ * height_; 
+    }
+    
+    double perimeter_impl() const { 
+        return 2 * (width_ + height_); 
+    }
+};
+
+class TriangleCRTP : public ShapeCRTP&lt;TriangleCRTP&gt; {
+private:
+    double a_, b_, c_;
+public:
+    TriangleCRTP(double a, double b, double c) : a_(a), b_(b), c_(c) {}
+    
+    double area_impl() const {
+        double s = (a_ + b_ + c_) / 2;
+        return std::sqrt(s * (s - a_) * (s - b_) * (s - c_));
+    }
+    
+    double perimeter_impl() const { 
+        return a_ + b_ + c_; 
+    }
+};
+
+// ============================================================================
+// BENCHMARK FUNCTIONS
+// ============================================================================
+
+long long benchmarkVirtual() {
+    std::vector&lt;std::unique_ptr&lt;ShapeVirtual&gt;&gt; shapes;
+    
+    // Create mixed shapes
+    for (int i = 0; i &lt; 1000; ++i) {
+        shapes.push_back(std::make_unique&lt;CircleVirtual&gt;(5.0 + i*0.001));
+        shapes.push_back(std::make_unique&lt;RectangleVirtual&gt;(4.0 + i*0.001, 6.0));
+        shapes.push_back(std::make_unique&lt;TriangleVirtual&gt;(3.0, 4.0, 5.0 + i*0.001));
+    }
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    volatile double totalArea = 0;
+    volatile double totalPerimeter = 0;
+    
+    for (int iteration = 0; iteration &lt; 10000; ++iteration) {
+        double scale = 1.0 + iteration * 0.0001;
+        for (const auto&amp; shape : shapes) {
+            totalArea += shape-&gt;area() * scale;
+            totalPerimeter += shape-&gt;perimeter() * scale;
+        }
+    }
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - start).count();
+}
+
+long long benchmarkCRTP() {
+    std::vector&lt;CircleCRTP&gt; circles; circles.reserve(1000);
+    std::vector&lt;RectangleCRTP&gt; rects; rects.reserve(1000);
+    std::vector&lt;TriangleCRTP&gt; tris; tris.reserve(1000);
+
+    for (int i = 0; i &lt; 1000; ++i) {
+        circles.emplace_back(5.0 + i*0.001);
+        rects.emplace_back(4.0 + i*0.001, 6.0);
+        tris.emplace_back(3.0, 4.0, 5.0 + i*0.001);
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+    volatile double totalArea = 0, totalPerimeter = 0;
+
+    for (int iteration = 0; iteration &lt; 10000; ++iteration) {
+        double scale = 1.0 + iteration * 0.0001;
+
+        for (const auto&amp; c : circles) {
+            totalArea += c.area() * scale;
+            totalPerimeter += c.perimeter() * scale;
+        }
+        for (const auto&amp; r : rects) {
+            totalArea += r.area() * scale;
+            totalPerimeter += r.perimeter() * scale;
+        }
+        for (const auto&amp; t : tris) {
+            totalArea += t.area() * scale;
+            totalPerimeter += t.perimeter() * scale;
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(end - start).count();
+}
+
+// ============================================================================
+// MAIN - RUN BENCHMARKS
+// ============================================================================
 
 int main() {
-    // Can store different types in container
-    std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt; shapes;
-    shapes.push_back(std::make_unique&lt;Circle&gt;(5.0));
-    shapes.push_back(std::make_unique&lt;Square&gt;(4.0));
-    shapes.push_back(std::make_unique&lt;Circle&gt;(3.5));
+    std::cout &lt;&lt; "\n";
+    std::cout &lt;&lt; "╔════════════════════════════════════════════════════════╗\n";
+    std::cout &lt;&lt; "║     CRTP vs Virtual Functions - Performance Benchmark  ║\n";
+    std::cout &lt;&lt; "╚════════════════════════════════════════════════════════╝\n";
+    std::cout &lt;&lt; "\n";
     
-    // Virtual dispatch for external interface
-    for (auto&amp; shape : shapes) {
-        shape-&gt;draw();
+    std::cout &lt;&lt; "Scenario: 3000 shapes (1000 of each type), 10000 iterations\n";
+    std::cout &lt;&lt; "Each iteration calls area() and perimeter() on all shapes\n";
+    std::cout &lt;&lt; "Total function calls: 3000 × 2 × 10000 = 60,000,000 calls\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Running benchmarks 5 times each for accuracy...\n\n";
+    
+    long long virtualTotal = 0;
+    long long crptTotal = 0;
+    
+    for (int run = 1; run &lt;= 5; ++run) {
+        long long vTime = benchmarkVirtual();
+        long long cTime = benchmarkCRTP();
+        
+        virtualTotal += vTime;
+        crptTotal += cTime;
+        
+        std::cout &lt;&lt; "Run " &lt;&lt; run &lt;&lt; ": Virtual=" &lt;&lt; std::setw(3) &lt;&lt; vTime 
+                  &lt;&lt; "ms | CRTP=" &lt;&lt; std::setw(3) &lt;&lt; cTime &lt;&lt; "ms\n";
     }
+    
+    double avgVirtual = virtualTotal / 5.0;
+    double avgCRTP = crptTotal / 5.0;
+    double improvement = ((avgVirtual - avgCRTP) / avgVirtual) * 100.0;
+    double speedup = avgVirtual / avgCRTP;
+    
+    std::cout &lt;&lt; "\n";
+    std::cout &lt;&lt; "╔════════════════════════════════════════════════════════╗\n";
+    std::cout &lt;&lt; "║                    RESULTS SUMMARY                     ║\n";
+    std::cout &lt;&lt; "╚════════════════════════════════════════════════════════╝\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Virtual Functions (Average):  " &lt;&lt; std::fixed &lt;&lt; std::setprecision(1) 
+              &lt;&lt; avgVirtual &lt;&lt; " ms\n";
+    std::cout &lt;&lt; "CRTP (Average):               " &lt;&lt; avgCRTP &lt;&lt; " ms\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "Performance Improvement:      " &lt;&lt; improvement &lt;&lt; "%\n";
+    std::cout &lt;&lt; "Speedup Factor:               " &lt;&lt; std::setprecision(2) &lt;&lt; speedup &lt;&lt; "x faster\n";
+    std::cout &lt;&lt; "\n";
+    
+    std::cout &lt;&lt; "═══════════════════════════════════════════════════════════\n\n";
+    
+    return 0;
 }
 </code></pre>
-<p><strong>Output:</strong></p>
-<pre><code>Drawing Circle with radius 5
-  [Circle] Initializing radius
-  [Circle] Cleaning up radius
-Drawing Square with side 4
-  [Square] Initializing side
-  [Square] Cleaning up side
-Drawing Circle with radius 3.5
-  [Circle] Initializing radius
-  [Circle] Cleaning up radius
+<h3 id="benchmark-results"><a class="header" href="#benchmark-results">Benchmark Results</a></h3>
+<pre><code>╔════════════════════════════════════════════════════════╗
+║     CRTP vs Virtual Functions - Performance Benchmark  ║
+╚════════════════════════════════════════════════════════╝
+
+Scenario: 3000 shapes (1000 of each type), 10000 iterations
+Each iteration calls area() and perimeter() on all shapes
+Total function calls: 3000 × 2 × 10000 = 60,000,000 calls
+
+Running benchmarks 5 times each for accuracy...
+
+Run 1: Virtual= 55ms | CRTP= 29ms
+Run 2: Virtual= 35ms | CRTP= 25ms
+Run 3: Virtual= 34ms | CRTP= 25ms
+Run 4: Virtual= 34ms | CRTP= 25ms
+Run 5: Virtual= 35ms | CRTP= 25ms
+
+╔════════════════════════════════════════════════════════╗
+║                    RESULTS SUMMARY                     ║
+╚════════════════════════════════════════════════════════╝
+
+Virtual Functions (Average):  38.6 ms
+CRTP (Average):               25.8 ms
+
+Performance Improvement:      33.2%
+Speedup Factor:               1.50x faster
+
+═══════════════════════════════════════════════════════════
 </code></pre>
-<h3 id="hybrid-approach-benefits"><a class="header" href="#hybrid-approach-benefits">Hybrid Approach Benefits</a></h3>
-<p>The hybrid strategy provides several advantages:</p>
-<p><strong>Container Flexibility:</strong> You can store different derived types in the same container through the abstract base class pointer, solving CRTP’s fundamental limitation.</p>
-<p><strong>Internal Performance:</strong> Within each derived class, CRTP enables zero-overhead abstraction for internal operations that don’t need polymorphic behavior. The compiler can inline and optimize these calls completely.</p>
-<p><strong>Selective Virtuality:</strong> Only the interface methods that truly need runtime polymorphism are virtual. Internal helper methods can use CRTP for maximum performance.</p>
-<p><strong>Type Safety:</strong> The CRTP base ensures compile-time type checking for the specific derived class operations, catching errors at compile time rather than runtime.</p>
-<h3 id="when-to-use-each-approach"><a class="header" href="#when-to-use-each-approach">When to Use Each Approach</a></h3>
-<p>Use <strong>pure CRTP</strong> when you have a known set of types that never need to be stored heterogeneously and performance is critical.</p>
-<p>Use <strong>pure virtual functions</strong> when you need maximum flexibility with runtime-determined types and polymorphic behavior is the primary requirement.</p>
-<p>Use the <strong>hybrid approach</strong> when you need both container flexibility AND performance-critical internal operations, or when your system has a stable interface with performance-sensitive implementations.</p>
+<h3 id="analysis-1"><a class="header" href="#analysis-1">Analysis</a></h3>
+<p><strong>Important Note:</strong> Benchmark results are highly dependent on the compiler, optimization flags, CPU architecture, and runtime environment. This benchmark was compiled with:</p>
+<pre><code>g++ -O3 -std=c++17 benchmark.cpp -o benchmark
+</code></pre>
+<p>These results are provided to showcase that CRTP can offer significant performance advantages in certain scenarios, particularly with modern optimizers and aggressive optimization levels like <code>-O3</code>. Your actual results may vary significantly depending on your compiler version, optimization flags, CPU architecture, and runtime environment. It’s always recommended to profile your own code with your specific toolchain and hardware.</p>
+<p>The benchmark results clearly demonstrate CRTP’s performance advantage in this scenario:</p>
+<p><strong>33.2% Performance Improvement</strong> over virtual functions on 60 million function calls. The CRTP approach achieves a <strong>1.50x speedup</strong>, completing the same workload in approximately two-thirds the time of the virtual function approach.</p>
+<p>This significant performance gain stems from several factors:</p>
+<ol>
+<li>
+<p><strong>No vtable lookups:</strong> CRTP eliminates runtime table lookups entirely, replacing them with compile-time type resolution.</p>
+</li>
+<li>
+<p><strong>Full inlining:</strong> The compiler can aggressively inline CRTP calls since the target function is known at compile time. Virtual function calls are typically not inlined due to the indirection involved.</p>
+</li>
+<li>
+<p><strong>Better cache locality:</strong> Without vtable pointers, objects have smaller memory footprints and better cache behavior.</p>
+</li>
+<li>
+<p><strong>Optimizer friendly:</strong> The compiler has complete visibility into the call chain and can apply more aggressive optimizations.</p>
+</li>
+</ol>
+<p><strong>Performance Comparison Visualization:</strong></p>
+<pre><code>    Virtual Functions  │  CRTP
+    ─────────────────────────────
+    38.6 ms (100%)     │  25.8 ms (67%)
+    ██████████         │  ███████
+    
+    Slower ←────────────┼────────→ Faster
+                       │
+              33.2% improvement
+              1.50x speedup
+</code></pre>
+<p>The results show that while the theoretical overhead per virtual call is 5-10 CPU cycles, in real-world scenarios with modern optimizers, the actual impact can be even more substantial when considering inlining opportunities and cache effects.</p>
+<hr>
+<h2 id="crtp-limitations"><a class="header" href="#crtp-limitations">CRTP Limitations</a></h2>
+<p>One of the most significant limitations of CRTP is its inability to store different derived types in the same container. This stems from a fundamental constraint: each specialization of a CRTP base template is a completely different type. For example, <code>Shape&lt;Circle&gt;</code> and <code>Shape&lt;Square&gt;</code> are entirely different types with no common base class, making it impossible to store both in a single container through polymorphic pointers or references.</p>
+<p>Additionally, CRTP requires all types to be known at compile time, limiting its use in scenarios where types are determined dynamically at runtime, such as plugin systems or highly extensible architectures.</p>
+<p>These limitations will be explored in detail in a separate chapter on CRTP limitations and hybrid approaches that combine CRTP with dynamic polymorphism for maximum flexibility and performance.</p>
 <hr>
 <h2 id="summary-20"><a class="header" href="#summary-20">Summary</a></h2>
-<p>This tutorial covers the fundamentals of CRTP and how it enables static polymorphism.</p>
-<p>In a separate dedicated chapter, we explore comprehensive performance benchmarks comparing CRTP against traditional virtual functions.
-Also we will discuss some common use cases of CRTP.</p>
+<p>This tutorial covers the fundamentals of CRTP and how it enables static polymorphism with concrete performance advantages.</p>
 <h3 id="real-world-projects-using-crtp"><a class="header" href="#real-world-projects-using-crtp">Real-World Projects Using CRTP</a></h3>
 <p>Several high-performance and widely-used open-source projects leverage CRTP extensively:</p>
 <p><strong>ClickHouse (Column-oriented Database)</strong></p>
