@@ -605,17 +605,17 @@ inline const char* Config<const char*>::getDefault() const {
 ## Common Mistakes to Avoid
 
 ```cpp
-// ❌ WRONG: Partial specialization in CPP file
+// WRONG: Partial specialization in CPP file
 // partial_spec.cpp
 template <typename T>
 void MyClass<T*>::method() { } // Linker error!
 
-// ❌ WRONG: Full specialization without inline in header
+// WRONG: Full specialization without inline in header
 // full_spec.h
 template <>
 void MyClass<int>::method() { } // Multiple definition error!
 
-// ✅ CORRECT: Full specialization with inline in header
+// CORRECT: Full specialization with inline in header
 // full_spec.h
 template <>
 class MyClass<int> {
@@ -624,7 +624,7 @@ class MyClass<int> {
 
 inline void MyClass<int>::method() { } // OK
 
-// ✅ CORRECT: Partial specialization in header
+// CORRECT: Partial specialization in header
 // partial_spec.h
 template <typename T>
 void MyClass<T*>::method() { } // OK - still a template
