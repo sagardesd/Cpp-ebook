@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8c88a9ab.js";
+            window.path_to_searchindex_js = "searchindex-41364232.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-032976a8.js"></script>
+        <script src="toc-3b7d879a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -27078,6 +27078,593 @@ std::shared_ptr&lt;int&gt; s;  // 16 bytes
 </table>
 </div>
 <p><code>std::shared_ptr</code> is a powerful tool for managing shared ownership of resources. Use it when you genuinely need multiple owners, but prefer <code>unique_ptr</code> when single ownership is sufficient.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="crtp-curiously-recurring-template-pattern-in-c"><a class="header" href="#crtp-curiously-recurring-template-pattern-in-c">CRTP (Curiously Recurring Template Pattern) in C++</a></h1>
+<hr>
+<h2 id="the-one-way-knowledge-of-inheritance"><a class="header" href="#the-one-way-knowledge-of-inheritance">The One-Way Knowledge of Inheritance</a></h2>
+<p>Standard inheritance creates a hierarchy where knowledge only flows downward:</p>
+<p><strong>Derived Knows Base:</strong>
+When you derive a class, it inherits all members (functions and variables) from its parent. It can see and use <code>public</code> and <code>protected</code> members of the Base class directly.</p>
+<pre><code class="language-cpp">class Base {
+protected:
+    int value;
+public:
+    void baseFunction() { }
+};
+
+class Derived : public Base {
+public:
+    void derivedFunction() {
+        value = 10;          // Can access Base's protected member
+        baseFunction();      // Can call Base's function
+    }
+};
+</code></pre>
+<p><strong>Base Has No Knowledge of Derived:</strong>
+The Base class is defined independently. It has absolutely no idea which classes will inherit from it later.</p>
+<pre><code class="language-cpp">class Base {
+public:
+    void callDerived() {
+        // ERROR: Base doesn't know about Derived
+        // derivedFunction();  // Won't compile!
+    }
+};
+
+class Derived : public Base {
+public:
+    void derivedFunction() {
+        std::cout &lt;&lt; "Derived function called\n";
+    }
+};
+</code></pre>
+<h3 id="the-access-problem"><a class="header" href="#the-access-problem">The “Access” Problem</a></h3>
+<p>If you have a <code>Base</code> object or pointer, you cannot access functions that only exist in <code>Derived</code>:</p>
+<pre><code class="language-cpp">int main() {
+    Derived d;
+    Base* ptr = &amp;d;
+    
+    // ptr-&gt;derivedFunction();  // ERROR: Base doesn't know this function
+}
+</code></pre>
+<p>In standard OOP, to allow the Base class to “call” a derived function, you must use <strong>Virtual Functions</strong>:</p>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void process() = 0;  // Pure virtual
+};
+
+class Derived : public Base {
+public:
+    void process() override {
+        std::cout &lt;&lt; "Processing in Derived\n";
+    }
+};
+
+int main() {
+    Base* ptr = new Derived();
+    ptr-&gt;process();  // Works! Calls Derived::process()
+    delete ptr;
+}
+</code></pre>
+<p>This function dispatch at runtime is <strong>dynamic polymorphism</strong>.
+Its really neat feature and very usefull.
+But in performance critical system it can be an overhead as well.
+How ?</p>
+<h3 id="the-cost-of-virtual-functions"><a class="header" href="#the-cost-of-virtual-functions">The Cost of Virtual Functions</a></h3>
+<p>However, virtual functions come with a “hidden” cost:</p>
+<ol>
+<li><strong>V-Table Lookups:</strong> The program must look up the correct function at runtime through a virtual table (vtable).</li>
+<li><strong>Inlining Failure:</strong> Compilers often cannot optimize or “inline” virtual calls, making them slower.</li>
+<li><strong>Memory Overhead:</strong> Each object with virtual functions carries a hidden pointer to the vtable (typically 8 bytes on 64-bit systems).</li>
+</ol>
+<pre><code class="language-cpp">class Base {
+public:
+    virtual void foo() { }
+};
+
+// Behind the scenes, compiler generates something like:
+// - Global vtable for Base
+// - Each Base object contains a hidden vptr (pointer to vtable)
+// - Function calls: obj-&gt;vptr-&gt;vtable[index]()
+</code></pre>
+<p><strong>Performance Impact:</strong></p>
+<ul>
+<li>Direct call: ~1-2 CPU cycles</li>
+<li>Virtual call: ~5-10 CPU cycles (vtable lookup + indirect jump)</li>
+<li>Lost inlining opportunities mean further optimizations are blocked</li>
+</ul>
+<p>Let’s revisit what is our goal here:</p>
+<ul>
+<li><strong>Derived class objects can invoke base class functions</strong></li>
+<li><strong>Base class functions need to call derived class methods</strong> (without virtuals) (How ?)</li>
+</ul>
+<p><strong>Question:</strong> How can we make the base class function able to call derived class methods?</p>
+<p><strong>Answer:</strong> The base class function needs to have <strong>knowledge of the exact derived class type at compile time</strong>.</p>
+<p>If we can achieve that, we get <strong>static polymorphism</strong> – polymorphic behavior resolved at compile time with zero runtime overhead!</p>
+<h3 id="templates-to-the-rescue"><a class="header" href="#templates-to-the-rescue">Templates to the Rescue</a></h3>
+<p>What if we create a base class that <strong>takes the derived class type as its template parameter</strong>?</p>
+<p>This way the Base class has idea about the exact type of the Derived class at compile time.</p>
+<p>This is exactly what <strong>CRTP (Curiously Recurring Template Pattern)</strong> is!</p>
+<hr>
+<h2 id="what-is-crtp"><a class="header" href="#what-is-crtp">What is CRTP?</a></h2>
+<p>CRTP is a pattern that achieves <strong>static polymorphism</strong> by passing the type of a derived class to a base class. In the Curiously Recurring Template Pattern, a class (let’s call it <code>Derived</code>) inherits from a class template (let’s call it <code>Base</code>) that has been specialized specifically with <code>Derived</code> as its template argument. This enables the base class to have knowledge of the derived class type at compile time, eliminating the runtime overhead of virtual function calls while maintaining polymorphic behavior.</p>
+<pre><code class="language-cpp">// Step 1: Define a template base class that takes a type T
+template&lt;typename T&gt;
+class Base {
+    // Base is a template - T will be the derived class type
+};
+
+// Step 2: Derived class inherits from Base, passing its own type as T
+class Derived : public Base&lt;Derived&gt; {
+    //                      ^^^^^^^^
+    // Derived passes itself as the template argument!
+};
+</code></pre>
+<p>This creates a <strong>curious recursive relationship</strong> where:</p>
+<ol>
+<li><code>Derived</code> inherits from <code>Base&lt;Derived&gt;</code></li>
+<li>Inside <code>Base</code>, the template parameter <code>T</code> is actually <code>Derived</code></li>
+<li><code>Base&lt;Derived&gt;</code> knows the exact type <code>Derived</code> at compile time</li>
+<li><code>Base&lt;Derived&gt;</code> can call <code>Derived</code>’s methods using <code>static_cast&lt;T*&gt;(this)</code></li>
+</ol>
+<h3 id="the-magic-is-compile-time-downcasting"><a class="header" href="#the-magic-is-compile-time-downcasting">The Magic is Compile-Time Downcasting</a></h3>
+<pre><code class="language-cpp">// Base class template - T will be the derived class type
+template&lt;typename T&gt;
+class Base {
+public:
+    void interface() {
+        // Cast 'this' to T* (which is Derived*) at compile time
+        static_cast&lt;T*&gt;(this)-&gt;implementation();
+    }
+};
+
+// Derived inherits from Base&lt;Derived&gt;
+// So inside Base, T is Derived
+class Derived : public Base&lt;Derived&gt; {
+public:
+    void implementation() {
+        std::cout &lt;&lt; "Derived implementation called!\n";
+    }
+};
+
+int main() {
+    Derived d;
+    d.interface();  // Base::interface() calls Derived::implementation()
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Derived implementation called!
+</code></pre>
+<p><strong>What happened?</strong></p>
+<ol>
+<li>We call <code>d.interface()</code> which is defined in <code>Base&lt;Derived&gt;</code></li>
+<li>Inside <code>Base</code>, the template parameter <code>T</code> is <code>Derived</code></li>
+<li>We do <code>static_cast&lt;T*&gt;(this)</code> which becomes <code>static_cast&lt;Derived*&gt;(this)</code></li>
+<li>This cast is resolved at <strong>compile time</strong> (zero runtime cost!)</li>
+<li>We call <code>implementation()</code> on the derived class directly</li>
+<li>Compiler can <strong>inline</strong> the entire call chain for maximum performance</li>
+</ol>
+<hr>
+<h2 id="basic-crtp-implementation-example-template-method-pattern"><a class="header" href="#basic-crtp-implementation-example-template-method-pattern">Basic CRTP Implementation Example: Template Method Pattern</a></h2>
+<p>The Template Method Pattern is a behavioral design pattern where the base class defines the skeleton of an algorithm, and derived classes provide specific implementations for certain steps. While this pattern can be achieved using dynamic polymorphism with virtual functions, CRTP offers a compile-time alternative with zero runtime overhead.
+Lets look at both.</p>
+<h3 id="comparison-virtual-functions-vs-crtp"><a class="header" href="#comparison-virtual-functions-vs-crtp">Comparison: Virtual Functions vs CRTP</a></h3>
+<p>Let’s first look at the traditional approach using dynamic polymorphism, then explore how CRTP implements the same pattern.</p>
+<h3 id="approach-1-virtual-functions-dynamic-polymorphism"><a class="header" href="#approach-1-virtual-functions-dynamic-polymorphism">Approach 1: Virtual Functions (Dynamic Polymorphism)</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;memory&gt;
+#include &lt;vector&gt;
+
+// Abstract base class with virtual functions
+class DataProcessor {
+public:
+    // The template method - defines the algorithm structure
+    void process() {
+        read();
+        processImpl();  // Virtual dispatch
+        write();
+    }
+    
+    virtual ~DataProcessor() = default;
+    
+private:
+    void read() {
+        std::cout &lt;&lt; "[DataProcessor] Reading data...\n";
+    }
+    
+    void write() {
+        std::cout &lt;&lt; "[DataProcessor] Writing results...\n";
+    }
+    
+protected:
+    virtual void processImpl() = 0;  // Pure virtual - customization point
+};
+
+// Concrete implementation for CSV data
+class CSVProcessor : public DataProcessor {
+protected:
+    void processImpl() override {
+        std::cout &lt;&lt; "[CSVProcessor] Processing CSV format\n";
+        std::cout &lt;&lt; "  - Parsing comma-separated values\n";
+    }
+};
+
+// Concrete implementation for JSON data
+class JSONProcessor : public DataProcessor {
+protected:
+    void processImpl() override {
+        std::cout &lt;&lt; "[JSONProcessor] Processing JSON format\n";
+        std::cout &lt;&lt; "  - Parsing JSON structure\n";
+    }
+};
+
+int main() {
+    // Can store different types via base class pointers
+    std::vector&lt;std::unique_ptr&lt;DataProcessor&gt;&gt; processors;
+    processors.push_back(std::make_unique&lt;CSVProcessor&gt;());
+    processors.push_back(std::make_unique&lt;JSONProcessor&gt;());
+    
+    for (auto&amp; proc : processors) {
+        proc-&gt;process();  // Virtual dispatch at runtime
+        std::cout &lt;&lt; "\n";
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>[DataProcessor] Reading data...
+[CSVProcessor] Processing CSV format
+  - Parsing comma-separated values
+[DataProcessor] Writing results...
+
+[DataProcessor] Reading data...
+[JSONProcessor] Processing JSON format
+  - Parsing JSON structure
+[DataProcessor] Writing results...
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>Uses virtual function for runtime dispatch</li>
+<li>Can store heterogeneous types in containers</li>
+<li>Runtime overhead from vtable lookup</li>
+<li>More flexible for dynamic scenarios</li>
+</ul>
+<h3 id="approach-2-crtp-static-polymorphism"><a class="header" href="#approach-2-crtp-static-polymorphism">Approach 2: CRTP (Static Polymorphism)</a></h3>
+<p>Now let’s implement the same pattern using CRTP. The key difference is that the base class knows the derived type at compile time:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// CRTP Base class that defines the template method pattern
+template&lt;typename Derived&gt;
+class DataProcessor {
+public:
+    // The template method - defines the algorithm structure
+    void process() {
+        read();
+        static_cast&lt;Derived*&gt;(this)-&gt;processImpl();  // Compile-time dispatch
+        write();
+    }
+    
+private:
+    void read() {
+        std::cout &lt;&lt; "[DataProcessor] Reading data...\n";
+    }
+    
+    void write() {
+        std::cout &lt;&lt; "[DataProcessor] Writing results...\n";
+    }
+};
+
+// Concrete implementation for CSV data
+class CSVProcessor : public DataProcessor&lt;CSVProcessor&gt; {
+public:
+    void processImpl() {
+        std::cout &lt;&lt; "[CSVProcessor] Processing CSV format\n";
+        std::cout &lt;&lt; "  - Parsing comma-separated values\n";
+    }
+};
+
+// Concrete implementation for JSON data
+class JSONProcessor : public DataProcessor&lt;JSONProcessor&gt; {
+public:
+    void processImpl() {
+        std::cout &lt;&lt; "[JSONProcessor] Processing JSON format\n";
+        std::cout &lt;&lt; "  - Parsing JSON structure\n";
+    }
+};
+
+// Concrete implementation for XML data
+class XMLProcessor : public DataProcessor&lt;XMLProcessor&gt; {
+public:
+    void processImpl() {
+        std::cout &lt;&lt; "[XMLProcessor] Processing XML format\n";
+        std::cout &lt;&lt; "  - Parsing XML tags\n";
+    }
+};
+
+int main() {
+    CSVProcessor csv;
+    csv.process();
+    
+    std::cout &lt;&lt; "\n";
+    
+    JSONProcessor json;
+    json.process();
+    
+    std::cout &lt;&lt; "\n";
+    
+    XMLProcessor xml;
+    xml.process();
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>[DataProcessor] Reading data...
+[CSVProcessor] Processing CSV format
+  - Parsing comma-separated values
+[DataProcessor] Writing results...
+
+[DataProcessor] Reading data...
+[JSONProcessor] Processing JSON format
+  - Parsing JSON structure
+[DataProcessor] Writing results...
+
+[DataProcessor] Reading data...
+[XMLProcessor] Processing XML format
+  - Parsing XML tags
+[DataProcessor] Writing results...
+</code></pre>
+<p><strong>Characteristics:</strong></p>
+<ul>
+<li>No virtual functions required</li>
+<li>Compile-time type resolution via <code>static_cast</code></li>
+<li>Cannot store different types in a single container (trade-off)</li>
+<li>Zero runtime overhead for polymorphic dispatch</li>
+<li>Compiler can fully inline the call chain</li>
+</ul>
+<h3 id="key-differences-2"><a class="header" href="#key-differences-2">Key Differences</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Virtual Functions</th><th>CRTP</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Dispatch Type</strong></td><td>Runtime (dynamic)</td><td>Compile-time (static)</td></tr>
+<tr><td><strong>Polymorphic Containers</strong></td><td>Yes</td><td>No</td></tr>
+<tr><td><strong>Virtual Function Overhead</strong></td><td>Yes (~5-10 CPU cycles)</td><td>None</td></tr>
+<tr><td><strong>Inlining</strong></td><td>Limited</td><td>Full inlining possible</td></tr>
+<tr><td><strong>Type Flexibility</strong></td><td>High (runtime types)</td><td>Low (compile-time types)</td></tr>
+<tr><td><strong>Memory Overhead</strong></td><td>vtable pointer per object</td><td>None</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="when-to-use-each"><a class="header" href="#when-to-use-each">When to Use Each</a></h3>
+<p><strong>Use Virtual Functions when:</strong></p>
+<ul>
+<li>You need to store different derived types in containers</li>
+<li>Types are determined at runtime</li>
+<li>Flexibility is more important than peak performance</li>
+<li>You’re building extensible plugin systems</li>
+</ul>
+<p><strong>Use CRTP when:</strong></p>
+<ul>
+<li>You know all types at compile time</li>
+<li>Performance-critical code needs zero overhead</li>
+<li>You don’t need heterogeneous containers</li>
+<li>You want compiler optimization benefits</li>
+</ul>
+<hr>
+<h2 id="crtp-limitations-and-hybrid-approach"><a class="header" href="#crtp-limitations-and-hybrid-approach">CRTP Limitations and Hybrid Approach</a></h2>
+<h3 id="the-container-problem-with-crtp"><a class="header" href="#the-container-problem-with-crtp">The Container Problem with CRTP</a></h3>
+<p>One of the most significant limitations of CRTP is its inability to store different derived types in the same container. This stems from a fundamental constraint: each specialization of a CRTP base template is a completely different type.</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+class Shape {
+public:
+    void draw() {
+        static_cast&lt;T*&gt;(this)-&gt;drawImpl();
+    }
+};
+
+class Circle : public Shape&lt;Circle&gt; {
+public:
+    void drawImpl() { std::cout &lt;&lt; "Drawing Circle\n"; }
+};
+
+class Square : public Shape&lt;Square&gt; {
+public:
+    void drawImpl() { std::cout &lt;&lt; "Drawing Square\n"; }
+};
+
+int main() {
+    std::vector&lt;Shape&lt;Circle&gt;&gt; shapes;  // Can only store Circles
+    
+    // This doesn't work:
+    // std::vector&lt;Shape&lt;??&gt;&gt; shapes;  // What type goes here?
+    // shapes.push_back(Circle());  // Type mismatch
+    // shapes.push_back(Square());  // Different type!
+}
+</code></pre>
+<p>The problem is that <code>Shape&lt;Circle&gt;</code> and <code>Shape&lt;Square&gt;</code> are entirely different types. There’s no common base class between them, making it impossible to store both in a single container. CRTP achieves zero-overhead abstraction at the cost of losing the flexibility to work with different derived types polymorphically through a single pointer or reference.</p>
+<h3 id="dynamic-polymorphism-the-container-advantage"><a class="header" href="#dynamic-polymorphism-the-container-advantage">Dynamic Polymorphism: The Container Advantage</a></h3>
+<p>Dynamic polymorphism with virtual functions solves this problem elegantly:</p>
+<pre><code class="language-cpp">class Shape {  // Non-template base
+public:
+    virtual void draw() = 0;
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+public:
+    void draw() override { std::cout &lt;&lt; "Drawing Circle\n"; }
+};
+
+class Square : public Shape {
+public:
+    void draw() override { std::cout &lt;&lt; "Drawing Square\n"; }
+};
+
+int main() {
+    // Works perfectly! Can store any Shape derived class
+    std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt; shapes;
+    shapes.push_back(std::make_unique&lt;Circle&gt;());
+    shapes.push_back(std::make_unique&lt;Square&gt;());
+    shapes.push_back(std::make_unique&lt;Circle&gt;());
+    
+    for (auto&amp; shape : shapes) {
+        shape-&gt;draw();  // Calls correct derived implementation
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Drawing Circle
+Drawing Square
+Drawing Circle
+</code></pre>
+<p>This is the classic trade-off: dynamic polymorphism gives flexibility and runtime behavior variation at the cost of vtable lookups and lost inlining opportunities.</p>
+<h3 id="the-hybrid-approach-best-of-both-worlds"><a class="header" href="#the-hybrid-approach-best-of-both-worlds">The Hybrid Approach: Best of Both Worlds</a></h3>
+<p>The hybrid approach combines CRTP with dynamic polymorphism to gain the benefits of both. The idea is to create a non-template abstract base class that uses virtual functions, while individual implementations use CRTP internally for performance-critical operations.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+
+// Abstract base class using virtual functions
+class Shape {
+public:
+    virtual void draw() = 0;
+    virtual ~Shape() = default;
+};
+
+// CRTP base for common functionality
+template&lt;typename Derived&gt;
+class ShapeImpl : public Shape {
+protected:
+    // CRTP allows static polymorphism for internal operations
+    void internalSetup() {
+        static_cast&lt;Derived*&gt;(this)-&gt;setup();
+    }
+    
+    void internalCleanup() {
+        static_cast&lt;Derived*&gt;(this)-&gt;cleanup();
+    }
+};
+
+class Circle : public ShapeImpl&lt;Circle&gt; {
+private:
+    double radius_;
+    
+    void setup() {
+        std::cout &lt;&lt; "  [Circle] Initializing radius\n";
+    }
+    
+    void cleanup() {
+        std::cout &lt;&lt; "  [Circle] Cleaning up radius\n";
+    }
+    
+    friend class ShapeImpl&lt;Circle&gt;;
+    
+public:
+    Circle(double r) : radius_(r) { }
+    
+    void draw() override {
+        std::cout &lt;&lt; "Drawing Circle with radius " &lt;&lt; radius_ &lt;&lt; "\n";
+        internalSetup();
+        internalCleanup();
+    }
+};
+
+class Square : public ShapeImpl&lt;Square&gt; {
+private:
+    double side_;
+    
+    void setup() {
+        std::cout &lt;&lt; "  [Square] Initializing side\n";
+    }
+    
+    void cleanup() {
+        std::cout &lt;&lt; "  [Square] Cleaning up side\n";
+    }
+    
+    friend class ShapeImpl&lt;Square&gt;;
+    
+public:
+    Square(double s) : side_(s) { }
+    
+    void draw() override {
+        std::cout &lt;&lt; "Drawing Square with side " &lt;&lt; side_ &lt;&lt; "\n";
+        internalSetup();
+        internalCleanup();
+    }
+};
+
+int main() {
+    // Can store different types in container
+    std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt; shapes;
+    shapes.push_back(std::make_unique&lt;Circle&gt;(5.0));
+    shapes.push_back(std::make_unique&lt;Square&gt;(4.0));
+    shapes.push_back(std::make_unique&lt;Circle&gt;(3.5));
+    
+    // Virtual dispatch for external interface
+    for (auto&amp; shape : shapes) {
+        shape-&gt;draw();
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Drawing Circle with radius 5
+  [Circle] Initializing radius
+  [Circle] Cleaning up radius
+Drawing Square with side 4
+  [Square] Initializing side
+  [Square] Cleaning up side
+Drawing Circle with radius 3.5
+  [Circle] Initializing radius
+  [Circle] Cleaning up radius
+</code></pre>
+<h3 id="hybrid-approach-benefits"><a class="header" href="#hybrid-approach-benefits">Hybrid Approach Benefits</a></h3>
+<p>The hybrid strategy provides several advantages:</p>
+<p><strong>Container Flexibility:</strong> You can store different derived types in the same container through the abstract base class pointer, solving CRTP’s fundamental limitation.</p>
+<p><strong>Internal Performance:</strong> Within each derived class, CRTP enables zero-overhead abstraction for internal operations that don’t need polymorphic behavior. The compiler can inline and optimize these calls completely.</p>
+<p><strong>Selective Virtuality:</strong> Only the interface methods that truly need runtime polymorphism are virtual. Internal helper methods can use CRTP for maximum performance.</p>
+<p><strong>Type Safety:</strong> The CRTP base ensures compile-time type checking for the specific derived class operations, catching errors at compile time rather than runtime.</p>
+<h3 id="when-to-use-each-approach"><a class="header" href="#when-to-use-each-approach">When to Use Each Approach</a></h3>
+<p>Use <strong>pure CRTP</strong> when you have a known set of types that never need to be stored heterogeneously and performance is critical.</p>
+<p>Use <strong>pure virtual functions</strong> when you need maximum flexibility with runtime-determined types and polymorphic behavior is the primary requirement.</p>
+<p>Use the <strong>hybrid approach</strong> when you need both container flexibility AND performance-critical internal operations, or when your system has a stable interface with performance-sensitive implementations.</p>
+<hr>
+<h2 id="summary-20"><a class="header" href="#summary-20">Summary</a></h2>
+<p>This tutorial covers the fundamentals of CRTP and how it enables static polymorphism.</p>
+<p>In a separate dedicated chapter, we explore comprehensive performance benchmarks comparing CRTP against traditional virtual functions.
+Also we will discuss some common use cases of CRTP.</p>
+<h3 id="real-world-projects-using-crtp"><a class="header" href="#real-world-projects-using-crtp">Real-World Projects Using CRTP</a></h3>
+<p>Several high-performance and widely-used open-source projects leverage CRTP extensively:</p>
+<p><strong>ClickHouse (Column-oriented Database)</strong></p>
+<ul>
+<li>One of the fastest open-source analytical databases</li>
+<li>Uses CRTP extensively for query optimization and column processing</li>
+<li>Achieves extreme performance through compile-time specialization</li>
+<li>CRTP enables efficient data type handling without virtual function overhead</li>
+</ul>
+<p><strong>Eigen (Linear Algebra Library)</strong></p>
+<ul>
+<li>Industry-standard C++ library for matrices and vectors</li>
+<li>Uses expression templates with CRTP for lazy evaluation</li>
+<li>Avoids temporary object creation in complex mathematical expressions</li>
+<li>Powers machine learning frameworks like TensorFlow</li>
+</ul>
+<p><strong>High-Frequency Trading (HFT) Systems</strong></p>
+<ul>
+<li>Critical latency-sensitive applications in financial markets</li>
+<li>CRTP is a core pattern in order routing and risk management systems</li>
+<li>Eliminates vtable overhead for microsecond-critical operations</li>
+<li>Used in systems that process millions of orders per second</li>
+</ul>
+<p><strong>Boost C++ Libraries</strong></p>
+<ul>
+<li>Various Boost libraries use CRTP for type-safe, zero-overhead abstractions</li>
+<li>Examples include Boost.Asio (networking) and Boost.Range</li>
+</ul>
+<p><strong>Apache Arrow</strong></p>
+<ul>
+<li>Data processing framework used in big data ecosystems</li>
+<li>Uses CRTP for efficient memory layout and data type handling</li>
+</ul>
+<p>These projects demonstrate that CRTP is not just an academic pattern but a proven technique used in the most demanding, performance-critical applications in the industry.</p>
 
                     </main>
 
