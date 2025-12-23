@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-82c944cc.js";
+            window.path_to_searchindex_js = "searchindex-8c88a9ab.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-032976a8.js"></script>
@@ -412,21 +412,21 @@ void Box&lt;T&gt;::display() const {
       └────────→ Return type using template parameter
 </code></pre>
 <h3 id="key-points-for-external-definitions"><a class="header" href="#key-points-for-external-definitions">Key Points for External Definitions</a></h3>
-<p>✅ <strong>Must include:</strong></p>
+<p><strong>Must include:</strong></p>
 <ul>
 <li><code>template&lt;typename T&gt;</code> before each function</li>
 <li>Class name with template parameter: <code>Box&lt;T&gt;::</code></li>
 <li>Same signature as declaration</li>
 </ul>
-<p>❌ <strong>Common mistakes:</strong></p>
-<pre><code class="language-cpp">// ❌ WRONG: Missing template declaration
+<p><strong>Common mistakes:</strong></p>
+<pre><code class="language-cpp">// WRONG: Missing template declaration
 T Box&lt;T&gt;::retrieve() const { }
 
-// ❌ WRONG: Missing template parameter on class name
+// WRONG: Missing template parameter on class name
 template&lt;typename T&gt;
 T Box::retrieve() const { }
 
-// ✅ CORRECT
+// CORRECT
 template&lt;typename T&gt;
 T Box&lt;T&gt;::retrieve() const { }
 </code></pre>
@@ -586,8 +586,8 @@ Box&lt;string&gt; myStringBox;  // Box&lt;string&gt; is a type
 <ol>
 <li>
 <p><strong>You cannot declare a variable of type <code>Box</code></strong> — you must specify the type parameter</p>
-<pre><code class="language-cpp">Box myBox;        // ❌ ERROR: Template parameter missing
-Box&lt;int&gt; myBox;   // ✅ CORRECT: Specific type
+<pre><code class="language-cpp">Box myBox;        // ERROR: Template parameter missing
+Box&lt;int&gt; myBox;   // CORRECT: Specific type
 </code></pre>
 </li>
 <li>

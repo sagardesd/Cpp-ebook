@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-82c944cc.js";
+            window.path_to_searchindex_js = "searchindex-8c88a9ab.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-032976a8.js"></script>
@@ -304,13 +304,13 @@ int main() {
 <li>Function body must be a single expression</li>
 </ol>
 <p><strong>Example of the Limitation:</strong></p>
-<pre><code class="language-cpp">// ❌ This does NOT work in C++11
+<pre><code class="language-cpp">// This does NOT work in C++11
 constexpr int fibonacci(int n) {
     if (n &lt;= 1) return n;           // Error: multiple return statements
     return fibonacci(n-1) + fibonacci(n-2);
 }
 
-// ❌ This does NOT work in C++11
+// This does NOT work in C++11
 constexpr int sum_to_n(int n) {
     int sum = 0;                    // Error: local variable
     for (int i = 1; i &lt;= n; ++i) {  // Error: loop
@@ -324,12 +324,12 @@ constexpr int sum_to_n(int n) {
 <p>To work around the single return statement limitation, you had to use recursion and ternary operators:</p>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
-// ✅ C++11 compliant - using ternary operator
+// C++11 compliant - using ternary operator
 constexpr int fibonacci(int n) {
     return (n &lt;= 1) ? n : (fibonacci(n-1) + fibonacci(n-2));
 }
 
-// ✅ C++11 compliant - using recursion for sum
+// C++11 compliant - using recursion for sum
 constexpr int sum_to_n_helper(int n, int sum) {
     return (n == 0) ? sum : sum_to_n_helper(n - 1, sum + n);
 }
@@ -360,19 +360,19 @@ Sum(1..100) = 5050
 <p>C++14 <strong>relaxed</strong> the restrictions on <code>constexpr</code> functions, making them much more practical:</p>
 <p><strong>New Capabilities:</strong></p>
 <ol>
-<li>✅ Multiple statements allowed</li>
-<li>✅ Local variables allowed</li>
-<li>✅ Loops (for, while, do-while)</li>
-<li>✅ If-else statements</li>
-<li>✅ Multiple return statements</li>
-<li>✅ switch statements</li>
-<li>✅ Modify local variables</li>
+<li>Multiple statements allowed</li>
+<li>Local variables allowed</li>
+<li>Loops (for, while, do-while)</li>
+<li>If-else statements</li>
+<li>Multiple return statements</li>
+<li>switch statements</li>
+<li>Modify local variables</li>
 </ol>
 <hr>
 <h3 id="multiple-statements-allowed"><a class="header" href="#multiple-statements-allowed">Multiple Statements Allowed</a></h3>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
-// ✅ C++14: Multiple statements and local variables
+// C++14: Multiple statements and local variables
 constexpr int sum_to_n(int n) {
     int sum = 0;  // Local variable allowed!
     
@@ -466,12 +466,12 @@ constexpr int find_max(const int* arr, int size) {
 <h3 id="constexpr-enhancements"><a class="header" href="#constexpr-enhancements">constexpr Enhancements</a></h3>
 <p><strong>New C++20 Features:</strong></p>
 <ol>
-<li>✅ <code>constexpr</code> destructors</li>
-<li>✅ <code>constexpr</code> dynamic memory allocation (new/delete)</li>
-<li>✅ <code>constexpr</code> virtual functions</li>
-<li>✅ <code>constexpr</code> try-catch blocks</li>
-<li>✅ <code>constexpr</code> standard library containers</li>
-<li>✅ <code>constexpr</code> algorithms</li>
+<li><code>constexpr</code> destructors</li>
+<li><code>constexpr</code> dynamic memory allocation (new/delete)</li>
+<li><code>constexpr</code> virtual functions</li>
+<li><code>constexpr</code> try-catch blocks</li>
+<li><code>constexpr</code> standard library containers</li>
+<li><code>constexpr</code> algorithms</li>
 </ol>
 <hr>
 <h3 id="1-constexpr-destructors"><a class="header" href="#1-constexpr-destructors">1. constexpr Destructors</a></h3>
@@ -694,17 +694,17 @@ consteval int square_consteval(int x) {
 
 int main() {
     // constexpr: Can use at compile time
-    constexpr int a = square_constexpr(5);  // ✅ OK: Compile time
+    constexpr int a = square_constexpr(5);  // OK: Compile time
     
     // constexpr: Can also use at runtime
     int n = 10;
-    int b = square_constexpr(n);  // ✅ OK: Runtime
+    int b = square_constexpr(n);  // OK: Runtime
     
     // consteval: Must use at compile time
-    constexpr int c = square_consteval(7);  // ✅ OK: Compile time
+    constexpr int c = square_consteval(7);  // OK: Compile time
     
     // consteval: CANNOT use at runtime
-    // int d = square_consteval(n);  // ❌ Error: n is not a constant
+    // int d = square_consteval(n);  // Error: n is not a constant
     
     std::cout &lt;&lt; "a = " &lt;&lt; a &lt;&lt; std::endl;
     std::cout &lt;&lt; "b = " &lt;&lt; b &lt;&lt; std::endl;
@@ -736,14 +736,14 @@ consteval size_t hash_string(std::string_view str) {
 }
 
 int main() {
-    // ✅ Compile time - string literal
+    // Compile time - string literal
     constexpr auto hash1 = hash_string("Hello");
     constexpr auto hash2 = hash_string("World");
     
     std::cout &lt;&lt; "Hash of 'Hello': " &lt;&lt; hash1 &lt;&lt; std::endl;
     std::cout &lt;&lt; "Hash of 'World': " &lt;&lt; hash2 &lt;&lt; std::endl;
     
-    // ❌ This would be a compile error:
+    // This would be a compile error:
     // std::string s = "Runtime";
     // auto hash3 = hash_string(s);  // Error: s is not compile-time constant
     
@@ -800,8 +800,8 @@ consteval bool is_prime(int n) {
 }
 
 int main() {
-    constexpr bool result1 = is_prime(17);  // ✅ Compile time
-    constexpr bool result2 = is_prime(100); // ✅ Compile time
+    constexpr bool result1 = is_prime(17);  // Compile time
+    constexpr bool result2 = is_prime(100); // Compile time
     
     std::cout &lt;&lt; "17 is prime: " &lt;&lt; result1 &lt;&lt; std::endl;
     std::cout &lt;&lt; "100 is prime: " &lt;&lt; result2 &lt;&lt; std::endl;
