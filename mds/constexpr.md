@@ -133,13 +133,13 @@ In C++11, `constexpr` functions were severely limited:
 **Example of the Limitation:**
 
 ```cpp
-// ❌ This does NOT work in C++11
+// This does NOT work in C++11
 constexpr int fibonacci(int n) {
     if (n <= 1) return n;           // Error: multiple return statements
     return fibonacci(n-1) + fibonacci(n-2);
 }
 
-// ❌ This does NOT work in C++11
+// This does NOT work in C++11
 constexpr int sum_to_n(int n) {
     int sum = 0;                    // Error: local variable
     for (int i = 1; i <= n; ++i) {  // Error: loop
@@ -158,12 +158,12 @@ To work around the single return statement limitation, you had to use recursion 
 ```cpp
 #include <iostream>
 
-// ✅ C++11 compliant - using ternary operator
+// C++11 compliant - using ternary operator
 constexpr int fibonacci(int n) {
     return (n <= 1) ? n : (fibonacci(n-1) + fibonacci(n-2));
 }
 
-// ✅ C++11 compliant - using recursion for sum
+// C++11 compliant - using recursion for sum
 constexpr int sum_to_n_helper(int n, int sum) {
     return (n == 0) ? sum : sum_to_n_helper(n - 1, sum + n);
 }
@@ -202,13 +202,13 @@ Sum(1..100) = 5050
 C++14 **relaxed** the restrictions on `constexpr` functions, making them much more practical:
 
 **New Capabilities:**
-1. ✅ Multiple statements allowed
-2. ✅ Local variables allowed
-3. ✅ Loops (for, while, do-while)
-4. ✅ If-else statements
-5. ✅ Multiple return statements
-6. ✅ switch statements
-7. ✅ Modify local variables
+1. Multiple statements allowed
+2. Local variables allowed
+3. Loops (for, while, do-while)
+4. If-else statements
+5. Multiple return statements
+6. switch statements
+7. Modify local variables
 
 ---
 
@@ -217,7 +217,7 @@ C++14 **relaxed** the restrictions on `constexpr` functions, making them much mo
 ```cpp
 #include <iostream>
 
-// ✅ C++14: Multiple statements and local variables
+// C++14: Multiple statements and local variables
 constexpr int sum_to_n(int n) {
     int sum = 0;  // Local variable allowed!
     
@@ -332,12 +332,12 @@ C++20 significantly expanded what can be done at compile time, bringing `constex
 ### constexpr Enhancements
 
 **New C++20 Features:**
-1. ✅ `constexpr` destructors
-2. ✅ `constexpr` dynamic memory allocation (new/delete)
-3. ✅ `constexpr` virtual functions
-4. ✅ `constexpr` try-catch blocks
-5. ✅ `constexpr` standard library containers
-6. ✅ `constexpr` algorithms
+1. `constexpr` destructors
+2. `constexpr` dynamic memory allocation (new/delete)
+3. `constexpr` virtual functions
+4. `constexpr` try-catch blocks
+5. `constexpr` standard library containers
+6. `constexpr` algorithms
 
 ---
 
@@ -610,17 +610,17 @@ consteval int square_consteval(int x) {
 
 int main() {
     // constexpr: Can use at compile time
-    constexpr int a = square_constexpr(5);  // ✅ OK: Compile time
+    constexpr int a = square_constexpr(5);  // OK: Compile time
     
     // constexpr: Can also use at runtime
     int n = 10;
-    int b = square_constexpr(n);  // ✅ OK: Runtime
+    int b = square_constexpr(n);  // OK: Runtime
     
     // consteval: Must use at compile time
-    constexpr int c = square_consteval(7);  // ✅ OK: Compile time
+    constexpr int c = square_consteval(7);  // OK: Compile time
     
     // consteval: CANNOT use at runtime
-    // int d = square_consteval(n);  // ❌ Error: n is not a constant
+    // int d = square_consteval(n);  // Error: n is not a constant
     
     std::cout << "a = " << a << std::endl;
     std::cout << "b = " << b << std::endl;
@@ -656,14 +656,14 @@ consteval size_t hash_string(std::string_view str) {
 }
 
 int main() {
-    // ✅ Compile time - string literal
+    // Compile time - string literal
     constexpr auto hash1 = hash_string("Hello");
     constexpr auto hash2 = hash_string("World");
     
     std::cout << "Hash of 'Hello': " << hash1 << std::endl;
     std::cout << "Hash of 'World': " << hash2 << std::endl;
     
-    // ❌ This would be a compile error:
+    // This would be a compile error:
     // std::string s = "Runtime";
     // auto hash3 = hash_string(s);  // Error: s is not compile-time constant
     
@@ -731,8 +731,8 @@ consteval bool is_prime(int n) {
 }
 
 int main() {
-    constexpr bool result1 = is_prime(17);  // ✅ Compile time
-    constexpr bool result2 = is_prime(100); // ✅ Compile time
+    constexpr bool result1 = is_prime(17);  // Compile time
+    constexpr bool result2 = is_prime(100); // Compile time
     
     std::cout << "17 is prime: " << result1 << std::endl;
     std::cout << "100 is prime: " << result2 << std::endl;
