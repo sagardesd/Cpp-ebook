@@ -116,7 +116,7 @@ Let's revisit what is our goal here:
 - **Derived class objects can invoke base class functions**
 - **Base class functions need to call derived class methods** (without virtuals) (How ?)
 
-**Question:** How can we make the base class function able to call derived class methods?
+**Question:** How can we make the base class function (invoked using derive class object) able to call derived class methods ?
 
 **Answer:** The base class function needs to have **knowledge of the exact derived class type at compile time**.
 
