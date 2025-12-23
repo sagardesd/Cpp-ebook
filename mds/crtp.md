@@ -122,11 +122,11 @@ Let's revisit what is our goal here:
 
 If we can achieve that, we get **static polymorphism** – polymorphic behavior resolved at compile time with zero runtime overhead!
 
-### Templates to the Rescue
+### What about Templates ? Can we use it for to solve this problem ?
 
 What if we create a base class that **takes the derived class type as its template parameter**?
 
-This way the Base class has idea about the exact type of the Derived class at compile time.
+This way the Base class has idea about the exact type of the Derived class at compile time and our problem solved.
 
 This is exactly what **CRTP (Curiously Recurring Template Pattern)** is!
 
