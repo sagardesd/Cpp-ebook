@@ -46,4 +46,5 @@
   - [Exclusive ownership smart pointer - std::unique_ptr<T>](./unique_ptr.md)
   - [Accessing Raw Pointers from `std::unique_ptr<T>`](./unique_ptr_get_release.md)
   - [Shared ownership smart pointer - std::shared_ptr<T> and std::weak_ptr<T>](./shared_ptr_weak_ptr.md)
+- [CRTP (Curiously Recurring Template Pattern)](./crtp.md)
   
