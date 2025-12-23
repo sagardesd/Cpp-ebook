@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-41364232.js";
+            window.path_to_searchindex_js = "searchindex-529bd2b2.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-3b7d879a.js"></script>
@@ -273,12 +273,12 @@ public:
 <li><strong>Derived class objects can invoke base class functions</strong></li>
 <li><strong>Base class functions need to call derived class methods</strong> (without virtuals) (How ?)</li>
 </ul>
-<p><strong>Question:</strong> How can we make the base class function able to call derived class methods?</p>
+<p><strong>Question:</strong> How can we make the base class function (invoked using derive class object) able to call derived class methods ?</p>
 <p><strong>Answer:</strong> The base class function needs to have <strong>knowledge of the exact derived class type at compile time</strong>.</p>
 <p>If we can achieve that, we get <strong>static polymorphism</strong> – polymorphic behavior resolved at compile time with zero runtime overhead!</p>
-<h3 id="templates-to-the-rescue"><a class="header" href="#templates-to-the-rescue">Templates to the Rescue</a></h3>
+<h3 id="what-about-templates--can-we-use-it-for-to-solve-this-problem-"><a class="header" href="#what-about-templates--can-we-use-it-for-to-solve-this-problem-">What about Templates ? Can we use it for to solve this problem ?</a></h3>
 <p>What if we create a base class that <strong>takes the derived class type as its template parameter</strong>?</p>
-<p>This way the Base class has idea about the exact type of the Derived class at compile time.</p>
+<p>This way the Base class has idea about the exact type of the Derived class at compile time and our problem solved.</p>
 <p>This is exactly what <strong>CRTP (Curiously Recurring Template Pattern)</strong> is!</p>
 <hr>
 <h2 id="what-is-crtp"><a class="header" href="#what-is-crtp">What is CRTP?</a></h2>
