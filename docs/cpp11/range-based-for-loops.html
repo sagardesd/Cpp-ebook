@@ -1,0 +1,564 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Range Based for loops (&gt;&#x3D; C++11)</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-a1598d69.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ae778994.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="c11-range-based-for-loops"><a class="header" href="#c11-range-based-for-loops">C++11 Range-Based For Loops</a></h1>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>The range-based <code>for</code> loop, introduced in C++11, provides a simpler, more readable syntax for iterating over elements of a range, such as arrays, standard library containers, and custom types that satisfy the necessary requirements.</p>
+<h2 id="basic-syntax"><a class="header" href="#basic-syntax">Basic Syntax</a></h2>
+<pre><code class="language-cpp">for (declaration : expression) {
+    // loop statement(s)
+}
+</code></pre>
+<p>Where <code>declaration</code> is <code>type variable</code>:</p>
+<pre><code class="language-cpp">for (type variable : expression) {
+    // loop statement(s)
+}
+</code></pre>
+<ul>
+<li><strong><code>type</code></strong>: The type of the elements (can be explicit like <code>int</code>, <code>std::string</code>, or use <code>auto</code>)</li>
+<li><strong><code>variable</code></strong>: The name of the variable that will hold each element</li>
+<li><strong><code>declaration</code></strong>: The complete variable declaration (<code>type variable</code>), whose type must be compatible with the element type of the sequence. The <code>auto</code> keyword is highly recommended here.</li>
+<li><strong><code>expression</code></strong>: The range to iterate over (e.g., an array, a <code>std::vector</code>, <code>std::string</code>, or an initializer list).</li>
+</ul>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+int main() {
+    // Vector
+    std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+    for (int num : numbers) {
+        std::cout &lt;&lt; num &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    // C-style array
+    int arr[] = {10, 20, 30, 40};
+    for (int value : arr) {
+        std::cout &lt;&lt; value &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    // String (iterates over characters)
+    std::string text = "Hello";
+    for (char c : text) {
+        std::cout &lt;&lt; c &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    // Initializer list
+    for (double d : {1.1, 2.2, 3.3}) {
+        std::cout &lt;&lt; d &lt;&lt; " ";
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<h3 id="comparison-old-vs-new-syntax"><a class="header" href="#comparison-old-vs-new-syntax">Comparison: Old vs. New Syntax</a></h3>
+<pre><code class="language-cpp">std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+
+// Old way with index
+for (size_t i = 0; i &lt; numbers.size(); i++) {
+    std::cout &lt;&lt; numbers[i] &lt;&lt; " ";
+}
+
+// Old way with iterators
+for (std::vector&lt;int&gt;::iterator it = numbers.begin(); it != numbers.end(); ++it) {
+    std::cout &lt;&lt; *it &lt;&lt; " ";
+}
+
+// Range-based for loop (much cleaner!)
+for (int num : numbers) {
+    std::cout &lt;&lt; num &lt;&lt; " ";
+}
+</code></pre>
+<h3 id="using-auto-keyword"><a class="header" href="#using-auto-keyword">Using <code>auto</code> Keyword</a></h3>
+<p>With the introduction of <code>auto</code> keyword in C++11, using auto in Range based for loops we can greatly reduce complexity as
+the porgrammer does not have to explicitly know the type of the entry in the containers or ranges.
+Simply use <code>auto</code> instead of the type.
+Compiler will deduce the type automatically from auto.</p>
+<pre><code class="language-cpp">std::vector&lt;std::string&gt; words = {"hello", "world", "C++11"};
+
+// Read-only, makes copies
+for (auto word : words) {
+    std::cout &lt;&lt; word &lt;&lt; " ";
+}
+</code></pre>
+<h3 id="using-references"><a class="header" href="#using-references">Using References</a></h3>
+<p>So <code>auto&amp;</code> can be used as well to get reference for entries that programmer can modify.</p>
+<pre><code class="language-cpp">std::vector&lt;std::string&gt; words = {"hello", "world"};
+
+// Read-only, no copies (efficient for large objects)
+for (const auto&amp; word : words) {
+    std::cout &lt;&lt; word &lt;&lt; " ";
+}
+
+// Modify elements
+for (auto&amp; word : words) {
+    word += "!";  // modifies the actual elements
+}
+</code></pre>
+<h2 id="how-it-works-under-the-hood"><a class="header" href="#how-it-works-under-the-hood">How It Works Under the Hood</a></h2>
+<h3 id="the-mechanism"><a class="header" href="#the-mechanism">The Mechanism</a></h3>
+<p>The range-based for loop is essentially syntactic sugar that the compiler translates into a standard <code>for</code> loop that relies explicitly on iterators. This is why the underlying data structure needs <code>begin()</code> and <code>end()</code> functions.</p>
+<h3 id="compiler-transformation"><a class="header" href="#compiler-transformation">Compiler Transformation</a></h3>
+<p>The C++ code you write:</p>
+<pre><code class="language-cpp">for (const auto&amp; element : container) {
+    // user code
+}
+</code></pre>
+<p>Is internally transformed by the compiler into something conceptually similar to:</p>
+<pre><code class="language-cpp">{
+    auto&amp;&amp; __range = container;
+    auto __begin = begin(__range); // Calls the begin() function
+    auto __end = end(__range);     // Calls the end() function
+
+    for (; __begin != __end; ++__begin) {
+        const auto&amp; element = *__begin; // Uses operator* on the iterator
+        // ... user loop body ...
+    }
+}
+</code></pre>
+<h3 id="why-iterators-are-necessary"><a class="header" href="#why-iterators-are-necessary">Why Iterators Are Necessary</a></h3>
+<p>The loop requires the <code>begin()</code> and <code>end()</code> functions to define the boundaries and the traversal logic:</p>
+<ul>
+<li><strong><code>begin()</code></strong>: Establishes the starting point of the iteration.</li>
+<li><strong><code>end()</code></strong>: Defines the termination condition (the loop stops when the current iterator equals the <code>end</code> iterator).</li>
+<li><strong>Iterators</strong>: The objects returned by these functions handle the mechanics of accessing (<code>operator*</code>) and moving to the next element (<code>operator++</code>).</li>
+</ul>
+<p>Without <code>begin()</code> and <code>end()</code>, the compiler has no standardized way to obtain the starting and ending iterators required for this translation process to work.</p>
+<h2 id="working-with-different-container-types"><a class="header" href="#working-with-different-container-types">Working with Different Container Types</a></h2>
+<h3 id="standard-containers"><a class="header" href="#standard-containers">Standard Containers</a></h3>
+<pre><code class="language-cpp">#include &lt;vector&gt;
+#include &lt;list&gt;
+#include &lt;map&gt;
+
+// Vector
+std::vector&lt;int&gt; vec = {1, 2, 3};
+for (auto v : vec) {
+    std::cout &lt;&lt; v &lt;&lt; " ";
+}
+
+// List
+std::list&lt;double&gt; lst = {1.1, 2.2, 3.3};
+for (const auto&amp; l : lst) {
+    std::cout &lt;&lt; l &lt;&lt; " ";
+}
+
+// Map
+std::map&lt;std::string, int&gt; ages = {{"Alice", 30}, {"Bob", 25}};
+for (const auto&amp; pair : ages) {
+    std::cout &lt;&lt; pair.first &lt;&lt; ": " &lt;&lt; pair.second &lt;&lt; std::endl;
+}
+</code></pre>
+<h3 id="static-arrays"><a class="header" href="#static-arrays">Static Arrays</a></h3>
+<p>The range-based <code>for</code> loop works seamlessly with static (fixed-size) arrays because the compiler knows the exact size at compile time.</p>
+<pre><code class="language-cpp">int static_array[] = {10, 20, 30, 40, 50};
+
+for (int x : static_array) {
+    std::cout &lt;&lt; x &lt;&lt; " ";
+}
+</code></pre>
+<p><strong>How It Works:</strong></p>
+<p>When you declare a static array, the compiler internally tracks both the memory location and the number of elements. The compiler calculates:</p>
+<ol>
+<li><strong><code>begin()</code></strong>: The array name (decays to a pointer to the first element)</li>
+<li><strong><code>end()</code></strong>: Uses pointer arithmetic with the known size (<code>array + size</code>)</li>
+</ol>
+<p>The compiler treats it like:</p>
+<pre><code class="language-cpp">auto* __begin = static_array;
+auto* __end = static_array + 5; // '5' is known at compile time
+</code></pre>
+<h2 id="dynamic-arrays-allocated-with-new"><a class="header" href="#dynamic-arrays-allocated-with-new">Dynamic Arrays (Allocated with <code>new</code>)</a></h2>
+<h3 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h3>
+<p>You cannot use a range-based <code>for</code> loop directly on a dynamically allocated array using <code>new</code>, because the compiler only sees a raw pointer (<code>int*</code>) and doesn’t know the size.</p>
+<pre><code class="language-cpp">int* dynamicArray = new int[5];
+// for (int x : dynamicArray) {} // Error: 'begin' was not found
+</code></pre>
+<p>Raw pointers don’t have <code>begin()</code> or <code>end()</code> member functions, and the compiler cannot determine the array size at compile time.</p>
+<h3 id="the-solution-using-standard-library-helpers"><a class="header" href="#the-solution-using-standard-library-helpers">The Solution: Using Standard Library Helpers</a></h3>
+<p>You must explicitly provide the range boundaries using standard library functions.</p>
+<h4 id="using-stdrangessubrange-c20"><a class="header" href="#using-stdrangessubrange-c20">Using <code>std::ranges::subrange</code> (C++20)</a></h4>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;ranges&gt;
+
+int main() {
+    size_t size = 5;
+    int* dynamicArray = new int[size];
+
+    // Initialize the array
+    for (size_t i = 0; i &lt; size; ++i) {
+        dynamicArray[i] = i * 10;
+    }
+
+    // Explicitly define the range using pointer arithmetic
+    for (int x : std::ranges::subrange(dynamicArray, dynamicArray + size)) {
+        std::cout &lt;&lt; x &lt;&lt; " "; // Output: 0 10 20 30 40
+    }
+    std::cout &lt;&lt; std::endl;
+
+    delete[] dynamicArray;
+    return 0;
+}
+</code></pre>
+<h4 id="using-stdspan-c20---recommended"><a class="header" href="#using-stdspan-c20---recommended">Using <code>std::span</code> (C++20 - Recommended)</a></h4>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;span&gt;
+
+int main() {
+    size_t size = 5;
+    int* dynamicArray = new int[size];
+
+    for (size_t i = 0; i &lt; size; ++i) {
+        dynamicArray[i] = i * 10;
+    }
+
+    // Wrap the pointer and size in a span
+    std::span&lt;int&gt; span_of_array(dynamicArray, size);
+    for (int x : span_of_array) {
+        std::cout &lt;&lt; x &lt;&lt; " "; // Output: 0 10 20 30 40
+    }
+    std::cout &lt;&lt; std::endl;
+
+    delete[] dynamicArray;
+    return 0;
+}
+</code></pre>
+<p>By using <code>std::ranges::subrange</code> or <code>std::span</code>, you wrap your raw pointer and size into a type that satisfies the range concept (it has <code>begin()</code> and <code>end()</code> member functions), allowing the range-based <code>for</code> loop to work correctly.</p>
+<h2 id="custom-classes-and-the-range-concept"><a class="header" href="#custom-classes-and-the-range-concept">Custom Classes and the Range Concept</a></h2>
+<p>To use a custom class with a range-based <code>for</code> loop, the class must satisfy the range concept.</p>
+<h3 id="requirements"><a class="header" href="#requirements">Requirements</a></h3>
+<p>Your class must provide:</p>
+<ol>
+<li>
+<p><strong><code>begin()</code> and <code>end()</code> functions</strong>, either as:</p>
+<ul>
+<li>Member functions, or</li>
+<li>Non-member functions in the same namespace (found via argument-dependent lookup)</li>
+</ul>
+</li>
+<li>
+<p><strong>An iterator type</strong> that supports:</p>
+<ul>
+<li><code>operator*</code> (dereference)</li>
+<li><code>operator!=</code> (inequality comparison)</li>
+<li>Pre-increment <code>operator++</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="example-custom-container"><a class="header" href="#example-custom-container">Example: Custom Container</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+class SimpleContainer {
+private:
+    int data[5] = {1, 2, 3, 4, 5};
+
+public:
+    // Iterator class
+    class Iterator {
+    private:
+        int* ptr;
+    
+    public:
+        Iterator(int* p) : ptr(p) {}
+        
+        // Dereference operator
+        int&amp; operator*() { return *ptr; }
+        
+        // Pre-increment operator
+        Iterator&amp; operator++() {
+            ++ptr;
+            return *this;
+        }
+        
+        // Inequality comparison
+        bool operator!=(const Iterator&amp; other) const {
+            return ptr != other.ptr;
+        }
+    };
+
+    // begin() function
+    Iterator begin() { return Iterator(data); }
+    
+    // end() function
+    Iterator end() { return Iterator(data + 5); }
+};
+
+int main() {
+    SimpleContainer container;
+    
+    for (int value : container) {
+        std::cout &lt;&lt; value &lt;&lt; " "; // Output: 1 2 3 4 5
+    }
+    std::cout &lt;&lt; std::endl;
+    
+    return 0;
+}
+</code></pre>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="use-const-auto-for-read-only-access"><a class="header" href="#use-const-auto-for-read-only-access">Use <code>const auto&amp;</code> for Read-Only Access</a></h3>
+<p>When you don’t need to modify elements and want to avoid copying (especially for large objects):</p>
+<pre><code class="language-cpp">std::vector&lt;std::string&gt; large_strings = {"very", "long", "strings"};
+
+for (const auto&amp; str : large_strings) {
+    std::cout &lt;&lt; str &lt;&lt; " ";
+}
+</code></pre>
+<h3 id="use-auto-for-modifications"><a class="header" href="#use-auto-for-modifications">Use <code>auto&amp;</code> for Modifications</a></h3>
+<p>When you need to modify the elements in place:</p>
+<pre><code class="language-cpp">std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+
+for (auto&amp; num : numbers) {
+    num *= 2;  // doubles each element
+}
+</code></pre>
+<h3 id="use-plain-auto-for-copies"><a class="header" href="#use-plain-auto-for-copies">Use Plain <code>auto</code> for Copies</a></h3>
+<p>When you explicitly want to work with copies:</p>
+<pre><code class="language-cpp">std::vector&lt;int&gt; numbers = {1, 2, 3};
+
+for (auto num : numbers) {
+    num *= 2;  // modifies the copy, not the original
+}
+</code></pre>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>Range-based for loops provide:</p>
+<ul>
+<li><strong>Cleaner syntax</strong>: No need for explicit iterators or index management</li>
+<li><strong>Less error-prone</strong>: Eliminates off-by-one errors and iterator mistakes</li>
+<li><strong>More readable</strong>: Intent is immediately clear</li>
+<li><strong>Flexible</strong>: Works with standard containers, arrays, and custom types</li>
+</ul>
+<p>The key requirement is that the range must provide <code>begin()</code> and <code>end()</code> functions that return iterators supporting the basic iterator operations.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="decltype.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="cpp11_constructors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="decltype.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="cpp11_constructors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

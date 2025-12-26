@@ -1,0 +1,2045 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Shared ownership smart pointer - std::shared_ptr and std::weak_ptr</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-a1598d69.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-ae778994.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="stdshared_ptr-shared-ownership-of-resources"><a class="header" href="#stdshared_ptr-shared-ownership-of-resources">std::shared_ptr<t>: Shared Ownership of Resources</t></a></h1>
+<hr>
+<p>When working with <code>unique_ptr&lt;T&gt;</code>, you have exclusive ownership - only one pointer can own a resource at a time. But what if multiple parts of your program legitimately need to own the same resource? What if you have a design where several objects should collectively manage a resource’s lifetime?</p>
+<p>This is where <code>std::shared_ptr&lt;T&gt;</code> comes in. Unlike <code>unique_ptr&lt;T&gt;</code>, which enforces exclusive ownership, <code>shared_ptr&lt;T&gt;</code> allows <strong>multiple owners to share responsibility</strong> for a single resource. The resource is automatically cleaned up only when the <strong>last owner is destroyed</strong>.</p>
+<hr>
+<h2 id="what-is-stdshared_ptr"><a class="header" href="#what-is-stdshared_ptr">What is std::shared_ptr<t>?</t></a></h2>
+<p><code>std::shared_ptr&lt;T&gt;</code> is a smart pointer that manages a resource through <strong>shared ownership</strong>. Multiple <code>shared_ptr</code> instances can point to the same resource and collectively manage its lifetime through a reference counting mechanism.</p>
+<p><code>std::shared_ptr&lt;T&gt;</code> consists of two main components: a <strong>data pointer</strong> and a <strong>control block pointer</strong>.</p>
+<p><img src="./images/shared_ptr.png" alt="shared_ptr"></p>
+<h3 id="key-characteristics"><a class="header" href="#key-characteristics">Key Characteristics</a></h3>
+<ul>
+<li><strong>Shared Ownership</strong>: Multiple <code>shared_ptr</code> can own the same resource</li>
+<li><strong>Reference Counting</strong>: Internally maintains a count of how many <code>shared_ptr</code> instances own the resource</li>
+<li><strong>Automatic Cleanup</strong>: Resource is deleted only when the last owner is destroyed</li>
+<li><strong>Copyable</strong>: Unlike <code>unique_ptr</code>, you can freely copy a <code>shared_ptr</code></li>
+<li><strong>Movable</strong>: You can also move a <code>shared_ptr</code> to transfer ownership</li>
+<li><strong>Reference Counted Overhead</strong>: Slightly slower than <code>unique_ptr</code> due to atomic reference counting</li>
+</ul>
+<h3 id="how-reference-counting-works"><a class="header" href="#how-reference-counting-works">How Reference Counting Works</a></h3>
+<p>Each resource managed by <code>shared_ptr</code> has an associated <strong>reference count</strong>:</p>
+<ol>
+<li><strong>When created</strong>: Count = 1 (one owner)</li>
+<li><strong>When copied</strong>: Count increments (more owners)</li>
+<li><strong>When destroyed</strong>: Count decrements</li>
+<li><strong>When count reaches 0</strong>: Resource is automatically deleted</li>
+</ol>
+<pre><code class="language-cpp">std::shared_ptr&lt;int&gt; ptr1 = std::make_shared&lt;int&gt;(42);  // count = 1
+
+std::shared_ptr&lt;int&gt; ptr2 = ptr1;  // count = 2
+
+std::shared_ptr&lt;int&gt; ptr3 = ptr1;  // count = 3
+
+// ptr1 goes out of scope    // count = 2
+// ptr3 goes out of scope    // count = 1
+// ptr2 goes out of scope    // count = 0 -&gt; Memory is deleted
+</code></pre>
+<hr>
+<h3 id="single-shared_ptr"><a class="header" href="#single-shared_ptr">Single shared_ptr</a></h3>
+<p>When you create: <code>std::shared_ptr&lt;int&gt; ptr = std::make_shared&lt;int&gt;(42);</code></p>
+<p><img src="./images/1_shared_ptr.png" alt="Single shared_ptr"></p>
+<h3 id="three-shared_ptr-sharing-same-resource"><a class="header" href="#three-shared_ptr-sharing-same-resource">Three shared_ptr Sharing Same Resource</a></h3>
+<p>When you do:</p>
+<pre><code class="language-cpp">std::shared_ptr&lt;int&gt; ptr1 = std::make_shared&lt;int&gt;(42);
+std::shared_ptr&lt;int&gt; ptr2 = ptr1;  // Copy
+std::shared_ptr&lt;int&gt; ptr3 = ptr1;  // Copy
+</code></pre>
+<p><img src="./images/3_shared_ptr.png" alt="3 shared_ptr"></p>
+<p><strong>Key Point</strong>: All 3 shared_ptr point to the SAME Control Block!</p>
+<ul>
+<li>When ANY one is copied, ref_count increments</li>
+<li>When ANY one is destroyed, ref_count decrements</li>
+</ul>
+<hr>
+<h2 id="creating-a-shared_ptr"><a class="header" href="#creating-a-shared_ptr">Creating a shared_ptr</a></h2>
+<h3 id="method-1-using-stdmake_sharedt-recommended"><a class="header" href="#method-1-using-stdmake_sharedt-recommended">Method 1: Using <code>std::make_shared&lt;T&gt;</code> (Recommended)</a></h3>
+<p><code>std::make_shared&lt;T&gt;</code> is the <strong>preferred way</strong> to create a <code>shared_ptr</code>. It allocates the object and the reference count metadata in a single operation, making it more efficient. (See the detailed comparison with <code>new</code> in the “Advanced Topics” section at the end.)</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Logger {
+public:
+    Logger(const std::string&amp; name) : name_(name) {
+        std::cout &lt;&lt; "Logger '" &lt;&lt; name_ &lt;&lt; "' created\n";
+    }
+    ~Logger() {
+        std::cout &lt;&lt; "Logger '" &lt;&lt; name_ &lt;&lt; "' destroyed\n";
+    }
+    void log(const std::string&amp; msg) const {
+        std::cout &lt;&lt; "[" &lt;&lt; name_ &lt;&lt; "] " &lt;&lt; msg &lt;&lt; "\n";
+    }
+private:
+    std::string name_;
+};
+
+int main() {
+    // Create using make_shared - THIS IS PREFERRED
+    std::shared_ptr&lt;Logger&gt; logger1 = std::make_shared&lt;Logger&gt;("Main");
+    
+    std::cout &lt;&lt; "Reference count: " &lt;&lt; logger1.use_count() &lt;&lt; "\n";
+    
+    logger1-&gt;log("Application started");
+    
+    return 0;
+}
+
+// Output:
+// Logger 'Main' created
+// Reference count: 1
+// [Main] Application started
+// Logger 'Main' destroyed
+</code></pre>
+<hr>
+<h3 id="method-2-using-new-when-custom-deleter-needed"><a class="header" href="#method-2-using-new-when-custom-deleter-needed">Method 2: Using <code>new</code> (When Custom Deleter Needed)</a></h3>
+<p>You can create a <code>shared_ptr</code> by passing a raw pointer, but this should only be used when you need a custom deleter or when <code>make_shared</code> cannot be used. See the “Advanced Topics: new vs make_shared” section at the end for a detailed comparison.</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Resource {
+public:
+    Resource() { std::cout &lt;&lt; "Resource created\n"; }
+    ~Resource() { std::cout &lt;&lt; "Resource destroyed\n"; }
+};
+
+int main() {
+    // Create using new - works but less efficient than make_shared
+    std::shared_ptr&lt;Resource&gt; res(new Resource());
+    
+    return 0;
+}
+
+// Output:
+// Resource created
+// Resource destroyed
+</code></pre>
+<hr>
+<h3 id="method-3-converting-from-unique_ptr"><a class="header" href="#method-3-converting-from-unique_ptr">Method 3: Converting from unique_ptr</a></h3>
+<p>You can move a <code>unique_ptr</code> into a <code>shared_ptr</code>, which transfers ownership:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Data {
+public:
+    Data() { std::cout &lt;&lt; "Data created\n"; }
+    ~Data() { std::cout &lt;&lt; "Data destroyed\n"; }
+};
+
+int main() {
+    std::unique_ptr&lt;Data&gt; uptr = std::make_unique&lt;Data&gt;();
+    
+    // Move unique_ptr to shared_ptr
+    std::shared_ptr&lt;Data&gt; sptr = std::move(uptr);
+    
+    // uptr is now empty, sptr owns the resource
+    return 0;
+}
+
+// Output:
+// Data created
+// Data destroyed
+</code></pre>
+<hr>
+<h2 id="custom-deleters-with-shared_ptr"><a class="header" href="#custom-deleters-with-shared_ptr">Custom Deleters with shared_ptr</a></h2>
+<p>Sometimes you need to manage resources that aren’t simple heap-allocated objects. For example, file handles, database connections, or C-style resources that need special cleanup. This is where <strong>custom deleters</strong> come in.</p>
+<h3 id="why-custom-deleters"><a class="header" href="#why-custom-deleters">Why Custom Deleters?</a></h3>
+<p>Custom deleters are useful when:</p>
+<ul>
+<li>Managing non-memory resources (files, sockets, handles)</li>
+<li>Working with C APIs that have their own cleanup functions</li>
+<li>Implementing special cleanup logic</li>
+<li>Managing arrays allocated with <code>new[]</code></li>
+<li>Releasing resources that don’t use <code>delete</code></li>
+</ul>
+<h3 id="creating-shared_ptr-with-custom-deleter"><a class="header" href="#creating-shared_ptr-with-custom-deleter">Creating shared_ptr with Custom Deleter</a></h3>
+<p><strong>Note</strong>: You <strong>cannot</strong> use <code>make_shared</code> with custom deleters. You must use the <code>shared_ptr</code> constructor with <code>new</code>.</p>
+<pre><code class="language-cpp">std::shared_ptr&lt;T&gt; ptr(new T(), custom_deleter);
+</code></pre>
+<p>Consider this Example of <strong>Managing FILE with Custom Deleter</strong></p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+#include &lt;cstdio&gt;
+
+int main() {
+    // Custom deleter for FILE*
+    auto fileDeleter = [](FILE* file) {
+        if (file) {
+            std::cout &lt;&lt; "Closing file\n";
+            std::fclose(file);
+        }
+    };
+    
+    // Create shared_ptr with custom deleter
+    std::shared_ptr&lt;FILE&gt; file(
+        std::fopen("data.txt", "w"),
+        fileDeleter
+    );
+    
+    if (file) {
+        std::fprintf(file.get(), "Hello, World!\n");
+        std::cout &lt;&lt; "Data written to file\n";
+    }
+    
+    return 0;
+}
+
+// Output:
+// Data written to file
+// Closing file
+</code></pre>
+<hr>
+<h3 id="managing-arrays-with-delete"><a class="header" href="#managing-arrays-with-delete">Managing Arrays with delete[]</a></h3>
+<p>When you allocate an array with <code>new[]</code>, you need to delete it with <code>delete[]</code>, not <code>delete</code>. A custom deleter ensures proper cleanup:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    // Custom deleter for array
+    auto arrayDeleter = [](int* arr) {
+        std::cout &lt;&lt; "Deleting array with delete[]\n";
+        delete[] arr;
+    };
+    
+    // Create array with custom deleter
+    std::shared_ptr&lt;int&gt; arr(
+        new int[5]{10, 20, 30, 40, 50},
+        arrayDeleter
+    );
+    
+    // Access array elements
+    for (int i = 0; i &lt; 5; ++i) {
+        std::cout &lt;&lt; "arr[" &lt;&lt; i &lt;&lt; "] = " &lt;&lt; arr.get()[i] &lt;&lt; "\n";
+    }
+    
+    return 0;
+}
+
+// Output:
+// arr[0] = 10
+// arr[1] = 20
+// arr[2] = 30
+// arr[3] = 40
+// arr[4] = 50
+// Deleting array with delete[]
+</code></pre>
+<p><strong>Better Alternative</strong>: Use <code>shared_ptr&lt;T[]&gt;</code> (C++17+) which automatically uses <code>delete[]</code>:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    // C++17: shared_ptr for arrays - no custom deleter needed!
+    std::shared_ptr&lt;int[]&gt; arr(new int[5]{10, 20, 30, 40, 50});
+    
+    // Can use array subscript operator
+    for (int i = 0; i &lt; 5; ++i) {
+        std::cout &lt;&lt; "arr[" &lt;&lt; i &lt;&lt; "] = " &lt;&lt; arr[i] &lt;&lt; "\n";
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="no-op-deleter-stack-objects"><a class="header" href="#no-op-deleter-stack-objects">No-Op Deleter (Stack Objects)</a></h3>
+<p>Sometimes you want to use shared_ptr with objects you don’t own (like stack-allocated objects). You need a no-op deleter:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Service {
+public:
+    Service(int id) : id_(id) {
+        std::cout &lt;&lt; "Service " &lt;&lt; id_ &lt;&lt; " created\n";
+    }
+    ~Service() {
+        std::cout &lt;&lt; "Service " &lt;&lt; id_ &lt;&lt; " destroyed\n";
+    }
+    void process() {
+        std::cout &lt;&lt; "Processing with service " &lt;&lt; id_ &lt;&lt; "\n";
+    }
+private:
+    int id_;
+};
+
+void useService(std::shared_ptr&lt;Service&gt; service) {
+    service-&gt;process();
+}
+
+int main() {
+    Service stackService(1);
+    
+    // No-op deleter - don't delete stack object
+    auto noopDeleter = [](Service*) {
+        std::cout &lt;&lt; "(No-op deleter called)\n";
+    };
+    
+    std::shared_ptr&lt;Service&gt; servicePtr(&amp;stackService, noopDeleter);
+    
+    useService(servicePtr);
+    
+    return 0;
+}
+
+// Output:
+// Service 1 created
+// Processing with service 1
+// (No-op deleter called)
+// Service 1 destroyed
+</code></pre>
+<hr>
+<h3 id="custom-deleter-syntax-summary"><a class="header" href="#custom-deleter-syntax-summary">Custom Deleter Syntax Summary</a></h3>
+<pre><code class="language-cpp">// Lambda deleter
+std::shared_ptr&lt;T&gt; ptr(new T(), [](T* p) { delete p; });
+
+// Function pointer deleter
+void customDelete(T* p) { delete p; }
+std::shared_ptr&lt;T&gt; ptr(new T(), customDelete);
+
+// Functor deleter
+struct Deleter {
+    void operator()(T* p) const { delete p; }
+};
+std::shared_ptr&lt;T&gt; ptr(new T(), Deleter{});
+
+// std::function deleter
+std::function&lt;void(T*)&gt; deleter = [](T* p) { delete p; };
+std::shared_ptr&lt;T&gt; ptr(new T(), deleter);
+</code></pre>
+<hr>
+<h3 id="some-situation-where-usage-of-custom-deleters-is-needed"><a class="header" href="#some-situation-where-usage-of-custom-deleters-is-needed">Some situation where usage of Custom Deleters is needed</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Situation</th><th>Use Custom Deleter</th></tr>
+</thead>
+<tbody>
+<tr><td>Standard heap allocation</td><td>Use <code>make_shared</code></td></tr>
+<tr><td>Arrays</td><td>Use <code>shared_ptr&lt;T[]&gt;</code> (C++17+) or custom deleter</td></tr>
+<tr><td>C API resources</td><td>Custom deleter with C cleanup function</td></tr>
+<tr><td>File handles</td><td>Custom deleter with <code>fclose</code></td></tr>
+<tr><td>Special cleanup logic</td><td>Custom deleter</td></tr>
+<tr><td>Stack objects</td><td>No-op deleter</td></tr>
+<tr><td>Logging/debugging</td><td>Custom deleter with logging</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="important-notes-about-custom-deleters"><a class="header" href="#important-notes-about-custom-deleters">Important Notes About Custom Deleters</a></h3>
+<ol>
+<li><strong>Cannot use make_shared</strong>: Custom deleters require constructor syntax</li>
+<li><strong>Two allocations</strong>: Unlike <code>make_shared</code>, this creates two separate allocations</li>
+<li><strong>Type erasure</strong>: The deleter type is stored in the control block</li>
+<li><strong>Shared among copies</strong>: All copies of the shared_ptr share the same deleter</li>
+<li><strong>Called once</strong>: The deleter is only called when ref_count reaches 0</li>
+</ol>
+<hr>
+<h2 id="copying-and-sharing-ownership"><a class="header" href="#copying-and-sharing-ownership">Copying and Sharing Ownership</a></h2>
+<p>The key feature of <code>shared_ptr</code> is that <strong>you can freely copy it</strong>, and each copy increases the reference count.</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Service {
+public:
+    Service(const std::string&amp; name) : name_(name) {
+        std::cout &lt;&lt; "Service '" &lt;&lt; name_ &lt;&lt; "' started\n";
+    }
+    ~Service() {
+        std::cout &lt;&lt; "Service '" &lt;&lt; name_ &lt;&lt; "' stopped\n";
+    }
+    void process() const {
+        std::cout &lt;&lt; "Processing...\n";
+    }
+private:
+    std::string name_;
+};
+
+int main() {
+    std::shared_ptr&lt;Service&gt; service = std::make_shared&lt;Service&gt;("DataProcessor");
+    
+    std::cout &lt;&lt; "Count after creation: " &lt;&lt; service.use_count() &lt;&lt; "\n";
+    
+    // Copy the pointer - count increments
+    std::shared_ptr&lt;Service&gt; service_copy1 = service;
+    std::cout &lt;&lt; "Count after 1st copy: " &lt;&lt; service.use_count() &lt;&lt; "\n";
+    
+    std::shared_ptr&lt;Service&gt; service_copy2 = service;
+    std::cout &lt;&lt; "Count after 2nd copy: " &lt;&lt; service.use_count() &lt;&lt; "\n";
+    
+    service_copy1-&gt;process();
+    
+    {
+        std::shared_ptr&lt;Service&gt; service_copy3 = service;
+        std::cout &lt;&lt; "Count inside scope: " &lt;&lt; service.use_count() &lt;&lt; "\n";
+    }
+    // service_copy3 goes out of scope - count decrements to 3
+    
+    std::cout &lt;&lt; "Count after scope: " &lt;&lt; service.use_count() &lt;&lt; "\n";
+    
+    return 0;
+}
+
+// Output:
+// Service 'DataProcessor' started
+// Count after creation: 1
+// Count after 1st copy: 2
+// Count after 2nd copy: 3
+// Processing...
+// Count inside scope: 4
+// Count after scope: 3
+// Service 'DataProcessor' stopped
+</code></pre>
+<hr>
+<h2 id="checking-ownership-information"><a class="header" href="#checking-ownership-information">Checking Ownership Information</a></h2>
+<h3 id="use_count---how-many-owners"><a class="header" href="#use_count---how-many-owners"><code>use_count()</code> - How Many Owners?</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    std::shared_ptr&lt;int&gt; ptr1 = std::make_shared&lt;int&gt;(100);
+    
+    std::cout &lt;&lt; "Owners: " &lt;&lt; ptr1.use_count() &lt;&lt; "\n";  // Prints: 1
+    
+    std::shared_ptr&lt;int&gt; ptr2 = ptr1;
+    std::cout &lt;&lt; "Owners: " &lt;&lt; ptr1.use_count() &lt;&lt; "\n";  // Prints: 2
+    
+    std::shared_ptr&lt;int&gt; ptr3 = ptr1;
+    std::cout &lt;&lt; "Owners: " &lt;&lt; ptr1.use_count() &lt;&lt; "\n";  // Prints: 3
+    
+    return 0;
+}
+</code></pre>
+<h3 id="unique---am-i-the-only-owner"><a class="header" href="#unique---am-i-the-only-owner"><code>unique()</code> - Am I the Only Owner?</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    std::shared_ptr&lt;int&gt; ptr1 = std::make_shared&lt;int&gt;(50);
+    
+    if (ptr1.unique()) {
+        std::cout &lt;&lt; "I'm the only owner\n";  // This prints
+    }
+    
+    std::shared_ptr&lt;int&gt; ptr2 = ptr1;
+    
+    if (!ptr1.unique()) {
+        std::cout &lt;&lt; "Multiple owners exist\n";  // This prints
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="bool-conversion---is-it-valid"><a class="header" href="#bool-conversion---is-it-valid"><code>bool</code> Conversion - Is It Valid?</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    std::shared_ptr&lt;int&gt; ptr;
+    
+    if (!ptr) {
+        std::cout &lt;&lt; "ptr is empty\n";  // Prints
+    }
+    
+    ptr = std::make_shared&lt;int&gt;(42);
+    
+    if (ptr) {
+        std::cout &lt;&lt; "ptr is valid\n";  // Prints
+    }
+    
+    return 0;
+}
+</code></pre>
+<hr>
+<h2 id="the-get-method"><a class="header" href="#the-get-method">The <code>get()</code> Method</a></h2>
+<h3 id="what-does-get-do"><a class="header" href="#what-does-get-do">What Does <code>get()</code> Do?</a></h3>
+<p>The <code>get()</code> method returns a <strong>raw pointer</strong> to the managed resource <strong>without transferring ownership</strong>. The <code>shared_ptr</code> retains ownership and will delete the resource when all owners are destroyed.</p>
+<pre><code class="language-cpp">T* get() const noexcept;
+</code></pre>
+<p><strong>Returns</strong>: Raw pointer to the managed object, or <code>nullptr</code> if empty</p>
+<h3 id="use-case-1-passing-to-legacy-c-apis"><a class="header" href="#use-case-1-passing-to-legacy-c-apis">Use Case 1: Passing to Legacy C APIs</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+
+void legacyPrintString(const char* str) {
+    std::printf("String: %s\n", str);
+}
+
+int main() {
+    std::shared_ptr&lt;char[]&gt; buffer = std::make_shared&lt;char[]&gt;(100);
+    
+    std::strcpy(buffer.get(), "Hello, World!");
+    legacyPrintString(buffer.get());
+    
+    return 0;
+}
+
+// Output:
+// String: Hello, World!
+</code></pre>
+<h3 id="use-case-2-null-check-before-use"><a class="header" href="#use-case-2-null-check-before-use">Use Case 2: Null Check Before Use</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Service {
+public:
+    void process() { std::cout &lt;&lt; "Processing...\n"; }
+};
+
+int main() {
+    std::shared_ptr&lt;Service&gt; service;
+    
+    if (service.get() != nullptr) {
+        service-&gt;process();
+    } else {
+        std::cout &lt;&lt; "Service not initialized\n";
+    }
+    
+    return 0;
+}
+
+// Output:
+// Service not initialized
+</code></pre>
+<h3 id="dangers-of-get"><a class="header" href="#dangers-of-get">Dangers of <code>get()</code></a></h3>
+<p><strong>DANGER: Don’t store the pointer beyond the scope where shared_ptr is valid</strong></p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Resource {
+public:
+    ~Resource() { std::cout &lt;&lt; "Resource destroyed\n"; }
+};
+
+int main() {
+    Resource* dangling = nullptr;
+    
+    {
+        std::shared_ptr&lt;Resource&gt; res = std::make_shared&lt;Resource&gt;();
+        dangling = res.get();  // OK here
+    }  // res destroyed here
+    
+    // DANGER: dangling points to freed memory!
+    // dangling-&gt;doWork();  // UNDEFINED BEHAVIOR
+    
+    return 0;
+}
+</code></pre>
+<hr>
+<h2 id="the-reset-method"><a class="header" href="#the-reset-method">The <code>reset()</code> Method</a></h2>
+<h3 id="what-does-reset-do"><a class="header" href="#what-does-reset-do">What Does <code>reset()</code> Do?</a></h3>
+<p>The <code>reset()</code> method releases the <code>shared_ptr</code>’s ownership of its current resource and optionally takes ownership of a new one. The reference count is decremented, and if it reaches zero, the resource is deleted.</p>
+<pre><code class="language-cpp">void reset() noexcept;
+void reset(T* ptr) noexcept;
+</code></pre>
+<h3 id="use-case-1-explicitly-release-a-resource"><a class="header" href="#use-case-1-explicitly-release-a-resource">Use Case 1: Explicitly Release a Resource</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Connection {
+public:
+    Connection(const std::string&amp; host) : host_(host) {
+        std::cout &lt;&lt; "Connecting to " &lt;&lt; host_ &lt;&lt; "\n";
+    }
+    ~Connection() {
+        std::cout &lt;&lt; "Disconnecting from " &lt;&lt; host_ &lt;&lt; "\n";
+    }
+private:
+    std::string host_;
+};
+
+int main() {
+    std::shared_ptr&lt;Connection&gt; conn = std::make_shared&lt;Connection&gt;("localhost");
+    
+    std::cout &lt;&lt; "Connection active. Count: " &lt;&lt; conn.use_count() &lt;&lt; "\n";
+    
+    conn.reset();
+    
+    std::cout &lt;&lt; "After reset. Count: " &lt;&lt; conn.use_count() &lt;&lt; "\n";
+    
+    return 0;
+}
+
+// Output:
+// Connecting to localhost
+// Connection active. Count: 1
+// Disconnecting from localhost
+// After reset. Count: 0
+</code></pre>
+<h3 id="use-case-2-replace-one-resource-with-another"><a class="header" href="#use-case-2-replace-one-resource-with-another">Use Case 2: Replace One Resource with Another</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class File {
+public:
+    File(const std::string&amp; name) : name_(name) {
+        std::cout &lt;&lt; "Opening: " &lt;&lt; name_ &lt;&lt; "\n";
+    }
+    ~File() {
+        std::cout &lt;&lt; "Closing: " &lt;&lt; name_ &lt;&lt; "\n";
+    }
+private:
+    std::string name_;
+};
+
+int main() {
+    std::shared_ptr&lt;File&gt; file = std::make_shared&lt;File&gt;("data.txt");
+    
+    std::cout &lt;&lt; "Switching files...\n";
+    
+    file.reset(new File("log.txt"));
+    
+    return 0;
+}
+
+// Output:
+// Opening: data.txt
+// Switching files...
+// Closing: data.txt
+// Opening: log.txt
+// Closing: log.txt
+</code></pre>
+<h3 id="use-case-3-shared-ownership---reset-only-affects-one-owner"><a class="header" href="#use-case-3-shared-ownership---reset-only-affects-one-owner">Use Case 3: Shared Ownership - reset() Only Affects One Owner</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+class Data {
+public:
+    Data(int val) : val_(val) {
+        std::cout &lt;&lt; "Data(" &lt;&lt; val_ &lt;&lt; ") created\n";
+    }
+    ~Data() {
+        std::cout &lt;&lt; "Data(" &lt;&lt; val_ &lt;&lt; ") destroyed\n";
+    }
+private:
+    int val_;
+};
+
+int main() {
+    std::shared_ptr&lt;Data&gt; ptr1 = std::make_shared&lt;Data&gt;(42);
+    std::shared_ptr&lt;Data&gt; ptr2 = ptr1;  // Share ownership
+    
+    std::cout &lt;&lt; "Count before reset: " &lt;&lt; ptr1.use_count() &lt;&lt; "\n";
+    
+    ptr2.reset();  // ptr2 releases its ownership
+    
+    std::cout &lt;&lt; "Count after reset: " &lt;&lt; ptr1.use_count() &lt;&lt; "\n";
+    std::cout &lt;&lt; "ptr1 still valid: " &lt;&lt; (ptr1.get() != nullptr) &lt;&lt; "\n";
+    
+    return 0;
+}
+
+// Output:
+// Data(42) created
+// Count before reset: 2
+// Count after reset: 1
+// ptr1 still valid: 1
+// Data(42) destroyed
+</code></pre>
+<hr>
+<h2 id="comparison-get-vs-reset"><a class="header" href="#comparison-get-vs-reset">Comparison: <code>get()</code> vs <code>reset()</code></a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th><code>get()</code></th><th><code>reset()</code></th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Purpose</strong></td><td>Borrow raw pointer</td><td>Release ownership</td></tr>
+<tr><td><strong>Ownership Change</strong></td><td>No</td><td>Yes - decrements ref count</td></tr>
+<tr><td><strong>Pointer Valid After</strong></td><td>If shared_ptr alive</td><td>After reset call</td></tr>
+<tr><td><strong>Side Effects</strong></td><td>None</td><td>May delete resource</td></tr>
+<tr><td><strong>Use Case</strong></td><td>Legacy APIs, temporary access</td><td>Cleanup, replacement</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="stdweak_ptr-non-owning-observer"><a class="header" href="#stdweak_ptr-non-owning-observer">std::weak_ptr<t>: Non-Owning Observer</t></a></h2>
+<h3 id="introduction-the-circular-reference-problem"><a class="header" href="#introduction-the-circular-reference-problem">Introduction: The Circular Reference Problem</a></h3>
+<p>Before diving into <code>weak_ptr</code>, let’s understand the problem it solves. Consider this scenario:</p>
+<pre><code class="language-cpp">class Node {
+public:
+    std::shared_ptr&lt;Node&gt; next;
+    std::shared_ptr&lt;Node&gt; prev;
+};
+
+int main() {
+    auto node1 = std::make_shared&lt;Node&gt;();
+    auto node2 = std::make_shared&lt;Node&gt;();
+    
+    node1-&gt;next = node2;  // node1 → node2
+    node2-&gt;prev = node1;  // node2 → node1
+    
+    // MEMORY LEAK!
+    // node1 keeps node2 alive
+    // node2 keeps node1 alive
+    // Neither can be deleted!
+    
+    return 0;
+}
+</code></pre>
+<p><strong>The Problem:</strong></p>
+<ul>
+<li><code>node1</code> has a <code>shared_ptr</code> to <code>node2</code> → ref_count(node2) = 1</li>
+<li><code>node2</code> has a <code>shared_ptr</code> to <code>node1</code> → ref_count(node1) = 1</li>
+<li>When <code>node1</code> goes out of scope, it can’t be deleted (ref_count = 1)</li>
+<li>When <code>node2</code> goes out of scope, it can’t be deleted (ref_count = 1)</li>
+<li><strong>Result</strong>: Both nodes leak memory!</li>
+</ul>
+<p>This is called a <strong>circular reference</strong> or <strong>reference cycle</strong>.</p>
+<hr>
+<h3 id="what-is-stdweak_ptr"><a class="header" href="#what-is-stdweak_ptr">What is std::weak_ptr<t>?</t></a></h3>
+<p><code>std::weak_ptr&lt;T&gt;</code> is a smart pointer that holds a <strong>non-owning</strong> reference to an object managed by <code>shared_ptr</code>. It does not affect the reference count and cannot directly access the object.</p>
+<h3 id="key-characteristics-1"><a class="header" href="#key-characteristics-1">Key Characteristics</a></h3>
+<ul>
+<li><strong>Non-owning</strong>: Does not contribute to reference counting</li>
+<li><strong>No Direct Access</strong>: Cannot use <code>*</code> or <code>-&gt;</code> operators directly</li>
+<li><strong>Must be converted</strong>: Use <code>lock()</code> to get a <code>shared_ptr</code> for access</li>
+<li><strong>Can detect expiration</strong>: Use <code>expired()</code> to check if object still exists</li>
+<li><strong>Breaks circular references</strong>: Solves the circular dependency problem</li>
+<li><strong>Lightweight</strong>: Only stores a pointer to the control block</li>
+</ul>
+<hr>
+<h3 id="how-weak_ptr-works"><a class="header" href="#how-weak_ptr-works">How weak_ptr Works</a></h3>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    std::weak_ptr&lt;int&gt; weak;
+    
+    {
+        std::shared_ptr&lt;int&gt; shared = std::make_shared&lt;int&gt;(42);
+        std::cout &lt;&lt; "shared ref_count: " &lt;&lt; shared.use_count() &lt;&lt; "\n";  // 1
+        
+        weak = shared;  // weak_ptr created
+        std::cout &lt;&lt; "shared ref_count: " &lt;&lt; shared.use_count() &lt;&lt; "\n";  // Still 1!
+        
+        // weak_ptr does NOT increment ref_count
+    }
+    
+    // shared destroyed, object deleted
+    std::cout &lt;&lt; "Object expired: " &lt;&lt; weak.expired() &lt;&lt; "\n";  // true
+    
+    return 0;
+}
+
+// Output:
+// shared ref_count: 1
+// shared ref_count: 1
+// Object expired: 1
+</code></pre>
+<p><strong>Key Insight</strong>: <code>weak_ptr</code> observes but doesn’t own!</p>
+<hr>
+<h3 id="the-control-block-with-weak_ptr"><a class="header" href="#the-control-block-with-weak_ptr">The Control Block with weak_ptr</a></h3>
+<p>Remember the control block structure? It has TWO counters:</p>
+<pre><code>Control Block:
+┌──────────────────┐
+│ shared_count: 2  │ ◄── Number of shared_ptr owners
+│ weak_count: 3    │ ◄── Number of weak_ptr observers
+│ deleter          │
+│ allocator        │
+└──────────────────┘
+</code></pre>
+<p><strong>Important Rules:</strong></p>
+<ol>
+<li><strong>Object is deleted</strong> when <code>shared_count</code> reaches 0</li>
+<li><strong>Control block is deleted</strong> when <code>weak_count</code> reaches 0</li>
+<li><code>weak_ptr</code> increments <code>weak_count</code>, not <code>shared_count</code></li>
+</ol>
+<hr>
+<h3 id="creating-a-weak_ptr"><a class="header" href="#creating-a-weak_ptr">Creating a weak_ptr</a></h3>
+<p>You cannot create a <code>weak_ptr</code> directly. It must be created from a <code>shared_ptr</code>:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+
+int main() {
+    // Cannot create weak_ptr from nothing
+    // std::weak_ptr&lt;int&gt; weak;  // This creates an empty weak_ptr
+    
+    // Create from shared_ptr
+    std::shared_ptr&lt;int&gt; shared = std::make_shared&lt;int&gt;(100);
+    std::weak_ptr&lt;int&gt; weak = shared;
+    
+    // Copy from another weak_ptr
+    std::weak_ptr&lt;int&gt; weak2 = weak;
+    
+    return 0;
+}
+</code></pre>
+<hr>
+<h3 id="using-weak_ptr-the-lock-method"><a class="header" href="#using-weak_ptr-the-lock-method">Using weak_ptr: The lock() Method</a></h3>
+<p>To access the object through a <code>weak_ptr</code>, you must convert it to a <code>shared_ptr</code> using <code>lock()</code>:</p>
+<pre><code class="language-cpp">std::shared_ptr&lt;T&gt; lock() const noexcept;
+</code></pre>
+<p><strong>Returns:</strong></p>
+<ul>
+<li>A <code>shared_ptr</code> to the object if it still exists</li>
+<li>An empty <code>shared_ptr</code> if the object has been deleted</li>
+</ul>
+<p><strong>Why lock()?</strong></p>
+<ul>
+<li><strong>Thread-safe</strong>: Atomically checks existence and creates <code>shared_ptr</code></li>
+<li><strong>Safe access</strong>: Ensures object stays alive during use</li>
+<li><strong>Prevents race conditions</strong>: Object can’t be deleted while you’re using it</li>
+</ul>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    std::weak_ptr&lt;int&gt; weak;
+    
+    {
+        std::shared_ptr&lt;int&gt; shared = std::make_shared&lt;int&gt;(42);
+        weak = shared;
+        
+        // Convert weak_ptr to shared_ptr
+        if (auto locked = weak.lock()) {
+            std::cout &lt;&lt; "Value: " &lt;&lt; *locked &lt;&lt; "\n";  // Safe to use
+            std::cout &lt;&lt; "Ref count: " &lt;&lt; locked.use_count() &lt;&lt; "\n";  // 2
+        }
+        
+        std::cout &lt;&lt; "shared ref count: " &lt;&lt; shared.use_count() &lt;&lt; "\n";  // Back to 1
+    }
+    
+    // Object deleted here
+    
+    // Try to access deleted object
+    if (auto locked = weak.lock()) {
+        std::cout &lt;&lt; "Still exists\n";
+    } else {
+        std::cout &lt;&lt; "Object has been deleted\n";  // This prints
+    }
+    
+    return 0;
+}
+
+// Output:
+// Value: 42
+// Ref count: 2
+// shared ref count: 1
+// Object has been deleted
+</code></pre>
+<hr>
+<h3 id="checking-if-object-exists-expired"><a class="header" href="#checking-if-object-exists-expired">Checking if Object Exists: expired()</a></h3>
+<pre><code class="language-cpp">bool expired() const noexcept;
+</code></pre>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>true</code> if the object has been deleted (shared_count = 0)</li>
+<li><code>false</code> if the object still exists</li>
+</ul>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    std::weak_ptr&lt;int&gt; weak;
+    
+    {
+        std::shared_ptr&lt;int&gt; shared = std::make_shared&lt;int&gt;(99);
+        weak = shared;
+        
+        std::cout &lt;&lt; "expired: " &lt;&lt; weak.expired() &lt;&lt; "\n";  // false
+    }
+    
+    std::cout &lt;&lt; "expired: " &lt;&lt; weak.expired() &lt;&lt; "\n";  // true
+    
+    return 0;
+}
+
+// Output:
+// expired: 0
+// expired: 1
+</code></pre>
+<p><strong>Important:</strong> <code>expired()</code> can have a race condition in multithreaded code. Prefer using <code>lock()</code> instead:</p>
+<pre><code class="language-cpp">// Race condition possible
+if (!weak.expired()) {
+    auto shared = weak.lock();  // Object might be deleted here!
+}
+
+// Thread-safe
+if (auto shared = weak.lock()) {
+    // Object guaranteed to exist here
+}
+</code></pre>
+<hr>
+<h3 id="getting-the-reference-count-use_count"><a class="header" href="#getting-the-reference-count-use_count">Getting the Reference Count: use_count()</a></h3>
+<pre><code class="language-cpp">long use_count() const noexcept;
+</code></pre>
+<p><strong>Returns:</strong> The number of <code>shared_ptr</code> instances owning the object (0 if expired)</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    auto shared1 = std::make_shared&lt;int&gt;(42);
+    std::weak_ptr&lt;int&gt; weak = shared1;
+    
+    std::cout &lt;&lt; "Count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";  // 1
+    
+    auto shared2 = shared1;
+    std::cout &lt;&lt; "Count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";  // 2
+    
+    shared1.reset();
+    std::cout &lt;&lt; "Count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";  // 1
+    
+    shared2.reset();
+    std::cout &lt;&lt; "Count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";  // 0
+    
+    return 0;
+}
+
+// Output:
+// Count: 1
+// Count: 2
+// Count: 1
+// Count: 0
+</code></pre>
+<hr>
+<h3 id="solving-circular-references-with-weak_ptr"><a class="header" href="#solving-circular-references-with-weak_ptr">Solving Circular References with weak_ptr</a></h3>
+<p>Let’s fix the circular reference problem from the introduction:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+class Node {
+public:
+    std::string data;
+    std::shared_ptr&lt;Node&gt; next;  // Owning reference
+    std::weak_ptr&lt;Node&gt; prev;    // Non-owning reference
+    
+    Node(const std::string&amp; d) : data(d) {
+        std::cout &lt;&lt; "Node '" &lt;&lt; data &lt;&lt; "' created\n";
+    }
+    
+    ~Node() {
+        std::cout &lt;&lt; "Node '" &lt;&lt; data &lt;&lt; "' destroyed\n";
+    }
+};
+
+int main() {
+    auto node1 = std::make_shared&lt;Node&gt;("First");
+    auto node2 = std::make_shared&lt;Node&gt;("Second");
+    
+    node1-&gt;next = node2;  // node1 owns node2
+    node2-&gt;prev = node1;  // node2 observes node1 (non-owning)
+    
+    std::cout &lt;&lt; "node1 ref_count: " &lt;&lt; node1.use_count() &lt;&lt; "\n";  // 1
+    std::cout &lt;&lt; "node2 ref_count: " &lt;&lt; node2.use_count() &lt;&lt; "\n";  // 2
+    
+    // Access prev through weak_ptr
+    if (auto prevNode = node2-&gt;prev.lock()) {
+        std::cout &lt;&lt; "node2's prev: " &lt;&lt; prevNode-&gt;data &lt;&lt; "\n";
+    }
+    
+    return 0;
+}
+
+// Output:
+// Node 'First' created
+// Node 'Second' created
+// node1 ref_count: 1
+// node2 ref_count: 2
+// node2's prev: First
+// Node 'Second' destroyed  - No leak!
+// Node 'First' destroyed   - No leak!
+</code></pre>
+<p><strong>Why it works:</strong></p>
+<ol>
+<li><code>node1 → node2</code> (shared_ptr) → node2’s ref_count = 2</li>
+<li><code>node2 → node1</code> (weak_ptr) → node1’s ref_count stays = 1</li>
+<li>When <code>node1</code> goes out of scope → ref_count = 0 → deleted</li>
+<li>When <code>node2</code> goes out of scope → ref_count = 1, then 0 → deleted</li>
+<li>No circular reference, proper cleanup!</li>
+</ol>
+<hr>
+<h3 id="weak_ptr-member-functions-summary"><a class="header" href="#weak_ptr-member-functions-summary">weak_ptr Member Functions Summary</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Function</th><th>Purpose</th><th>Returns</th></tr>
+</thead>
+<tbody>
+<tr><td><code>lock()</code></td><td>Get shared_ptr if object exists</td><td><code>shared_ptr&lt;T&gt;</code> (or empty)</td></tr>
+<tr><td><code>expired()</code></td><td>Check if object deleted</td><td><code>bool</code></td></tr>
+<tr><td><code>use_count()</code></td><td>Get number of shared_ptr owners</td><td><code>long</code></td></tr>
+<tr><td><code>reset()</code></td><td>Release the weak reference</td><td><code>void</code></td></tr>
+<tr><td><code>swap(other)</code></td><td>Swap with another weak_ptr</td><td><code>void</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="common-patterns-and-best-practices"><a class="header" href="#common-patterns-and-best-practices">Common Patterns and Best Practices</a></h3>
+<h4 id="pattern-1-always-use-lock-for-access"><a class="header" href="#pattern-1-always-use-lock-for-access">Pattern 1: Always Use lock() for Access</a></h4>
+<pre><code class="language-cpp">// Correct
+std::weak_ptr&lt;Data&gt; weak = shared;
+
+if (auto locked = weak.lock()) {
+    locked-&gt;process();  // Safe
+}
+
+// Wrong - race condition
+if (!weak.expired()) {
+    auto locked = weak.lock();  // Object might be deleted here!
+    locked-&gt;process();
+}
+</code></pre>
+<hr>
+<h4 id="pattern-2-check-both-expiration-and-validity"><a class="header" href="#pattern-2-check-both-expiration-and-validity">Pattern 2: Check Both Expiration and Validity</a></h4>
+<pre><code class="language-cpp">std::weak_ptr&lt;Resource&gt; weak = shared;
+
+// When you need to distinguish between "expired" and "null"
+if (auto locked = weak.lock()) {
+    if (locked) {  // Additional null check
+        locked-&gt;use();
+    }
+} else {
+    // Object has been deleted or weak_ptr was never initialized
+}
+</code></pre>
+<hr>
+<h4 id="pattern-3-cleanup-expired-weak_ptr-from-containers"><a class="header" href="#pattern-3-cleanup-expired-weak_ptr-from-containers">Pattern 3: Cleanup Expired weak_ptr from Containers</a></h4>
+<pre><code class="language-cpp">std::vector&lt;std::weak_ptr&lt;Observer&gt;&gt; observers;
+
+// Remove expired observers periodically
+void cleanupExpired() {
+    observers.erase(
+        std::remove_if(observers.begin(), observers.end(),
+            [](const std::weak_ptr&lt;Observer&gt;&amp; weak) {
+                return weak.expired();
+            }),
+        observers.end()
+    );
+}
+</code></pre>
+<hr>
+<h4 id="pattern-4-convert-weak_ptr-to-shared_ptr-temporarily"><a class="header" href="#pattern-4-convert-weak_ptr-to-shared_ptr-temporarily">Pattern 4: Convert weak_ptr to shared_ptr Temporarily</a></h4>
+<pre><code class="language-cpp">class Service {
+    std::weak_ptr&lt;Resource&gt; resource_;
+public:
+    void process() {
+        // Lock only for the duration of use
+        if (auto res = resource_.lock()) {
+            res-&gt;doWork();
+        }  // shared_ptr destroyed, ref_count decremented
+    }
+};
+</code></pre>
+<hr>
+<h3 id="performance-considerations"><a class="header" href="#performance-considerations">Performance Considerations</a></h3>
+<h4 id="memory-overhead"><a class="header" href="#memory-overhead">Memory Overhead</a></h4>
+<pre><code class="language-cpp">std::weak_ptr&lt;int&gt; weak;  // 16 bytes (two pointers)
+</code></pre>
+<p><strong>Components:</strong></p>
+<ul>
+<li>Pointer to control block: 8 bytes</li>
+<li>Pointer to object (for lock()): 8 bytes</li>
+</ul>
+<p><strong>Control block impact:</strong></p>
+<ul>
+<li>Increments <code>weak_count</code> (not <code>shared_count</code>)</li>
+<li>Control block stays alive until <code>weak_count = 0</code></li>
+<li>Object can be deleted while control block persists</li>
+</ul>
+<hr>
+<h4 id="lock-performance"><a class="header" href="#lock-performance">lock() Performance</a></h4>
+<pre><code class="language-cpp">auto shared = weak.lock();  // Atomic operation
+</code></pre>
+<p><strong>Cost:</strong></p>
+<ul>
+<li>Atomic load/increment of <code>shared_count</code></li>
+<li>Check if count &gt; 0</li>
+<li>~10-20 CPU cycles</li>
+</ul>
+<p><strong>Recommendation:</strong> Don’t call <code>lock()</code> repeatedly in tight loops:</p>
+<pre><code class="language-cpp">// Inefficient
+for (int i = 0; i &lt; 1000; ++i) {
+    if (auto obj = weak.lock()) {
+        obj-&gt;process(i);
+    }
+}
+
+// Better
+if (auto obj = weak.lock()) {
+    for (int i = 0; i &lt; 1000; ++i) {
+        obj-&gt;process(i);
+    }
+}
+</code></pre>
+<hr>
+<h3 id="common-pitfalls"><a class="header" href="#common-pitfalls">Common Pitfalls</a></h3>
+<h4 id="pitfall-1-forgetting-to-lock"><a class="header" href="#pitfall-1-forgetting-to-lock">Pitfall 1: Forgetting to lock()</a></h4>
+<pre><code class="language-cpp">// Won't compile
+std::weak_ptr&lt;int&gt; weak = shared;
+*weak = 42;  // ERROR: weak_ptr has no operator*
+
+// Correct
+if (auto locked = weak.lock()) {
+    *locked = 42;
+}
+</code></pre>
+<hr>
+<h4 id="pitfall-2-dangling-weak_ptr-in-multithreaded-code"><a class="header" href="#pitfall-2-dangling-weak_ptr-in-multithreaded-code">Pitfall 2: Dangling weak_ptr in Multithreaded Code</a></h4>
+<pre><code class="language-cpp">// Thread-unsafe
+std::weak_ptr&lt;Data&gt; weak = shared;
+
+// Thread 1
+if (!weak.expired()) {
+    // Thread 2 might delete object here!
+    auto obj = weak.lock();  // Might fail
+}
+
+// Thread-safe
+if (auto obj = weak.lock()) {
+    // Object guaranteed alive here
+}
+</code></pre>
+<hr>
+<h4 id="pitfall-3-creating-weak_ptr-from-this"><a class="header" href="#pitfall-3-creating-weak_ptr-from-this">Pitfall 3: Creating weak_ptr from this</a></h4>
+<pre><code class="language-cpp">class Widget {
+public:
+    void registerSelf() {
+        // Won't compile
+        // std::weak_ptr&lt;Widget&gt; weak(this);
+        
+        // Use enable_shared_from_this
+    }
+};
+</code></pre>
+<p>Use <code>std::enable_shared_from_this</code> instead (covered in parent documentation).</p>
+<hr>
+<h3 id="when-to-use-weak_ptr"><a class="header" href="#when-to-use-weak_ptr">When to Use weak_ptr</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Situation</th><th>Use</th></tr>
+</thead>
+<tbody>
+<tr><td>Breaking circular references</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Observer pattern</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Cache implementations</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Parent-child relationships</td><td><code>weak_ptr</code> (child → parent)</td></tr>
+<tr><td>Back-references in graphs</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Callbacks without ownership</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Temporary non-owning access</td><td>Raw pointer or reference</td></tr>
+<tr><td>Ownership required</td><td><code>shared_ptr</code></td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="comparison-shared_ptr-vs-weak_ptr"><a class="header" href="#comparison-shared_ptr-vs-weak_ptr">Comparison: shared_ptr vs weak_ptr</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>shared_ptr</th><th>weak_ptr</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Ownership</strong></td><td>Owns the object</td><td>Observes the object</td></tr>
+<tr><td><strong>Reference Count</strong></td><td>Increments <code>shared_count</code></td><td>Increments <code>weak_count</code></td></tr>
+<tr><td><strong>Direct Access</strong></td><td>Yes (<code>*</code>, <code>-&gt;</code>)</td><td>No (must <code>lock()</code>)</td></tr>
+<tr><td><strong>Keeps Object Alive</strong></td><td>Yes</td><td>No</td></tr>
+<tr><td><strong>Can Create From</strong></td><td><code>make_shared</code>, <code>new</code>, <code>unique_ptr</code></td><td>Only from <code>shared_ptr</code></td></tr>
+<tr><td><strong>Use Case</strong></td><td>Ownership</td><td>Observation, breaking cycles</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="weak_ptr-summary"><a class="header" href="#weak_ptr-summary">weak_ptr Summary</a></h3>
+<p><strong>Core Concepts:</strong></p>
+<ul>
+<li>Non-owning observer of <code>shared_ptr</code>-managed objects</li>
+<li>Does not affect object lifetime (doesn’t increment <code>shared_count</code>)</li>
+<li>Must use <code>lock()</code> to access the object safely</li>
+<li>Automatically detects when object is deleted</li>
+</ul>
+<p><strong>Key Methods:</strong></p>
+<ul>
+<li><code>lock()</code>: Get temporary <code>shared_ptr</code> for safe access</li>
+<li><code>expired()</code>: Check if object has been deleted</li>
+<li><code>use_count()</code>: Get number of <code>shared_ptr</code> owners</li>
+</ul>
+<p><strong>Primary Use Cases:</strong></p>
+<ol>
+<li>Breaking circular references</li>
+<li>Observer pattern implementations</li>
+<li>Cache with automatic cleanup</li>
+<li>Parent-child relationships (child observes parent)</li>
+<li>Graph structures with cycles</li>
+</ol>
+<p><strong>Best Practices:</strong></p>
+<ul>
+<li>Always use <code>lock()</code> for access, never <code>expired()</code> + <code>lock()</code></li>
+<li>Clean up expired <code>weak_ptr</code> from containers periodically</li>
+<li>Use for back-references to prevent cycles</li>
+<li>Avoid storing raw pointers from <code>lock()</code></li>
+</ul>
+<p><code>weak_ptr</code> is essential for managing complex object relationships while avoiding memory leaks from circular references!</p>
+<hr>
+<h3 id="the-problem-new-vs-make_shared"><a class="header" href="#the-problem-new-vs-make_shared">The Problem: <code>new</code> vs <code>make_shared</code></a></h3>
+<h4 id="memory-layout-with-new"><a class="header" href="#memory-layout-with-new">Memory Layout with <code>new</code></a></h4>
+<p>Code: <code>std::shared_ptr&lt;int&gt; ptr(new int(42));</code></p>
+<pre><code>Step 1: new int(42) allocates data
+
+┌──────────────────────┐
+│    HEAP MEMORY       │
+│  ┌────────────────┐  │
+│  │ int: 42        │  │ ◄── Allocation 1 (for data)
+│  │                │  │
+│  └────────────────┘  │
+│                      │
+│  (fragmented space)  │
+│                      │
+│  ┌────────────────┐  │
+│  │ Control Block  │  │ ◄── Allocation 2 (for control block)
+│  │ ref_count: 1   │  │
+│  │ weak_count: 0  │  │
+│  │ deleter        │  │
+│  │ allocator      │  │
+│  └────────────────┘  │
+└──────────────────────┘
+</code></pre>
+<p><strong>Problems:</strong></p>
+<ol>
+<li>
+<p><strong>Non-contiguous Memory</strong>: Data and Control Block are in separate heap locations</p>
+<ul>
+<li>CPU cache misses increase</li>
+<li>Performance is degraded</li>
+</ul>
+</li>
+<li>
+<p><strong>Exception Safety Risk</strong>: If shared_ptr constructor fails after new succeeds</p>
+<ul>
+<li>Memory for data is allocated but not managed</li>
+<li>Result: <strong>MEMORY LEAK</strong></li>
+</ul>
+</li>
+</ol>
+<p><strong>Example of Memory Leak (C++14 and earlier):</strong></p>
+<p><strong>Note</strong>: This issue was fixed in C++17 where function argument evaluation order was made deterministic. However, understanding this problem helps explain why <code>make_shared</code> is still preferred.</p>
+<pre><code class="language-cpp">void processData(std::shared_ptr&lt;Data&gt; d1, std::shared_ptr&lt;Data&gt; d2);
+
+processData(
+    std::shared_ptr&lt;Data&gt;(new Data()),  // Allocation 1
+    std::shared_ptr&lt;Data&gt;(new Data())   // Allocation 2
+);
+</code></pre>
+<p>In C++14 and earlier, the compiler could execute in this order:</p>
+<ol>
+<li><code>new Data()</code> ◄── Success</li>
+<li><code>new Data()</code> ◄── Exception thrown here!</li>
+<li>Allocate control block ◄── Never reached</li>
+<li>Allocate control block ◄── Never reached</li>
+</ol>
+<p><strong>Result</strong>: First Data() allocated but not wrapped in shared_ptr → <strong>MEMORY LEAK</strong></p>
+<p><strong>In C++17+</strong>: Arguments are evaluated in a more predictable order, preventing this specific leak. However, <code>make_shared</code> is still superior for performance and remains the recommended approach.</p>
+<hr>
+<h4 id="memory-layout-with-make_shared"><a class="header" href="#memory-layout-with-make_shared">Memory Layout with <code>make_shared</code></a></h4>
+<p>Code: <code>std::shared_ptr&lt;int&gt; ptr = std::make_shared&lt;int&gt;(42);</code></p>
+<pre><code>Single Allocation: Both data and control block together
+
+┌─────────────────────────────────────────┐
+│           HEAP MEMORY                   │
+│   ┌───────────────────────────────────┐ │
+│   │   Single Contiguous Block         │ │ ◄── Allocation 1 (both together)
+│   │                                   │ │
+│   │  ┌──────────────────┐             │ │
+│   │  │ Control Block    │             │ │
+│   │  │ ref_count: 1     │             │ │
+│   │  │ weak_count: 0    │             │ │
+│   │  │ deleter          │             │ │
+│   │  │ allocator        │             │ │
+│   │  └──────────────────┘             │ │
+│   │                                   │ │
+│   │  ┌──────────────────┐             │ │
+│   │  │ int: 42          │             │ │
+│   │  │                  │             │ │
+│   │  └──────────────────┘             │ │
+│   │                                   │ │
+│   └───────────────────────────────────┘ │
+│                                         │
+│   CONTIGUOUS MEMORY                     │
+│   ATOMIC OPERATION                      │
+│   EXCEPTION SAFE                        │
+└─────────────────────────────────────────┘
+</code></pre>
+<p><strong>Why make_shared is Better:</strong></p>
+<p><strong>ADVANTAGE 1: Single Allocation</strong></p>
+<ul>
+<li>Data and control block allocated together</li>
+<li>Contiguous memory layout</li>
+<li>Better CPU cache locality</li>
+<li>Fewer system calls</li>
+</ul>
+<p><strong>ADVANTAGE 2: Exception Safety</strong></p>
+<ul>
+<li>Either entire operation succeeds OR fails</li>
+<li>No intermediate states where memory can leak</li>
+<li>Atomic from shared_ptr perspective</li>
+</ul>
+<p><strong>ADVANTAGE 3: Performance</strong></p>
+<ul>
+<li>Only ONE system allocation</li>
+<li>Better memory layout for CPU cache</li>
+<li>Less memory overhead</li>
+</ul>
+<p><strong>Example of Safe Exception Handling:</strong></p>
+<pre><code class="language-cpp">void processData(std::shared_ptr&lt;Data&gt; d1, std::shared_ptr&lt;Data&gt; d2);
+
+processData(
+    std::make_shared&lt;Data&gt;(),  // If fails, nothing allocated
+    std::make_shared&lt;Data&gt;()   // If fails, first is cleaned up
+);
+</code></pre>
+<p>Each make_shared is atomic:</p>
+<ul>
+<li><strong>Success</strong>: Data AND control block allocated + wrapped</li>
+<li><strong>Failure</strong>: Exception thrown, nothing allocated, no leak</li>
+</ul>
+<hr>
+<h3 id="comparison-table-new-vs-make_shared"><a class="header" href="#comparison-table-new-vs-make_shared">Comparison Table: <code>new</code> vs <code>make_shared</code></a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Characteristic</th><th><code>new</code></th><th><code>make_shared</code></th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Memory Allocations</strong></td><td>2 allocations (fragmented)</td><td>1 allocation (contiguous)</td></tr>
+<tr><td><strong>Cache Efficiency</strong></td><td>Poor (separate memory)</td><td>Good (same cache line)</td></tr>
+<tr><td><strong>Exception Safety</strong></td><td>Risky (memory leak)</td><td>Safe (atomic)</td></tr>
+<tr><td><strong>Memory Leak Risk</strong></td><td>High (if ctor fails)</td><td>None (atomic operation)</td></tr>
+<tr><td><strong>Performance (delete)</strong></td><td>Same</td><td>Same</td></tr>
+<tr><td><strong>Custom Deleter</strong></td><td>Supported (via 2nd param)</td><td>Not supported (use new for custom)</td></tr>
+<tr><td><strong>Memory with weak_ptr</strong></td><td>Object freed when shared count = 0</td><td>Object memory held until weak count = 0</td></tr>
+<tr><td><strong>Recommended?</strong></td><td>When custom deleter or weak_ptr used heavily</td><td>YES, for most cases</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h3 id="real-world-impact"><a class="header" href="#real-world-impact">Real-World Impact</a></h3>
+<p><strong>Scenario</strong>: Creating 1000 shared_ptr objects</p>
+<p><strong>Using new:</strong></p>
+<ul>
+<li>2000 memory allocations</li>
+<li>Fragmented heap</li>
+<li>Many cache misses</li>
+<li>If one fails → potential leaks</li>
+</ul>
+<p><strong>Using make_shared:</strong></p>
+<ul>
+<li>1000 memory allocations</li>
+<li>Contiguous for each object</li>
+<li>Fewer cache misses</li>
+<li>Atomic per object → no leaks</li>
+</ul>
+<hr>
+<h3 id="when-to-use-new-instead-of-make_shared"><a class="header" href="#when-to-use-new-instead-of-make_shared">When to Use <code>new</code> Instead of <code>make_shared</code></a></h3>
+<p>While <code>make_shared</code> is generally preferred, there are specific scenarios where using <code>new</code> is actually better:</p>
+<h4 id="scenario-1-custom-deleters-required"><a class="header" href="#scenario-1-custom-deleters-required">Scenario 1: Custom Deleters Required</a></h4>
+<p><code>make_shared</code> does not support custom deleters. If you need special cleanup logic, you must use <code>new</code>:</p>
+<pre><code class="language-cpp">// Cannot use make_shared for custom deleter
+std::shared_ptr&lt;FILE&gt; file(
+    fopen("data.txt", "r"),
+    [](FILE* f) { if (f) fclose(f); }
+);
+</code></pre>
+<hr>
+<h4 id="scenario-2-heavy-use-of-weak_ptr-memory-concern"><a class="header" href="#scenario-2-heavy-use-of-weak_ptr-memory-concern">Scenario 2: Heavy Use of weak_ptr (Memory Concern)</a></h4>
+<p>This is a subtle but important consideration related to how <code>make_shared</code> allocates memory.</p>
+<p><strong>The Problem: Control Block Lifetime with make_shared</strong></p>
+<p>When you use <code>make_shared</code>, the object and control block are allocated together in a single memory block. While this is normally efficient, it creates an issue with <code>weak_ptr</code>:</p>
+<pre><code>make_shared Memory Layout:
+┌─────────────────────────────────────┐
+│  Single Contiguous Allocation       │
+│                                     │
+│  ┌────────────────┐                 │
+│  │ Control Block  │                 │
+│  │ shared_count   │                 │
+│  │ weak_count     │ ◄── weak_ptr keeps this alive
+│  └────────────────┘                 │
+│                                     │
+│  ┌────────────────┐                 │
+│  │ Large Object   │                 │
+│  │ (e.g., 1 MB)   │ ◄── Cannot free this separately!
+│  └────────────────┘                 │
+└─────────────────────────────────────┘
+</code></pre>
+<p><strong>Why This Matters:</strong></p>
+<ol>
+<li>
+<p><strong>weak_ptr keeps control block alive</strong>: A <code>weak_ptr</code> must check if the managed object is still valid by looking at the shared_ptr count in the control block</p>
+</li>
+<li>
+<p><strong>Control block must stay alive</strong>: Even when all <code>shared_ptr</code> instances are destroyed (shared_count = 0), if any <code>weak_ptr</code> exists (weak_count &gt; 0), the control block must remain</p>
+</li>
+<li>
+<p><strong>Object memory cannot be freed separately</strong>: Since <code>make_shared</code> allocates object and control block together, the <strong>entire memory block</strong> (including the large object) stays allocated until <strong>both</strong> counts reach zero</p>
+</li>
+</ol>
+<p><strong>Example of the Problem:</strong></p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+class LargeObject {
+    std::vector&lt;int&gt; data_;
+public:
+    LargeObject() : data_(1'000'000, 42) {  // 4 MB of data
+        std::cout &lt;&lt; "LargeObject created (4 MB)\n";
+    }
+    ~LargeObject() {
+        std::cout &lt;&lt; "LargeObject destroyed\n";
+    }
+};
+
+int main() {
+    std::weak_ptr&lt;LargeObject&gt; weak;
+    
+    {
+        // Using make_shared
+        std::shared_ptr&lt;LargeObject&gt; shared = std::make_shared&lt;LargeObject&gt;();
+        weak = shared;
+        
+        std::cout &lt;&lt; "shared_count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";
+    }
+    
+    // shared is destroyed, but...
+    std::cout &lt;&lt; "After shared destroyed\n";
+    std::cout &lt;&lt; "shared_count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";
+    std::cout &lt;&lt; "weak_count: " &lt;&lt; weak.expired() ? 0 : 1 &lt;&lt; "\n";
+    
+    // PROBLEM: The 4 MB LargeObject memory is STILL ALLOCATED
+    // because weak_ptr keeps the control block (and entire allocation) alive!
+    
+    std::cout &lt;&lt; "4 MB still allocated until weak goes out of scope!\n";
+    
+    return 0;
+}
+
+// Output:
+// LargeObject created (4 MB)
+// shared_count: 1
+// LargeObject destroyed  ◄── Destructor runs
+// After shared destroyed
+// shared_count: 0
+// weak_count: 1
+// 4 MB still allocated until weak goes out of scope!  ◄── Memory not freed!
+</code></pre>
+<p><strong>The Solution: Use <code>new</code> for Separate Allocation</strong></p>
+<p>When using <code>new</code>, object and control block are allocated separately:</p>
+<pre><code>new + shared_ptr Memory Layout:
+┌────────────────┐
+│ Control Block  │ ◄── weak_ptr keeps only this alive
+│ shared_count   │     (small, ~24-48 bytes)
+│ weak_count     │
+└────────────────┘
+
+        (separate allocation)
+
+┌────────────────┐
+│ Large Object   │ ◄── Can be freed when shared_count = 0
+│ (e.g., 1 MB)   │     even if weak_count &gt; 0
+└────────────────┘
+</code></pre>
+<p><strong>Example with Separate Allocation:</strong></p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+class LargeObject {
+    std::vector&lt;int&gt; data_;
+public:
+    LargeObject() : data_(1'000'000, 42) {  // 4 MB of data
+        std::cout &lt;&lt; "LargeObject created (4 MB)\n";
+    }
+    ~LargeObject() {
+        std::cout &lt;&lt; "LargeObject destroyed\n";
+    }
+};
+
+int main() {
+    std::weak_ptr&lt;LargeObject&gt; weak;
+    
+    {
+        // Using new instead of make_shared
+        std::shared_ptr&lt;LargeObject&gt; shared(new LargeObject());
+        weak = shared;
+        
+        std::cout &lt;&lt; "shared_count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";
+    }
+    
+    // BETTER: The 4 MB LargeObject memory is freed immediately
+    // Only the small control block (~48 bytes) remains
+    
+    std::cout &lt;&lt; "After shared destroyed\n";
+    std::cout &lt;&lt; "shared_count: " &lt;&lt; weak.use_count() &lt;&lt; "\n";
+    std::cout &lt;&lt; "Only control block (~48 bytes) still allocated\n";
+    
+    return 0;
+}
+
+// Output:
+// LargeObject created (4 MB)
+// shared_count: 1
+// LargeObject destroyed  ◄── Destructor runs
+// After shared destroyed
+// shared_count: 0
+// Only control block (~48 bytes) still allocated  ◄── Object memory freed!
+</code></pre>
+<p><strong>When to Prefer <code>new</code> Over <code>make_shared</code>:</strong></p>
+<p>Use <code>new</code> when:</p>
+<ol>
+<li>The object is <strong>large</strong> (significant memory footprint)</li>
+<li>You expect <code>weak_ptr</code> instances to <strong>outlive</strong> all <code>shared_ptr</code> instances</li>
+<li>You want the object’s memory <strong>freed immediately</strong> when the last <code>shared_ptr</code> is destroyed</li>
+</ol>
+<p><strong>Memory Timeline Comparison:</strong></p>
+<pre><code class="language-cpp">// With make_shared:
+auto shared = std::make_shared&lt;LargeObject&gt;();  // Allocate: control block + object (single block)
+weak_ptr&lt;LargeObject&gt; weak = shared;
+shared.reset();  // Object destroyed but memory NOT freed (weak_ptr keeps it)
+weak.reset();    // NOW entire memory freed
+
+// With new:
+auto shared = std::shared_ptr&lt;LargeObject&gt;(new LargeObject());  // Allocate: control block, object (separate)
+weak_ptr&lt;LargeObject&gt; weak = shared;
+shared.reset();  // Object destroyed AND object memory freed immediately
+weak.reset();    // Control block freed (only ~48 bytes)
+</code></pre>
+<pre><code>Scenario: Large object (1 MB) with weak_ptr that outlives shared_ptr
+
+make_shared approach:
+  All shared_ptr destroyed → Object destructor runs
+  └─&gt; BUT: 1 MB + control block still allocated
+  
+  All weak_ptr destroyed → NOW 1 MB freed
+  └─&gt; Total time holding 1 MB: Entire weak_ptr lifetime
+
+new approach:
+  All shared_ptr destroyed → Object destructor runs AND 1 MB freed
+  └─&gt; Only ~48 byte control block remains
+  
+  All weak_ptr destroyed → Control block freed
+  └─&gt; Total time holding 1 MB: Only shared_ptr lifetime
+</code></pre>
+<p><strong>Trade-off Summary:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>make_shared</th><th>new</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Allocations</strong></td><td>1 (faster)</td><td>2 (slower)</td></tr>
+<tr><td><strong>Cache locality</strong></td><td>Better</td><td>Worse</td></tr>
+<tr><td><strong>Exception safety</strong></td><td>Better</td><td>Worse (pre-C++17)</td></tr>
+<tr><td><strong>Object memory freed</strong></td><td>When weak_count = 0</td><td>When shared_count = 0</td></tr>
+<tr><td><strong>Best for</strong></td><td>Normal usage, short-lived weak_ptr</td><td>Large objects, long-lived weak_ptr</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Recommendation:</strong></p>
+<ul>
+<li><strong>Default to <code>make_shared</code></strong> for most cases</li>
+<li><strong>Use <code>new</code></strong> when:
+<ul>
+<li>You need custom deleters</li>
+<li>Object is large (&gt; 1 KB) AND</li>
+<li>weak_ptr instances may significantly outlive shared_ptr instances</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="best-practices-for-shared_ptr"><a class="header" href="#best-practices-for-shared_ptr">Best Practices for shared_ptr</a></h2>
+<h3 id="1-always-use-stdmake_sharedt"><a class="header" href="#1-always-use-stdmake_sharedt">1. Always Use <code>std::make_shared&lt;T&gt;</code></a></h3>
+<p><strong>Preferred:</strong></p>
+<pre><code class="language-cpp">auto ptr = std::make_shared&lt;Resource&gt;();
+</code></pre>
+<p><strong>Avoid (unless custom deleter needed):</strong></p>
+<pre><code class="language-cpp">std::shared_ptr&lt;Resource&gt; ptr(new Resource());
+</code></pre>
+<p><strong>Why?</strong></p>
+<ul>
+<li>Single allocation (better performance)</li>
+<li>Exception safe</li>
+<li>Better cache locality</li>
+</ul>
+<hr>
+<h3 id="2-pass-by-const-reference-when-not-taking-ownership"><a class="header" href="#2-pass-by-const-reference-when-not-taking-ownership">2. Pass by const Reference When Not Taking Ownership</a></h3>
+<p><strong>Efficient:</strong></p>
+<pre><code class="language-cpp">void process(const std::shared_ptr&lt;Data&gt;&amp; data) {
+    // Use data without modifying shared_ptr
+    data-&gt;doWork();
+}
+</code></pre>
+<p><strong>Inefficient:</strong></p>
+<pre><code class="language-cpp">void process(std::shared_ptr&lt;Data&gt; data) {
+    // Unnecessary copy, increments/decrements ref count
+    data-&gt;doWork();
+}
+</code></pre>
+<hr>
+<h3 id="3-pass-by-value-only-when-taking-shared-ownership"><a class="header" href="#3-pass-by-value-only-when-taking-shared-ownership">3. Pass by Value Only When Taking Shared Ownership</a></h3>
+<pre><code class="language-cpp">class Container {
+public:
+    void store(std::shared_ptr&lt;Data&gt; data) {
+        // Function takes shared ownership
+        storage_.push_back(data);
+    }
+private:
+    std::vector&lt;std::shared_ptr&lt;Data&gt;&gt; storage_;
+};
+</code></pre>
+<hr>
+<h3 id="4-avoid-storing-raw-pointers-from-get"><a class="header" href="#4-avoid-storing-raw-pointers-from-get">4. Avoid Storing Raw Pointers from <code>get()</code></a></h3>
+<p><strong>Dangerous:</strong></p>
+<pre><code class="language-cpp">Data* rawPtr = sharedPtr.get();
+// Later... sharedPtr might be destroyed
+rawPtr-&gt;doWork();  // Potential use-after-free
+</code></pre>
+<p><strong>Safe:</strong></p>
+<pre><code class="language-cpp">std::shared_ptr&lt;Data&gt; copy = sharedPtr;
+// Now copy keeps the resource alive
+copy-&gt;doWork();  // Safe
+</code></pre>
+<hr>
+<h3 id="5-dont-mix-ownership-models"><a class="header" href="#5-dont-mix-ownership-models">5. Don’t Mix Ownership Models</a></h3>
+<p><strong>Consistent - Good:</strong></p>
+<pre><code class="language-cpp">std::shared_ptr&lt;Database&gt; db = std::make_shared&lt;Database&gt;();
+std::shared_ptr&lt;Session&gt; session = std::make_shared&lt;Session&gt;(db);
+</code></pre>
+<p><strong>Inconsistent - Confusing:</strong></p>
+<pre><code class="language-cpp">Database* db = new Database();  // Raw pointer
+std::shared_ptr&lt;Session&gt; session = std::make_shared&lt;Session&gt;(db);
+// Who owns db? Unclear!
+</code></pre>
+<hr>
+<h3 id="6-be-careful-with-this-pointer"><a class="header" href="#6-be-careful-with-this-pointer">6. Be Careful with <code>this</code> Pointer</a></h3>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-cpp">class Widget {
+public:
+    void registerCallback() {
+        // Creates separate shared_ptr from raw this
+        callback_system.setCallback(std::shared_ptr&lt;Widget&gt;(this));
+        // This will double-delete!
+    }
+};
+</code></pre>
+<p><strong>Solution: Use <code>enable_shared_from_this</code></strong></p>
+<pre><code class="language-cpp">class Widget : public std::enable_shared_from_this&lt;Widget&gt; {
+public:
+    void registerCallback() {
+        // Safely creates shared_ptr from this
+        callback_system.setCallback(shared_from_this());
+    }
+};
+
+// Usage:
+auto widget = std::make_shared&lt;Widget&gt;();
+widget-&gt;registerCallback();  // Safe!
+</code></pre>
+<hr>
+<h3 id="7-use-custom-deleters-for-non-memory-resources"><a class="header" href="#7-use-custom-deleters-for-non-memory-resources">7. Use Custom Deleters for Non-Memory Resources</a></h3>
+<pre><code class="language-cpp">// For C resources
+auto fileDeleter = [](FILE* f) { 
+    if (f) fclose(f); 
+};
+std::shared_ptr&lt;FILE&gt; file(fopen("data.txt", "r"), fileDeleter);
+
+// For C++ arrays (or use shared_ptr&lt;T[]&gt; in C++17+)
+auto arrayDeleter = [](int* arr) { 
+    delete[] arr; 
+};
+std::shared_ptr&lt;int&gt; arr(new int[100], arrayDeleter);
+</code></pre>
+<hr>
+<h2 id="common-pitfalls-and-solutions"><a class="header" href="#common-pitfalls-and-solutions">Common Pitfalls and Solutions</a></h2>
+<h3 id="pitfall-1-creating-multiple-control-blocks"><a class="header" href="#pitfall-1-creating-multiple-control-blocks">Pitfall 1: Creating Multiple Control Blocks</a></h3>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-cpp">Widget* raw = new Widget();
+std::shared_ptr&lt;Widget&gt; ptr1(raw);
+std::shared_ptr&lt;Widget&gt; ptr2(raw);  // Second control block!
+// Result: Double delete when both go out of scope
+</code></pre>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-cpp">std::shared_ptr&lt;Widget&gt; ptr1 = std::make_shared&lt;Widget&gt;();
+std::shared_ptr&lt;Widget&gt; ptr2 = ptr1;  // Shares control block
+</code></pre>
+<hr>
+<h3 id="pitfall-2-circular-references-memory-leak"><a class="header" href="#pitfall-2-circular-references-memory-leak">Pitfall 2: Circular References (Memory Leak)</a></h3>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-cpp">class Node {
+    std::shared_ptr&lt;Node&gt; next;  // Circular reference possible
+    std::shared_ptr&lt;Node&gt; prev;
+};
+</code></pre>
+<p><strong>Solution:</strong> Use <code>weak_ptr</code> for back-references</p>
+<pre><code class="language-cpp">class Node {
+    std::shared_ptr&lt;Node&gt; next;  // Forward reference
+    std::weak_ptr&lt;Node&gt; prev;    // Back reference
+};
+</code></pre>
+<hr>
+<h3 id="pitfall-3-slicing-with-polymorphic-types"><a class="header" href="#pitfall-3-slicing-with-polymorphic-types">Pitfall 3: Slicing with Polymorphic Types</a></h3>
+<p><strong>Problem:</strong></p>
+<pre><code class="language-cpp">class Base { virtual void f() {} };
+class Derived : public Base { void f() override {} };
+
+std::shared_ptr&lt;Base&gt; ptr = std::make_shared&lt;Derived&gt;();
+Base copy = *ptr;  // Slicing! Only Base part copied
+</code></pre>
+<p><strong>Solution:</strong></p>
+<pre><code class="language-cpp">std::shared_ptr&lt;Base&gt; ptr = std::make_shared&lt;Derived&gt;();
+std::shared_ptr&lt;Base&gt; copy = ptr;  // Shared ownership, no slicing
+</code></pre>
+<hr>
+<h3 id="pitfall-4-thread-safety-misunderstanding"><a class="header" href="#pitfall-4-thread-safety-misunderstanding">Pitfall 4: Thread Safety Misunderstanding</a></h3>
+<p><strong>shared_ptr is:</strong></p>
+<ul>
+<li>Thread-safe for reference counting</li>
+<li>Thread-safe for copying the pointer itself</li>
+</ul>
+<p><strong>shared_ptr is NOT:</strong></p>
+<ul>
+<li>Thread-safe for modifying the pointed-to object</li>
+<li>Thread-safe for resetting without synchronization</li>
+</ul>
+<pre><code class="language-cpp">std::shared_ptr&lt;Data&gt; ptr = std::make_shared&lt;Data&gt;();
+
+// Thread 1
+ptr-&gt;modify();  // Not thread-safe without external synchronization
+
+// Thread 2  
+ptr-&gt;modify();  // Not thread-safe without external synchronization
+
+// Solution: Protect the Data, not the shared_ptr
+std::mutex mtx;
+{
+    std::lock_guard&lt;std::mutex&gt; lock(mtx);
+    ptr-&gt;modify();  // Now thread-safe
+}
+</code></pre>
+<hr>
+<h2 id="performance-considerations-1"><a class="header" href="#performance-considerations-1">Performance Considerations</a></h2>
+<h3 id="memory-overhead-1"><a class="header" href="#memory-overhead-1">Memory Overhead</a></h3>
+<p>Each <code>shared_ptr</code> has:</p>
+<ul>
+<li><strong>Pointer to object</strong>: 8 bytes (64-bit)</li>
+<li><strong>Pointer to control block</strong>: 8 bytes (64-bit)</li>
+<li><strong>Total per shared_ptr</strong>: 16 bytes</li>
+</ul>
+<p>Each control block has:</p>
+<ul>
+<li><strong>Reference count</strong>: 4-8 bytes</li>
+<li><strong>Weak count</strong>: 4-8 bytes</li>
+<li><strong>Deleter</strong>: Variable size</li>
+<li><strong>Allocator</strong>: Variable size</li>
+<li><strong>Total control block</strong>: ~24-48 bytes minimum</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="language-cpp">std::unique_ptr&lt;int&gt; u;  // 8 bytes
+std::shared_ptr&lt;int&gt; s;  // 16 bytes
+// Plus ~24-48 byte control block for shared_ptr
+</code></pre>
+<hr>
+<h3 id="runtime-overhead"><a class="header" href="#runtime-overhead">Runtime Overhead</a></h3>
+<p><strong>Reference counting operations:</strong></p>
+<ul>
+<li>Atomic increment on copy (~10-20 CPU cycles)</li>
+<li>Atomic decrement on destroy (~10-20 CPU cycles)</li>
+<li>Comparison to zero on destroy (~1 cycle)</li>
+</ul>
+<p><strong>Compared to unique_ptr:</strong></p>
+<ul>
+<li><code>unique_ptr</code>: Zero overhead (same as raw pointer)</li>
+<li><code>shared_ptr</code>: Small overhead due to atomic operations</li>
+</ul>
+<p><strong>When performance matters:</strong></p>
+<ul>
+<li>Use <code>unique_ptr</code> if single ownership suffices</li>
+<li>Use <code>shared_ptr</code> only when truly needed</li>
+<li>Consider pass-by-reference to avoid copying</li>
+</ul>
+<hr>
+<h2 id="summary-shared_ptrt"><a class="header" href="#summary-shared_ptrt">Summary: <code>shared_ptr&lt;T&gt;</code></a></h2>
+<h3 id="core-concepts"><a class="header" href="#core-concepts">Core Concepts</a></h3>
+<ul>
+<li><strong>Shared ownership</strong>: Multiple <code>shared_ptr</code> instances can own the same resource</li>
+<li><strong>Reference counting</strong>: Resource is deleted when the last owner is destroyed</li>
+<li><strong>Copyable and movable</strong>: Unlike <code>unique_ptr</code>, copying is the normal operation</li>
+<li><strong>Control block</strong>: Stores reference count and deletion information</li>
+</ul>
+<h3 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h3>
+<p><strong>DO:</strong></p>
+<ul>
+<li>Use <code>std::make_shared&lt;T&gt;</code> for creation (when possible)</li>
+<li>Pass by <code>const &amp;</code> when not taking ownership</li>
+<li>Use custom deleters for non-memory resources</li>
+<li>Use <code>enable_shared_from_this</code> for <code>this</code> pointer sharing</li>
+</ul>
+<p><strong>DON’T:</strong></p>
+<ul>
+<li>Create multiple control blocks from same raw pointer</li>
+<li>Store raw pointers from <code>get()</code> long-term</li>
+<li>Use when <code>unique_ptr</code> would suffice</li>
+<li>Forget about circular reference issues</li>
+</ul>
+<h3 id="when-to-use"><a class="header" href="#when-to-use">When to Use</a></h3>
+<ul>
+<li>Multiple parts of code need to own the resource</li>
+<li>Ownership is unclear or dynamic</li>
+<li>Resource needs to outlive any single owner</li>
+<li>Implementing shared state patterns</li>
+<li>Working with legacy code requiring shared ownership</li>
+</ul>
+<h3 id="trade-offs"><a class="header" href="#trade-offs">Trade-offs</a></h3>
+<ul>
+<li><strong>Advantages</strong>: Safe shared ownership, automatic cleanup, flexible</li>
+<li><strong>Disadvantages</strong>: Higher memory overhead, atomic operations cost, potential circular references</li>
+</ul>
+<hr>
+<h2 id="when-to-use-shared_ptr-vs-unique_ptr-vs-weak_ptr"><a class="header" href="#when-to-use-shared_ptr-vs-unique_ptr-vs-weak_ptr">When to Use shared_ptr vs unique_ptr vs weak_ptr</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Situation</th><th>Use</th></tr>
+</thead>
+<tbody>
+<tr><td>Single clear owner</td><td><code>unique_ptr</code></td></tr>
+<tr><td>Multiple owners needed</td><td><code>shared_ptr</code></td></tr>
+<tr><td>Transferring ownership</td><td><code>unique_ptr</code> (move)</td></tr>
+<tr><td>Shared state across objects</td><td><code>shared_ptr</code></td></tr>
+<tr><td>Observer pattern (non-owning)</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Breaking circular references</td><td><code>weak_ptr</code></td></tr>
+<tr><td>Return from factory</td><td><code>unique_ptr</code> (can convert to <code>shared_ptr</code>)</td></tr>
+<tr><td>Temporary non-owning access</td><td>Raw pointer from <code>get()</code></td></tr>
+<tr><td>Performance critical, single owner</td><td><code>unique_ptr</code></td></tr>
+</tbody>
+</table>
+</div>
+<p><code>std::shared_ptr</code> is a powerful tool for managing shared ownership of resources. Use it when you genuinely need multiple owners, but prefer <code>unique_ptr</code> when single ownership is sufficient.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="unique_ptr_get_release.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="lamda_functions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="unique_ptr_get_release.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="lamda_functions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
