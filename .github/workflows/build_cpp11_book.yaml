@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'mds/**'
       - 'cpp11_summary/**'
       - 'book_cpp11.toml'
       - 'theme/**'
