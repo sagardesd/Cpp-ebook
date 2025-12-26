@@ -1,0 +1,1250 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Encapsulation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-1cdc846b.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-c16d8e8c.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="encapsulation-in-c"><a class="header" href="#encapsulation-in-c">Encapsulation in C++</a></h1>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ol>
+<li><a href="#1-what-is-encapsulation">What is Encapsulation?</a></li>
+<li><a href="#2-how-to-achieve-encapsulation">How to Achieve Encapsulation</a>
+<ul>
+<li><a href="#21-making-data-members-private">Making Data Members Private</a></li>
+<li><a href="#22-providing-public-methods">Providing Public Methods</a></li>
+<li><a href="#23-validation-and-control">Validation and Control</a></li>
+</ul>
+</li>
+<li><a href="#3-why-is-encapsulation-needed-benefits">Why is Encapsulation Needed? Benefits</a></li>
+<li><a href="#4-real-world-examples">Real-World Examples</a>
+<ul>
+<li><a href="#41-atm-machine-example">ATM Machine Example</a></li>
+<li><a href="#42-smart-thermostat-example">Smart Thermostat Example</a></li>
+<li><a href="#43-email-account-example">Email Account Example</a></li>
+</ul>
+</li>
+<li><a href="#5-best-practices">Best Practices</a></li>
+<li><a href="#6-common-mistakes-to-avoid">Common Mistakes to Avoid</a></li>
+<li><a href="#summary">Summary</a></li>
+</ol>
+<hr>
+<h2 id="1-what-is-encapsulation"><a class="header" href="#1-what-is-encapsulation">1. What is Encapsulation?</a></h2>
+<p><strong>Encapsulation</strong> is the bundling of data (attributes) and methods (functions) that operate on that data into a single unit (class), while <strong>restricting direct access</strong> to some of the object’s components. It’s about <strong>data hiding</strong> and <strong>controlling access</strong> to the internal state of an object.</p>
+<h3 id="core-principles"><a class="header" href="#core-principles">Core Principles</a></h3>
+<p>Encapsulation involves three key concepts:</p>
+<ol>
+<li><strong>Data Hiding</strong> - Keeping internal data private</li>
+<li><strong>Bundling</strong> - Grouping related data and methods together</li>
+<li><strong>Controlled Access</strong> - Providing specific methods to interact with data</li>
+</ol>
+<p>Think of it as putting data in a <strong>protective capsule</strong> where:</p>
+<ul>
+<li>Internal details are hidden from outside</li>
+<li>Access is controlled through specific methods</li>
+<li>Data integrity is maintained through validation</li>
+</ul>
+<p><img src="images/encap.png" alt="Encapsulation"></p>
+<h3 id="simple-analogy"><a class="header" href="#simple-analogy">Simple Analogy</a></h3>
+<p>Think of a <strong>medicine capsule</strong>:</p>
+<ul>
+<li>The capsule shell <strong>protects</strong> the medicine inside</li>
+<li>You cannot directly access the medicine (it’s <strong>hidden</strong>)</li>
+<li>You take the whole capsule as intended (<strong>controlled access</strong>)</li>
+<li>The medicine is <strong>bundled</strong> safely inside the capsule</li>
+</ul>
+<p>Similarly, in programming:</p>
+<ul>
+<li>Class is the capsule</li>
+<li>Data members are the medicine (protected content)</li>
+<li>Public methods are the intended way to use it</li>
+</ul>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="2-how-to-achieve-encapsulation"><a class="header" href="#2-how-to-achieve-encapsulation">2. How to Achieve Encapsulation</a></h2>
+<p>Encapsulation is achieved using <strong>access specifiers</strong> in C++. The typical pattern is:</p>
+<ol>
+<li>Make data members <strong>private</strong></li>
+<li>Provide <strong>public methods</strong> (getters and setters) to access and modify data</li>
+<li>Add <strong>validation logic</strong> in methods to ensure data integrity</li>
+</ol>
+<h3 id="21-making-data-members-private"><a class="header" href="#21-making-data-members-private">2.1 Making Data Members Private</a></h3>
+<p>By making data members private, we prevent direct access from outside the class.</p>
+<pre><code class="language-cpp">class BankAccount {
+private:
+    // Private data members - hidden from outside
+    string accountHolder;
+    long accountNumber;
+    double balance;
+    string pin;
+    
+public:
+    // Public methods will be added here
+};
+</code></pre>
+<p><strong>Why Private?</strong></p>
+<pre><code class="language-cpp">BankAccount account;
+
+// This is prevented (good!)
+// account.balance = 1000000;  // ✗ Error: balance is private
+// account.pin = "0000";        // ✗ Error: pin is private
+
+// This ensures data can only be modified through controlled methods
+</code></pre>
+<h3 id="22-providing-public-methods"><a class="header" href="#22-providing-public-methods">2.2 Providing Public Methods</a></h3>
+<p>Public methods (getters and setters) provide controlled access to private data.</p>
+<pre><code class="language-cpp">class BankAccount {
+private:
+    string accountHolder;
+    long accountNumber;
+    double balance;
+    string pin;
+
+public:
+    // Getter methods - Read access
+    string getAccountHolder() {
+        return accountHolder;
+    }
+    
+    long getAccountNumber() {
+        return accountNumber;
+    }
+    
+    double getBalance() {
+        return balance;
+    }
+    
+    // Setter methods - Write access with control
+    void setAccountHolder(string name) {
+        if (!name.empty()) {
+            accountHolder = name;
+        } else {
+            cout &lt;&lt; "Error: Name cannot be empty!" &lt;&lt; endl;
+        }
+    }
+    
+    void setPin(string oldPin, string newPin) {
+        if (oldPin == pin &amp;&amp; newPin.length() == 4) {
+            pin = newPin;
+            cout &lt;&lt; "PIN changed successfully!" &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "Error: Invalid PIN change request!" &lt;&lt; endl;
+        }
+    }
+    
+    // Note: No direct setter for balance
+    // Balance can only be modified through deposit/withdraw
+};
+</code></pre>
+<h3 id="23-validation-and-control"><a class="header" href="#23-validation-and-control">2.3 Validation and Control</a></h3>
+<p>The real power of encapsulation comes from adding validation logic in methods.</p>
+<pre><code class="language-cpp">class BankAccount {
+private:
+    string accountHolder;
+    long accountNumber;
+    double balance;
+    string pin;
+    bool isLocked;
+
+public:
+    // Constructor
+    BankAccount(string name, long accNum, string p) {
+        accountHolder = name;
+        accountNumber = accNum;
+        balance = 0.0;
+        pin = p;
+        isLocked = false;
+    }
+    
+    // Deposit with validation
+    void deposit(double amount) {
+        if (isLocked) {
+            cout &lt;&lt; "Account is locked!" &lt;&lt; endl;
+            return;
+        }
+        
+        if (amount &gt; 0 &amp;&amp; amount &lt;= 100000) {
+            balance += amount;
+            cout &lt;&lt; "Deposited: $" &lt;&lt; amount &lt;&lt; endl;
+            cout &lt;&lt; "New Balance: $" &lt;&lt; balance &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "Invalid deposit amount!" &lt;&lt; endl;
+        }
+    }
+    
+    // Withdraw with multiple validations
+    void withdraw(string inputPin, double amount) {
+        if (isLocked) {
+            cout &lt;&lt; "Account is locked!" &lt;&lt; endl;
+            return;
+        }
+        
+        if (inputPin != pin) {
+            cout &lt;&lt; "Incorrect PIN!" &lt;&lt; endl;
+            return;
+        }
+        
+        if (amount &lt;= 0) {
+            cout &lt;&lt; "Invalid amount!" &lt;&lt; endl;
+            return;
+        }
+        
+        if (amount &gt; balance) {
+            cout &lt;&lt; "Insufficient funds!" &lt;&lt; endl;
+            cout &lt;&lt; "Available balance: $" &lt;&lt; balance &lt;&lt; endl;
+            return;
+        }
+        
+        balance -= amount;
+        cout &lt;&lt; "Withdrawn: $" &lt;&lt; amount &lt;&lt; endl;
+        cout &lt;&lt; "Remaining Balance: $" &lt;&lt; balance &lt;&lt; endl;
+    }
+    
+    // Transfer with validation
+    void transfer(string inputPin, BankAccount&amp; recipient, double amount) {
+        if (inputPin != pin) {
+            cout &lt;&lt; "Incorrect PIN!" &lt;&lt; endl;
+            return;
+        }
+        
+        if (amount &gt; balance) {
+            cout &lt;&lt; "Insufficient funds for transfer!" &lt;&lt; endl;
+            return;
+        }
+        
+        balance -= amount;
+        recipient.balance += amount;
+        cout &lt;&lt; "Transferred $" &lt;&lt; amount &lt;&lt; " to " &lt;&lt; recipient.accountHolder &lt;&lt; endl;
+    }
+    
+    // View balance (requires authentication)
+    void viewBalance(string inputPin) {
+        if (inputPin == pin) {
+            cout &lt;&lt; "Account Balance: $" &lt;&lt; balance &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "Incorrect PIN!" &lt;&lt; endl;
+        }
+    }
+    
+    // Lock/Unlock account
+    void lockAccount(string inputPin) {
+        if (inputPin == pin) {
+            isLocked = true;
+            cout &lt;&lt; "Account locked successfully!" &lt;&lt; endl;
+        }
+    }
+    
+    void unlockAccount(string inputPin) {
+        if (inputPin == pin) {
+            isLocked = false;
+            cout &lt;&lt; "Account unlocked successfully!" &lt;&lt; endl;
+        }
+    }
+};
+</code></pre>
+<p><strong>Usage Example:</strong></p>
+<pre><code class="language-cpp">int main() {
+    BankAccount account1("John Doe", 123456789, "1234");
+    BankAccount account2("Jane Smith", 987654321, "5678");
+    
+    // Controlled access through public methods
+    account1.deposit(5000);
+    account1.withdraw("1234", 2000);
+    account1.viewBalance("1234");
+    
+    // Transfer between accounts
+    account1.transfer("1234", account2, 1000);
+    
+    // Cannot directly access or modify balance
+    // account1.balance = 999999;  // ✗ Error: balance is private
+    
+    return 0;
+}
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="3-why-is-encapsulation-needed-benefits"><a class="header" href="#3-why-is-encapsulation-needed-benefits">3. Why is Encapsulation Needed? Benefits</a></h2>
+<h3 id="benefits-table"><a class="header" href="#benefits-table">Benefits Table</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Benefit</th><th>Description</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Data Protection</strong></td><td>Prevents unauthorized or accidental modification of data</td><td>Bank balance cannot be directly set to negative values</td></tr>
+<tr><td><strong>Data Validation</strong></td><td>Ensures only valid data is stored</td><td>Age cannot be set to -5 or 500; email must contain @ symbol</td></tr>
+<tr><td><strong>Flexibility</strong></td><td>Internal implementation can change without affecting external code</td><td>Can change how balance is calculated internally without breaking client code</td></tr>
+<tr><td><strong>Maintainability</strong></td><td>Easier to modify and maintain code</td><td>Changes to internal logic don’t break code that uses the class</td></tr>
+<tr><td><strong>Security</strong></td><td>Sensitive data remains hidden and protected</td><td>PIN, password, credit card details cannot be accessed directly</td></tr>
+<tr><td><strong>Control</strong></td><td>Complete control over how data is accessed and modified</td><td>Can add logging, authentication, or business rules in methods</td></tr>
+<tr><td><strong>Debugging</strong></td><td>Easier to track where data is modified</td><td>Only specific methods modify data, making bugs easier to find</td></tr>
+<tr><td><strong>Consistency</strong></td><td>Ensures data remains in valid state</td><td>Account balance always consistent with transactions</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="detailed-examples-of-benefits"><a class="header" href="#detailed-examples-of-benefits">Detailed Examples of Benefits</a></h3>
+<h4 id="1-data-protection"><a class="header" href="#1-data-protection">1. Data Protection</a></h4>
+<pre><code class="language-cpp">class Student {
+private:
+    float marks;  // Protected from invalid values
+    
+public:
+    void setMarks(float m) {
+        if (m &gt;= 0 &amp;&amp; m &lt;= 100) {
+            marks = m;
+        } else {
+            cout &lt;&lt; "Error: Marks must be between 0 and 100!" &lt;&lt; endl;
+        }
+    }
+};
+
+// Without encapsulation (dangerous):
+// student.marks = -50;  // Would allow invalid data
+// student.marks = 150;  // Would allow invalid data
+
+// With encapsulation (safe):
+Student student;
+student.setMarks(85);    // ✓ Valid
+student.setMarks(-50);   // ✗ Rejected
+student.setMarks(150);   // ✗ Rejected
+</code></pre>
+<h4 id="2-flexibility-and-maintainability"><a class="header" href="#2-flexibility-and-maintainability">2. Flexibility and Maintainability</a></h4>
+<pre><code class="language-cpp">class Employee {
+private:
+    double baseSalary;
+    double bonus;
+    
+    // Internal implementation can change without affecting external code
+    double calculateTotalSalary() {
+        // Version 1: Simple addition
+        return baseSalary + bonus;
+        
+        // Later, can change to:
+        // Version 2: Include tax calculation
+        // double tax = baseSalary * 0.2;
+        // return baseSalary + bonus - tax;
+        
+        // External code using getSalary() doesn't need to change!
+    }
+    
+public:
+    double getSalary() {
+        return calculateTotalSalary();
+    }
+};
+</code></pre>
+<h4 id="3-security"><a class="header" href="#3-security">3. Security</a></h4>
+<pre><code class="language-cpp">class User {
+private:
+    string username;
+    string passwordHash;  // Never store plain password
+    string email;
+    
+    string hashPassword(string password) {
+        // Complex hashing algorithm
+        return "hashed_" + password;  // Simplified for example
+    }
+    
+public:
+    void setPassword(string oldPassword, string newPassword) {
+        if (hashPassword(oldPassword) == passwordHash) {
+            passwordHash = hashPassword(newPassword);
+            cout &lt;&lt; "Password changed successfully!" &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "Incorrect old password!" &lt;&lt; endl;
+        }
+    }
+    
+    bool login(string inputPassword) {
+        return (hashPassword(inputPassword) == passwordHash);
+    }
+    
+    // No getter for password - security!
+    // Cannot retrieve actual password
+};
+</code></pre>
+<h4 id="4-control-and-business-logic"><a class="header" href="#4-control-and-business-logic">4. Control and Business Logic</a></h4>
+<pre><code class="language-cpp">class ShoppingCart {
+private:
+    vector&lt;string&gt; items;
+    double totalPrice;
+    int itemCount;
+    
+    void updateTotal(double price) {
+        totalPrice += price;
+        itemCount++;
+        
+        // Can add business logic here
+        if (totalPrice &gt; 1000) {
+            cout &lt;&lt; "Free shipping applied!" &lt;&lt; endl;
+        }
+    }
+    
+    void logActivity(string action) {
+        cout &lt;&lt; "[LOG] " &lt;&lt; action &lt;&lt; " at " &lt;&lt; /* current time */ endl;
+    }
+    
+public:
+    void addItem(string item, double price) {
+        if (price &lt; 0) {
+            cout &lt;&lt; "Invalid price!" &lt;&lt; endl;
+            return;
+        }
+        
+        items.push_back(item);
+        updateTotal(price);
+        logActivity("Item added: " + item);
+        
+        cout &lt;&lt; "Item added to cart. Total: $" &lt;&lt; totalPrice &lt;&lt; endl;
+    }
+    
+    void removeItem(string item, double price) {
+        // Find and remove item
+        totalPrice -= price;
+        itemCount--;
+        logActivity("Item removed: " + item);
+    }
+    
+    double getTotal() {
+        return totalPrice;
+    }
+};
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="4-real-world-examples"><a class="header" href="#4-real-world-examples">4. Real-World Examples</a></h2>
+<h3 id="41-atm-machine-example"><a class="header" href="#41-atm-machine-example">4.1 ATM Machine Example</a></h3>
+<p>An ATM machine is a perfect example of encapsulation in real life.</p>
+<pre><code class="language-cpp">class ATM {
+private:
+    // Hidden internal components (Encapsulation)
+    double cashAvailable;
+    map&lt;string, double&gt; accountBalances;
+    map&lt;string, string&gt; accountPins;
+    vector&lt;string&gt; transactionLog;
+    
+    // Private helper methods (Hidden implementation)
+    bool authenticateUser(string cardNumber, string pin) {
+        if (accountPins.find(cardNumber) != accountPins.end()) {
+            return accountPins[cardNumber] == pin;
+        }
+        return false;
+    }
+    
+    bool checkCashAvailability(double amount) {
+        return (cashAvailable &gt;= amount);
+    }
+    
+    void dispenseCash(double amount) {
+        // Complex mechanical operations hidden
+        cout &lt;&lt; "Dispensing cash..." &lt;&lt; endl;
+        cout &lt;&lt; "Please collect $" &lt;&lt; amount &lt;&lt; endl;
+        cashAvailable -= amount;
+    }
+    
+    void logTransaction(string cardNumber, string type, double amount) {
+        string log = cardNumber + " - " + type + " - $" + to_string(amount);
+        transactionLog.push_back(log);
+    }
+    
+    void printReceipt(string cardNumber, string type, double amount, double balance) {
+        cout &lt;&lt; "\n========== RECEIPT ==========" &lt;&lt; endl;
+        cout &lt;&lt; "Account: ****" &lt;&lt; cardNumber.substr(cardNumber.length() - 4) &lt;&lt; endl;
+        cout &lt;&lt; "Transaction: " &lt;&lt; type &lt;&lt; endl;
+        cout &lt;&lt; "Amount: $" &lt;&lt; amount &lt;&lt; endl;
+        cout &lt;&lt; "Balance: $" &lt;&lt; balance &lt;&lt; endl;
+        cout &lt;&lt; "============================\n" &lt;&lt; endl;
+    }
+
+public:
+    // Constructor
+    ATM(double initialCash) : cashAvailable(initialCash) {}
+    
+    // Public interface (Simple methods for users)
+    void addAccount(string cardNumber, string pin, double initialBalance) {
+        accountPins[cardNumber] = pin;
+        accountBalances[cardNumber] = initialBalance;
+    }
+    
+    void withdrawMoney(string cardNumber, string pin, double amount) {
+        cout &lt;&lt; "\nProcessing withdrawal..." &lt;&lt; endl;
+        
+        if (!authenticateUser(cardNumber, pin)) {
+            cout &lt;&lt; "Authentication failed! Incorrect PIN." &lt;&lt; endl;
+            return;
+        }
+        
+        if (accountBalances[cardNumber] &lt; amount) {
+            cout &lt;&lt; "Insufficient funds!" &lt;&lt; endl;
+            cout &lt;&lt; "Available balance: $" &lt;&lt; accountBalances[cardNumber] &lt;&lt; endl;
+            return;
+        }
+        
+        if (!checkCashAvailability(amount)) {
+            cout &lt;&lt; "ATM has insufficient cash. Please try a smaller amount." &lt;&lt; endl;
+            return;
+        }
+        
+        // All checks passed, process withdrawal
+        accountBalances[cardNumber] -= amount;
+        dispenseCash(amount);
+        logTransaction(cardNumber, "Withdrawal", amount);
+        printReceipt(cardNumber, "Withdrawal", amount, accountBalances[cardNumber]);
+    }
+    
+    void depositMoney(string cardNumber, string pin, double amount) {
+        cout &lt;&lt; "\nProcessing deposit..." &lt;&lt; endl;
+        
+        if (!authenticateUser(cardNumber, pin)) {
+            cout &lt;&lt; "Authentication failed! Incorrect PIN." &lt;&lt; endl;
+            return;
+        }
+        
+        if (amount &lt;= 0) {
+            cout &lt;&lt; "Invalid deposit amount!" &lt;&lt; endl;
+            return;
+        }
+        
+        accountBalances[cardNumber] += amount;
+        cashAvailable += amount;
+        logTransaction(cardNumber, "Deposit", amount);
+        
+        cout &lt;&lt; "Deposit successful!" &lt;&lt; endl;
+        printReceipt(cardNumber, "Deposit", amount, accountBalances[cardNumber]);
+    }
+    
+    void checkBalance(string cardNumber, string pin) {
+        cout &lt;&lt; "\nChecking balance..." &lt;&lt; endl;
+        
+        if (!authenticateUser(cardNumber, pin)) {
+            cout &lt;&lt; "Authentication failed! Incorrect PIN." &lt;&lt; endl;
+            return;
+        }
+        
+        cout &lt;&lt; "Current Balance: $" &lt;&lt; accountBalances[cardNumber] &lt;&lt; endl;
+    }
+    
+    void changePin(string cardNumber, string oldPin, string newPin) {
+        cout &lt;&lt; "\nChanging PIN..." &lt;&lt; endl;
+        
+        if (!authenticateUser(cardNumber, oldPin)) {
+            cout &lt;&lt; "Authentication failed! Incorrect current PIN." &lt;&lt; endl;
+            return;
+        }
+        
+        if (newPin.length() != 4) {
+            cout &lt;&lt; "PIN must be 4 digits!" &lt;&lt; endl;
+            return;
+        }
+        
+        accountPins[cardNumber] = newPin;
+        cout &lt;&lt; "PIN changed successfully!" &lt;&lt; endl;
+    }
+};
+
+// Usage
+int main() {
+    ATM atm(50000);  // ATM with $50,000 cash
+    
+    // Add accounts
+    atm.addAccount("1234567890123456", "1234", 5000);
+    atm.addAccount("9876543210987654", "5678", 3000);
+    
+    // User interactions - simple and clean
+    atm.checkBalance("1234567890123456", "1234");
+    atm.withdrawMoney("1234567890123456", "1234", 500);
+    atm.depositMoney("1234567890123456", "1234", 1000);
+    atm.changePin("1234567890123456", "1234", "9999");
+    
+    // Cannot access internal data (encapsulated)
+    // atm.cashAvailable = 0;  // ✗ Error: private member
+    // atm.accountBalances["1234567890123456"] = 999999;  // ✗ Error: private
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Key Points of ATM Encapsulation:</strong></p>
+<ul>
+<li>Users interact through simple buttons/methods</li>
+<li>Internal mechanisms (cash counting, authentication algorithms) are hidden</li>
+<li>Cannot directly access cash or account balances</li>
+<li>All operations go through validation</li>
+<li>Complex security and logging happen behind the scenes</li>
+</ul>
+<h3 id="42-smart-thermostat-example"><a class="header" href="#42-smart-thermostat-example">4.2 Smart Thermostat Example</a></h3>
+<pre><code class="language-cpp">class SmartThermostat {
+private:
+    double currentTemperature;
+    double targetTemperature;
+    bool isHeatingOn;
+    bool isCoolingOn;
+    string mode;  // "auto", "heat", "cool", "off"
+    int fanSpeed;
+    
+    // Private methods - hidden complexity
+    void adjustHeating() {
+        if (currentTemperature &lt; targetTemperature - 1) {
+            isHeatingOn = true;
+            isCoolingOn = false;
+        } else {
+            isHeatingOn = false;
+        }
+    }
+    
+    void adjustCooling() {
+        if (currentTemperature &gt; targetTemperature + 1) {
+            isCoolingOn = true;
+            isHeatingOn = false;
+        } else {
+            isCoolingOn = false;
+        }
+    }
+    
+    void autoRegulate() {
+        if (currentTemperature &lt; targetTemperature - 1) {
+            adjustHeating();
+        } else if (currentTemperature &gt; targetTemperature + 1) {
+            adjustCooling();
+        } else {
+            isHeatingOn = false;
+            isCoolingOn = false;
+        }
+    }
+
+public:
+    SmartThermostat() {
+        currentTemperature = 20.0;
+        targetTemperature = 22.0;
+        isHeatingOn = false;
+        isCoolingOn = false;
+        mode = "auto";
+        fanSpeed = 2;
+    }
+    
+    // Simple public interface
+    void setTargetTemperature(double temp) {
+        if (temp &gt;= 15.0 &amp;&amp; temp &lt;= 30.0) {
+            targetTemperature = temp;
+            cout &lt;&lt; "Target temperature set to " &lt;&lt; temp &lt;&lt; "°C" &lt;&lt; endl;
+            autoRegulate();
+        } else {
+            cout &lt;&lt; "Temperature must be between 15°C and 30°C" &lt;&lt; endl;
+        }
+    }
+    
+    double getTargetTemperature() {
+        return targetTemperature;
+    }
+    
+    double getCurrentTemperature() {
+        return currentTemperature;
+    }
+    
+    void setMode(string m) {
+        if (m == "auto" || m == "heat" || m == "cool" || m == "off") {
+            mode = m;
+            cout &lt;&lt; "Mode set to: " &lt;&lt; mode &lt;&lt; endl;
+        } else {
+            cout &lt;&lt; "Invalid mode!" &lt;&lt; endl;
+        }
+    }
+    
+    string getMode() {
+        return mode;
+    }
+    
+    void displayStatus() {
+        cout &lt;&lt; "\n===== Thermostat Status =====" &lt;&lt; endl;
+        cout &lt;&lt; "Current: " &lt;&lt; currentTemperature &lt;&lt; "°C" &lt;&lt; endl;
+        cout &lt;&lt; "Target: " &lt;&lt; targetTemperature &lt;&lt; "°C" &lt;&lt; endl;
+        cout &lt;&lt; "Mode: " &lt;&lt; mode &lt;&lt; endl;
+        cout &lt;&lt; "Heating: " &lt;&lt; (isHeatingOn ? "ON" : "OFF") &lt;&lt; endl;
+        cout &lt;&lt; "Cooling: " &lt;&lt; (isCoolingOn ? "ON" : "OFF") &lt;&lt; endl;
+        cout &lt;&lt; "============================\n" &lt;&lt; endl;
+    }
+    
+    // Simulate temperature change (for testing)
+    void simulateTemperatureChange(double change) {
+        currentTemperature += change;
+        cout &lt;&lt; "Temperature changed to " &lt;&lt; currentTemperature &lt;&lt; "°C" &lt;&lt; endl;
+        autoRegulate();
+    }
+};
+</code></pre>
+<h3 id="43-email-account-example"><a class="header" href="#43-email-account-example">4.3 Email Account Example</a></h3>
+<pre><code class="language-cpp">class EmailAccount {
+private:
+    string emailAddress;
+    string password;
+    vector&lt;string&gt; inbox;
+    vector&lt;string&gt; sent;
+    vector&lt;string&gt; spam;
+    int storageUsed;  // in MB
+    int storageLimit;
+    
+    bool isValidEmail(string email) {
+        return email.find('@') != string::npos;
+    }
+    
+    bool isSpam(string message) {
+        // Simplified spam detection
+        return message.find("FREE MONEY") != string::npos ||
+               message.find("CLICK HERE NOW") != string::npos;
+    }
+    
+    void updateStorage(int size) {
+        storageUsed += size;
+    }
+
+public:
+    EmailAccount(string email, string pass) {
+        if (isValidEmail(email)) {
+            emailAddress = email;
+            password = pass;
+            storageUsed = 0;
+            storageLimit = 1000;  // 1000 MB
+        }
+    }
+    
+    void receiveEmail(string from, string message) {
+        if (storageUsed &gt;= storageLimit) {
+            cout &lt;&lt; "Storage full! Cannot receive email." &lt;&lt; endl;
+            return;
+        }
+        
+        string email = "From: " + from + " - " + message;
+        
+        if (isSpam(message)) {
+            spam.push_back(email);
+            cout &lt;&lt; "Email moved to spam folder" &lt;&lt; endl;
+        } else {
+            inbox.push_back(email);
+            cout &lt;&lt; "New email received from " &lt;&lt; from &lt;&lt; endl;
+        }
+        
+        updateStorage(1);  // Each email = 1 MB
+    }
+    
+    void sendEmail(string to, string message) {
+        if (!isValidEmail(to)) {
+            cout &lt;&lt; "Invalid recipient email!" &lt;&lt; endl;
+            return;
+        }
+        
+        string email = "To: " + to + " - " + message;
+        sent.push_back(email);
+        updateStorage(1);
+        
+        cout &lt;&lt; "Email sent to " &lt;&lt; to &lt;&lt; endl;
+    }
+    
+    void viewInbox() {
+        cout &lt;&lt; "\n===== INBOX =====" &lt;&lt; endl;
+        if (inbox.empty()) {
+            cout &lt;&lt; "No messages" &lt;&lt; endl;
+        } else {
+            for (size_t i = 0; i &lt; inbox.size(); i++) {
+                cout &lt;&lt; i + 1 &lt;&lt; ". " &lt;&lt; inbox[i] &lt;&lt; endl;
+            }
+        }
+        cout &lt;&lt; "================\n" &lt;&lt; endl;
+    }
+    
+    void getStorageInfo() {
+        cout &lt;&lt; "Storage: " &lt;&lt; storageUsed &lt;&lt; " MB / " &lt;&lt; storageLimit &lt;&lt; " MB" &lt;&lt; endl;
+        cout &lt;&lt; "Available: " &lt;&lt; (storageLimit - storageUsed) &lt;&lt; " MB" &lt;&lt; endl;
+    }
+    
+    void changePassword(string oldPass, string newPass) {
+        if (oldPass == password) {
+            if (newPass.length() &gt;= 8) {
+                password = newPass;
+                cout &lt;&lt; "Password changed successfully!" &lt;&lt; endl;
+            } else {
+                cout &lt;&lt; "Password must be at least 8 characters!" &lt;&lt; endl;
+            }
+        } else {
+            cout &lt;&lt; "Incorrect password!" &lt;&lt; endl;
+        }
+    }
+};
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="5-best-practices"><a class="header" href="#5-best-practices">5. Best Practices</a></h2>
+<h3 id="1-always-make-data-members-private"><a class="header" href="#1-always-make-data-members-private">1. Always Make Data Members Private</a></h3>
+<pre><code class="language-cpp">// ✓ Good
+class Person {
+private:
+    string name;
+    int age;
+public:
+    void setAge(int a) {
+        if (a &gt;= 0 &amp;&amp; a &lt;= 150) age = a;
+    }
+};
+
+// ✗ Bad
+class Person {
+public:
+    string name;
+    int age;  // Anyone can set age to -5 or 9999
+};
+</code></pre>
+<h3 id="2-provide-getters-and-setters-with-validation"><a class="header" href="#2-provide-getters-and-setters-with-validation">2. Provide Getters and Setters with Validation</a></h3>
+<pre><code class="language-cpp">class Product {
+private:
+    string name;
+    double price;
+    int quantity;
+    
+public:
+    // Getter - simple read access
+    double getPrice() {
+        return price;
+    }
+    
+    // Setter with validation
+    void setPrice(double p) {
+        if (p &gt; 0) {
+            price = p;
+        } else {
+            cout &lt;&lt; "Price must be positive!" &lt;&lt; endl;
+        }
+    }
+    
+    // Controlled modification
+    void updateQuantity(int change) {
+        if (quantity + change &gt;= 0) {
+            quantity += change;
+        } else {
+            cout &lt;&lt; "Insufficient quantity!" &lt;&lt; endl;
+        }
+    }
+};
+</code></pre>
+<h3 id="3-dont-provide-setters-for-everything"><a class="header" href="#3-dont-provide-setters-for-everything">3. Don’t Provide Setters for Everything</a></h3>
+<pre><code class="language-cpp">class Order {
+private:
+    string orderID;
+    double totalAmount;
+    string status;
+    
+public:
+    // Read-only access (no setter)
+    string getOrderID() {
+        return orderID;
+    }
+    
+    double getTotalAmount() {
+        return totalAmount;
+    }
+    
+    // Controlled state changes only
+    void processPayment() {
+        if (status == "pending") {
+            status = "paid";
+            // Process payment logic
+        }
+    }
+    
+    void shipOrder() {
+        if (status == "paid") {
+            status = "shipped";
+        }
+    }
+    
+    // No direct setStatus() method - status changes through business logic only
+};
+</code></pre>
+<h3 id="4-use-const-for-getters"><a class="header" href="#4-use-const-for-getters">4. Use Const for Getters</a></h3>
+<pre><code class="language-cpp">class Rectangle {
+private:
+    double length;
+    double width;
+    
+public:
+    // Const getter - promises not to modify object
+    double getLength() const {
+        return length;
+    }
+    
+    double getWidth() const {
+        return width;
+    }
+    
+    double getArea() const {
+        return length * width;
+    }
+};
+</code></pre>
+<h3 id="5-encapsulate-related-data-together"><a class="header" href="#5-encapsulate-related-data-together">5. Encapsulate Related Data Together</a></h3>
+<pre><code class="language-cpp">// ✓ Good - Related data encapsulated together
+class Address {
+private:
+    string street;
+    string city;
+    string state;
+    string zipCode;
+    
+public:
+    string getFullAddress() const {
+        return street + ", " + city + ", " + state + " " + zipCode;
+    }
+};
+
+class Person {
+private:
+    string name;
+    Address homeAddress;
+    Address workAddress;
+};
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="6-common-mistakes-to-avoid"><a class="header" href="#6-common-mistakes-to-avoid">6. Common Mistakes to Avoid</a></h2>
+<h3 id="mistake-1-making-everything-public"><a class="header" href="#mistake-1-making-everything-public">Mistake 1: Making Everything Public</a></h3>
+<pre><code class="language-cpp">// ✗ Bad - No encapsulation
+class Student {
+public:
+    string name;
+    int age;
+    float marks;
+};
+
+// Anyone can do:
+Student s;
+s.marks = -50;  // Invalid data!
+s.age = 999;    // Invalid data!
+</code></pre>
+<h3 id="mistake-2-getterssetters-for-everything-without-validation"><a class="header" href="#mistake-2-getterssetters-for-everything-without-validation">Mistake 2: Getters/Setters for Everything Without Validation</a></h3>
+<pre><code class="language-cpp">// ✗ Bad - Useless encapsulation
+class Person {
+private:
+    int age;
+public:
+    void setAge(int a) { age = a; }  // No validation!
+    int getAge() { return age; }
+};
+
+// Not much better than:
+class Person {
+public:
+    int age;
+};
+</code></pre>
+<h3 id="mistake-3-returning-references-to-private-data"><a class="header" href="#mistake-3-returning-references-to-private-data">Mistake 3: Returning References to Private Data</a></h3>
+<pre><code class="language-cpp">// ✗ Bad - Breaks encapsulation
+class Database {
+private:
+    vector&lt;string&gt; records;
+public:
+    vector&lt;string&gt;&amp; getRecords() {
+        return records;  // Returns reference - caller can modify!
+    }
+};
+
+// Better:
+vector&lt;string&gt; getRecords() const {
+    return records;  // Returns copy - safe
+}
+</code></pre>
+<h3 id="mistake-4-not-validating-in-constructors"><a class="header" href="#mistake-4-not-validating-in-constructors">Mistake 4: Not Validating in Constructors</a></h3>
+<pre><code class="language-cpp">// ✗ Bad
+class BankAccount {
+private:
+    double balance;
+public:
+    BankAccount(double b) {
+        balance = b;  // Could be negative!
+    }
+};
+
+// ✓ Good
+class BankAccount {
+private:
+    double balance;
+public:
+    BankAccount(double b) {
+        if (b &gt;= 0) {
+            balance = b;
+        } else {
+            balance = 0;
+            cout &lt;&lt; "Invalid initial balance. Set to 0." &lt;&lt; endl;
+        }
+    }
+};
+</code></pre>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p><strong>Encapsulation</strong> is one of the fundamental pillars of object-oriented programming. It provides:</p>
+<ul>
+<li><strong>Data Protection</strong> - Private members prevent unauthorized access</li>
+<li><strong>Controlled Access</strong> - Public methods with validation ensure data integrity</li>
+<li><strong>Flexibility</strong> - Internal implementation can change without affecting external code</li>
+<li><strong>Security</strong> - Sensitive data remains hidden</li>
+<li><strong>Maintainability</strong> - Easier to debug and modify</li>
+</ul>
+<h3 id="key-takeaways"><a class="header" href="#key-takeaways">Key Takeaways</a></h3>
+<ol>
+<li><strong>Make data members private</strong> by default</li>
+<li><strong>Provide public methods</strong> (getters/setters) with validation</li>
+<li><strong>Bundle related data and methods</strong> together in a class</li>
+<li><strong>Hide implementation details</strong> from outside world</li>
+<li><strong>Control how data is accessed and modified</strong></li>
+</ol>
+<h3 id="quick-reference"><a class="header" href="#quick-reference">Quick Reference</a></h3>
+<pre><code class="language-cpp">class EncapsulationExample {
+private:
+    // 1. Hide data
+    int privateData;
+    
+    // 2. Hide complex implementation
+    void complexInternalMethod() {
+        // Hidden complexity
+    }
+    
+public:
+    // 3. Provide controlled access
+    void setData(int value) {
+        if (value &gt;= 0) {  // 4. Add validation
+            privateData = value;
+        }
+    }
+    
+    int getData() const {  // 5. Use const for read-only
+        return privateData;
+    }
+};
+</code></pre>
+<p>Encapsulation creates robust, secure, and maintainable code by protecting your data and providing controlled access through well-defined interfaces!</p>
+<p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="cpp_class_object_guide.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="inheritance.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="cpp_class_object_guide.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="inheritance.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

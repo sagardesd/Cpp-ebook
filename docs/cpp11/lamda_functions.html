@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-cfadc762.js";
+            window.path_to_searchindex_js = "searchindex-1cdc846b.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-be66b500.js"></script>
+        <script src="toc-c16d8e8c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,19 +175,830 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="lamda-functions--c11"><a class="header" href="#lamda-functions--c11">Lamda Functions (&gt;= C++11)</a></h1>
+                        <h1 id="from-specific-to-general-a-guide-to-predicates-functors-and-lambda-functions-in-c"><a class="header" href="#from-specific-to-general-a-guide-to-predicates-functors-and-lambda-functions-in-c">From Specific to General: A Guide to Predicates, Functors, and Lambda Functions in C++</a></h1>
+<h2 id="starting-point-a-specific-find-algorithm"><a class="header" href="#starting-point-a-specific-find-algorithm">Starting Point: A Specific Find Algorithm</a></h2>
+<p>Let’s begin with a simple <code>find</code> algorithm that searches for a specific value:</p>
+<pre><code class="language-cpp">template &lt;typename It, typename T&gt;
+It find(It first, It last, const T&amp; value) {
+    for (auto it = first; it != last; ++it) {
+        if (*it == value)  // This condition is too specific!
+            return it;
+    }
+    return last;
+}
+</code></pre>
+<p>This works well for finding exact values.
+The line of code that does this is:</p>
+<pre><code class="language-cpp">if (*it == value)
+</code></pre>
+<p>What if i want to find the 1st element that is a prime number or based on some different criteria ?</p>
+<p>The condition <code>*it == value</code> is too restrictive.</p>
+<p>Instead of hardcoding the comparison, what if we could pass the condition itself as a parameter?</p>
+<p>Let’s replace the specific condition with a general <strong>predicate</strong> function:</p>
+<pre><code class="language-cpp">template &lt;typename It, typename Pred&gt;
+It find_if(It first, It last, Pred pred) {
+    for (auto it = first; it != last; ++it) {
+        if (pred(*it))  // Call the predicate on each element
+            return it;
+    }
+    return last;
+}
+</code></pre>
+<p><strong>What changed?</strong></p>
+<ul>
+<li><code>Pred</code>: The type of our predicate (the compiler figures this out via template deduction)</li>
+<li><code>pred</code>: Our predicate parameter - a function we can call on each element</li>
+<li><code>pred(*it)</code>: We call the predicate to test each element</li>
+</ul>
+<p>Lets rename it to <code>find_if</code> to distinguish it from the original <code>find</code> function.</p>
+<p>Finding Prime Numbers <code>predicate</code> function.</p>
+<pre><code class="language-cpp">bool isPrime(size_t n) {
+    if (n &lt; 2) return false;
+    for (size_t i = 2; i &lt;= std::sqrt(n); i++)
+        if (n % i == 0) return false;
+    return true;
+}
+
+std::vector&lt;int&gt; ints = {1, 0, 6};
+auto it = find_if(ints.begin(), ints.end(), isPrime);
+assert(it == ints.end());  // No primes found!
+</code></pre>
+<p>So the observation here is by passing functions as parameters allows us to generalize algorithms with user-defined behavior !</p>
+<h2 id="the-problem-what-about-runtime-values"><a class="header" href="#the-problem-what-about-runtime-values">The Problem: What About Runtime Values?</a></h2>
+<p>Suppose we want to find a number less than N, where N is determined at runtime:</p>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+find_if(begin, end, /* lessThan... what? */);
+</code></pre>
+<p>The Naive Approach, We might try creating multiple functions:</p>
+<pre><code class="language-cpp">bool lessThan5(int x) { return x &lt; 5; }
+bool lessThan6(int x) { return x &lt; 6; }
+bool lessThan7(int x) { return x &lt; 7; }
+
+find_if(begin, end, lessThan5);
+find_if(begin, end, lessThan6);
+find_if(begin, end, lessThan7);
+</code></pre>
+<p><strong>Problem:</strong> We can’t create a function for every possible value of N at compile time!</p>
+<h3 id="can-we-add-another-parameter"><a class="header" href="#can-we-add-another-parameter">Can We Add Another Parameter?</a></h3>
+<pre><code class="language-cpp">bool isLessThan(int elem, int n) {
+    return elem &lt; n;
+}
+</code></pre>
+<p><strong>Problem:</strong> This won’t work with <code>find_if</code>! Look at our algorithm:</p>
+<pre><code class="language-cpp">template &lt;typename It, typename Pred&gt;
+It find_if(It first, It last, Pred pred) {
+    for (auto it = first; it != last; ++it) {
+        if (pred(*it))  // We only pass ONE parameter to pred!
+            return it;
+    }
+    return last;
+}
+</code></pre>
+<p>The predicate <code>pred</code> is called with only one parameter (<code>*it</code>), so we can’t pass the threshold value N here.</p>
+<p><strong>The Challenge:</strong></p>
+<p>We need to give our function extra state (the value N) without adding another parameter to the predicate call.
+So how can we add a state to the predicate.
+The answer is a feature called <strong>Functors (Function Objects)</strong></p>
+<p>A <strong>functor</strong> is an object that can be called like a function. We create this by overloading the <code>operator()</code> in a class.</p>
+<h3 id="what-makes-something-callable"><a class="header" href="#what-makes-something-callable">What Makes Something Callable?</a></h3>
+<p>In <code>find_if</code>, we write <code>pred(*it)</code>. For this to work, <code>pred</code> needs to be <strong>callable</strong>.</p>
+<p>Three things in C++ are callable:</p>
+<ol>
+<li>Regular functions</li>
+<li><strong>Functors (objects with <code>operator()</code> overloaded)</strong></li>
+<li>Lambda functions (we’ll get to these!)</li>
+</ol>
+<h3 id="creating-a-functor"><a class="header" href="#creating-a-functor">Creating a Functor</a></h3>
+<pre><code class="language-cpp">class LessThanN {
+private:
+    int threshold;
+    
+public:
+    LessThanN(int n) : threshold(n) {}
+    
+    bool operator()(int x) const {
+        return x &lt; threshold;
+    }
+};
+</code></pre>
+<p><strong>How it works:</strong></p>
+<ul>
+<li><code>LessThanN</code> is a class that stores the threshold value as member data</li>
+<li>The constructor allows us to set the threshold at runtime</li>
+<li><code>operator()</code> makes objects of this class callable like a function</li>
+<li>The <code>const</code> means this doesn’t modify the object’s state</li>
+</ul>
+<h3 id="using-the-functor"><a class="header" href="#using-the-functor">Using the Functor</a></h3>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+
+LessThanN lessThanN(n);  // Create a functor object with threshold n
+find_if(begin, end, lessThanN);  // Pass the functor to the algorithm
+</code></pre>
+<p>Or more concisely:</p>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+find_if(begin, end, LessThanN(n));  // Create and pass in one line
+</code></pre>
+<h3 id="why-this-works"><a class="header" href="#why-this-works">Why This Works</a></h3>
+<p>When <code>find_if</code> calls <code>pred(*it)</code>, it’s actually calling <code>lessThanN.operator()(*it)</code>:</p>
+<pre><code class="language-cpp">// Inside find_if:
+if (pred(*it))  // This becomes: lessThanN.operator()(*it)
+</code></pre>
+<p>The functor has <strong>state</strong> (the <code>threshold</code> member variable) that persists across multiple calls!</p>
+<h3 id="advantages-of-functors"><a class="header" href="#advantages-of-functors">Advantages of Functors</a></h3>
+<ol>
+<li><strong>State preservation</strong>: Can store data between calls</li>
+<li><strong>Type safety</strong>: Each functor is its own type</li>
+<li><strong>Optimization</strong>: Compiler can inline the <code>operator()</code> calls</li>
+<li><strong>Flexibility</strong>: Can have multiple member functions and complex state</li>
+</ol>
+<h3 id="disadvantages-of-functors"><a class="header" href="#disadvantages-of-functors">Disadvantages of Functors</a></h3>
+<ol>
+<li><strong>Verbose</strong>: Requires writing an entire class</li>
+<li><strong>Boilerplate</strong>: Lots of code for simple predicates</li>
+<li><strong>Readability</strong>: The logic is separated from where it’s used</li>
+</ol>
+<p>So in C++11 a wonderful feature has been introdcued named <strong>Lamda functions</strong>.</p>
+<h2 id="lambda-functions---the-modern-way"><a class="header" href="#lambda-functions---the-modern-way">Lambda Functions - The Modern Way</a></h2>
+<p>Lambda functions give us the benefits of functors with much cleaner syntax:</p>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+
+auto lessThanN = [n](int x) {
+    return x &lt; n;
+};
+
+find_if(begin, end, lessThanN);
+</code></pre>
+<h3 id="lambda-syntax-breakdown"><a class="header" href="#lambda-syntax-breakdown">Lambda Syntax Breakdown</a></h3>
+<pre><code class="language-cpp">[capture](parameters) { body }
+</code></pre>
+<ul>
+<li><strong>Capture clause <code>[n]</code></strong>: What variables from the outer scope to “remember” (like member variables in a functor or state)</li>
+<li><strong>Parameters <code>(int x)</code></strong>: What gets passed when the lambda is called (like the parameters to <code>operator()</code>)</li>
+<li><strong>Body <code>{ return x &lt; n; }</code></strong>: The code to execute (like the body of <code>operator()</code>)</li>
+</ul>
+<p><strong>Lambdas are syntactic sugar for functors. They give us the power of function objects with the convenience of inline code!</strong></p>
+<h3 id="capture-modes"><a class="header" href="#capture-modes">Capture Modes</a></h3>
+<p>The parameters from the outerscope can be captured in varius modes.
+Below are the modes.</p>
+<pre><code class="language-cpp">int x = 10, y = 20;
+
+[x]        // Capture x by value (Variables captured by value are const by default (read-only))
+[&amp;x]       // Capture x by reference (Variables captured by reference can be modified)
+[x, &amp;y]    // Capture x by value, y by reference
+[=]        // Capture all used variables by value
+[&amp;]        // Capture all used variables by reference
+[=, &amp;y]    // Capture all by value except y (by reference)
+[&amp;, x]     // Capture all by reference except x (by value)
+</code></pre>
+<p>Example:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int x = 10, y = 20;
+    
+    // [x] - Capture x by value (Read only)
+    auto lambda1 = [x]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; endl;
+        // x = 15; // ERROR: cannot modify x (captured by value is const)
+    };
+    lambda1();
+    
+    
+    // [&amp;x] - Capture x by reference (Can modify)
+    auto lambda2 = [&amp;x]() {
+        cout &lt;&lt; "Original x = " &lt;&lt; x &lt;&lt; endl;
+        x = 15; // OK: can modify x
+        cout &lt;&lt; "Modified x = " &lt;&lt; x &lt;&lt; endl;
+    };
+    lambda2();
+    cout &lt;&lt; "x after lambda2: " &lt;&lt; x &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [x, &amp;y] - Capture x by value, y by reference
+    x = 10; // Reset x
+    auto lambda3 = [x, &amp;y]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 100; // ERROR: cannot modify x (captured by value)
+        y = 25; // OK: can modify y (captured by reference)
+    };
+    lambda3();
+    cout &lt;&lt; "y after lambda3: " &lt;&lt; y &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [=] - Capture all used variables by value (Read only)
+    auto lambda4 = [=]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 50; // ERROR: cannot modify x (captured by value)
+        // y = 50; // ERROR: cannot modify y (captured by value)
+    };
+    lambda4();
+    
+    
+    // [&amp;] - Capture all used variables by reference (Can modify)
+    auto lambda5 = [&amp;]() {
+        cout &lt;&lt; "Before: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        x = 30; // OK: can modify x
+        y = 40; // OK: can modify y
+        cout &lt;&lt; "After: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+    };
+    lambda5();
+    cout &lt;&lt; "After lambda5: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [=, &amp;y] - Capture all by value except y (by reference)
+    auto lambda6 = [=, &amp;y]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 100; // ERROR: cannot modify x (captured by value)
+        y = 50; // OK: can modify y (captured by reference)
+    };
+    lambda6();
+    cout &lt;&lt; "y after lambda6: " &lt;&lt; y &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [&amp;, x] - Capture all by reference except x (by value)
+    auto lambda7 = [&amp;, x]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 200; // ERROR: cannot modify x (captured by value)
+        y = 60; // OK: can modify y (captured by reference)
+    };
+    lambda7();
+    cout &lt;&lt; "After lambda7: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>x = 10
+Original x = 10
+Modified x = 15
+x after lambda2: 15
+
+x = 10, y = 20
+y after lambda3: 25
+
+x = 10, y = 25
+
+Before: x = 10, y = 25
+After: x = 30, y = 40
+After lambda5: x = 30, y = 40
+
+x = 30, y = 40
+y after lambda6: 50
+
+x = 30, y = 50
+After lambda7: x = 30, y = 60
+</code></pre>
+<h2 id="lambda-capture-with-mutable"><a class="header" href="#lambda-capture-with-mutable">Lambda Capture with <code>mutable</code></a></h2>
+<p>By default, variables captured <strong>by value</strong> in a lambda are <strong>read-only</strong> (const).
+If you need to modify the captured variable inside the lambda, use the <code>mutable</code> keyword.</p>
+<p>However, <code>mutable</code> only allows you to modify a <strong>local read-write copy</strong> of the variable
+inside the lambda. Any changes made are <strong>local to the lambda</strong> and do not affect the
+original variable outside.</p>
+<p>If you want to modify the <strong>original variable</strong>, you must capture it <strong>by reference</strong>
+using <code>&amp;</code>.</p>
+<h3 id="example"><a class="header" href="#example">Example:</a></h3>
+<pre><code class="language-cpp">int x = 10;
+
+// Without mutable - Read only
+auto lambda1 = [x]() {
+    // x = 20; // ERROR: cannot modify
+};
+
+// With mutable - Local read-write copy
+auto lambda2 = [x]() mutable {
+    x = 20; // OK: modifies LOCAL copy only
+};
+lambda2();
+cout &lt;&lt; x; // Output: 10 (original unchanged)
+
+// By reference - Modifies original
+auto lambda3 = [&amp;x]() {
+    x = 30; // Modifies original x
+};
+lambda3();
+cout &lt;&lt; x; // Output: 30 (original changed)
+</code></pre>
+<p><strong>Note:</strong> <code>mutable</code> gives you a read-write copy, but changes stay inside the lambda.
+Use <code>&amp;</code> (reference) if you need to modify the actual variable.</p>
+<h3 id="what-lambdas-really-are-"><a class="header" href="#what-lambdas-really-are-">What Lambdas Really Are ?</a></h3>
+<p>Here is the fun part.
+<strong>Behind the scenes, the compiler turns a lambda into a functor!</strong></p>
+<p>When you write:</p>
+<pre><code class="language-cpp">auto lessThanN = [n](int x) { return x &lt; n; };
+auto output = lessThanN(20);
+</code></pre>
+<p>The compiler generates something like the below:</p>
+<pre><code class="language-cpp">
+  class __lambda_6_22 // Compiler-generated name
+  {
+    public: 
+    inline /*constexpr */ bool operator()(int x) const
+    {
+      return x &lt; n;
+    }
+    
+    private: 
+    int n;
+    
+    public:
+    __lambda_6_22(int &amp; _n)
+    : n{_n}
+    {}
+    
+  };
+  
+__lambda_6_22 lessThanN = __lambda_6_22{n};
+bool output = lessThanN.operator()(20);
+</code></pre>
+<h2 id="passing-lambdas-to-functions"><a class="header" href="#passing-lambdas-to-functions">Passing Lambdas to Functions</a></h2>
+<p>One of the key advatage of <code>lamdas</code> is you can pass them to functions as paramters.
+This feature is very useful for usecase like callback systems, Eventing etc.</p>
+<p>Below are various ways you can accept <code>lamdas</code> as function parameters:</p>
+<h3 id="method-1-using-stdfunction-most-flexible"><a class="header" href="#method-1-using-stdfunction-most-flexible">Method 1: Using <code>std::function</code> (Most Flexible)</a></h3>
+<p><code>std::function</code> is a general-purpose wrapper that can hold any callable object (lambda, function pointer, functor).</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;functional&gt;
+using namespace std;
+
+// Function accepting lambda via std::function
+void executeOperation(int a, int b, function&lt;int(int, int)&gt; operation) {
+    int result = operation(a, b);
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+}
+
+int main() {
+    // Pass different lambdas
+    executeOperation(10, 5, [](int x, int y) { return x + y; });     // 15
+    executeOperation(10, 5, [](int x, int y) { return x - y; });     // 5
+    executeOperation(10, 5, [](int x, int y) { return x * y; });     // 50
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Pros:</strong> Flexible, can store lambdas with different captures<br><strong>Cons:</strong> Slight performance overhead (type erasure, heap allocation)</p>
+<hr>
+<h3 id="method-2-using-template-best-performance"><a class="header" href="#method-2-using-template-best-performance">Method 2: Using Template (Best Performance)</a></h3>
+<p>Templates allow the compiler to optimize the lambda call directly.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Template function - accepts any callable
+template&lt;typename Func&gt;
+void executeOperation(int a, int b, Func operation) {
+    int result = operation(a, b);
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+}
+
+int main() {
+    executeOperation(10, 5, [](int x, int y) { return x + y; });
+    executeOperation(10, 5, [](int x, int y) { return x * y; });
+    
+    // Works with captures too
+    int multiplier = 2;
+    executeOperation(10, 5, [multiplier](int x, int y) { 
+        return (x + y) * multiplier; 
+    });
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Pros:</strong> Zero overhead, compiler optimizations, works with any callable<br><strong>Cons:</strong> Template code in header files, longer compile times</p>
+<hr>
+<h3 id="method-3-using-function-pointer-c-style-limited"><a class="header" href="#method-3-using-function-pointer-c-style-limited">Method 3: Using Function Pointer (C-Style, Limited)</a></h3>
+<p>Only works with lambdas that <strong>don’t capture</strong> anything (stateless).</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Function pointer for int(int, int) signature
+void executeOperation(int a, int b, int (*operation)(int, int)) {
+    int result = operation(a, b);
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+}
+
+int main() {
+    // Works - no capture
+    executeOperation(10, 5, [](int x, int y) { return x + y; });
+    
+    // ERROR - cannot convert lambda with capture to function pointer
+    int multiplier = 2;
+    // executeOperation(10, 5, [multiplier](int x, int y) { return x * y; });
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Pros:</strong> Lightweight, C-compatible<br><strong>Cons:</strong> Only works with non-capturing lambdas</p>
+<hr>
+<h3 id="method-4-using-auto-c14-generic"><a class="header" href="#method-4-using-auto-c14-generic">Method 4: Using <code>auto</code> (C++14+, Generic)</a></h3>
+<p>Perfect for generic code where you don’t care about the exact type.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Generic function using auto
+auto executeOperation(int a, int b, auto operation) {
+    return operation(a, b);
+}
+
+int main() {
+    auto result1 = executeOperation(10, 5, [](int x, int y) { return x + y; });
+    auto result2 = executeOperation(10, 5, [](int x, int y) { return x * y; });
+    
+    cout &lt;&lt; "Result1: " &lt;&lt; result1 &lt;&lt; endl; // 15
+    cout &lt;&lt; "Result2: " &lt;&lt; result2 &lt;&lt; endl; // 50
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Note:</strong> <code>auto</code> parameters require C++20, but templates work in C++11+.</p>
+<hr>
+<h2 id="lambda-evolution-c11-to-c20"><a class="header" href="#lambda-evolution-c11-to-c20">Lambda Evolution: C++11 to C++20</a></h2>
+<p>Lambdas have evolved significantly since their introduction in C++11.
+Let’s explore the incremental improvements across C++ standards.</p>
+<h3 id="c11-lambda-introduction"><a class="header" href="#c11-lambda-introduction">C++11: Lambda Introduction</a></h3>
+<p>C++11 introduced lambdas with basic functionality:</p>
+<pre><code class="language-cpp">// Basic lambda syntax
+auto add = [](int a, int b) { return a + b; };
+
+// Capture by value and reference
+int x = 10;
+auto byValue = [x]() { return x; };      // Captures copy of x
+auto byRef = [&amp;x]() { return x; };       // Captures reference to x
+
+// Capture all
+auto captureAll = [=]() { return x; };   // Capture all by value
+auto captureAllRef = [&amp;]() { return x; }; // Capture all by reference
+
+// Mutable lambdas (can modify captured values)
+auto counter = [count = 0]() mutable {
+    return ++count;
+};
+
+// Explicit return type
+auto divide = [](int a, int b) -&gt; double {
+    return static_cast&lt;double&gt;(a) / b;
+};
+</code></pre>
+<p><strong>C++11 Limitations:</strong></p>
+<ul>
+<li>Cannot capture <code>*this</code> by value</li>
+<li>No <code>constexpr</code> support</li>
+<li>Cannot use <code>auto</code> as types for parameters</li>
+<li>Return type deduction limited to simple cases</li>
+</ul>
+<hr>
+<h3 id="c14-generalized-lambda-captures--generic-lambdas"><a class="header" href="#c14-generalized-lambda-captures--generic-lambdas">C++14: Generalized Lambda Captures &amp; Generic Lambdas</a></h3>
+<p>C++14 added two major features:</p>
+<h4 id="1-generalized-lambda-captures-init-captures"><a class="header" href="#1-generalized-lambda-captures-init-captures">1. Generalized Lambda Captures (Init Captures)</a></h4>
+<p>You can now initialize captured variables with arbitrary expressions:</p>
+<pre><code class="language-cpp">// Move-only types in captures
+auto ptr = std::make_unique&lt;int&gt;(42);
+auto lambda = [ptr = std::move(ptr)]() {
+    return *ptr;
+};
+
+// Initialize new variables in capture
+auto lambda2 = [value = 5 * 2]() {
+    return value;  // value is 10
+};
+
+// Complex initializations
+std::string str = "Hello";
+auto lambda3 = [s = std::move(str)]() {
+    return s;  // str is moved into lambda
+};
+
+// Multiple initializations
+auto lambda4 = [x = 1, y = 2, z = x + y]() {
+    return z;  // z is 3
+};
+</code></pre>
+<h4 id="2-generic-lambdas-auto-parameters"><a class="header" href="#2-generic-lambdas-auto-parameters">2. Generic Lambdas (Auto Parameters)</a></h4>
+<p>Lambdas can now use <code>auto</code> for parameters, making them templates:</p>
+<pre><code class="language-cpp">// Generic lambda - works with any type
+auto print = [](auto x) {
+    std::cout &lt;&lt; x &lt;&lt; std::endl;
+};
+
+print(42);           // int
+print(3.14);         // double
+print("Hello");      // const char*
+
+// Multiple auto parameters
+auto add = [](auto a, auto b) {
+    return a + b;
+};
+
+add(1, 2);           // int + int
+add(1.5, 2.5);       // double + double
+add(std::string("Hello"), std::string(" World"));  // string + string
+
+// Mixing auto and concrete types
+auto mixed = [](int x, auto y) {
+    return x + y;
+};
+</code></pre>
+<p><strong>What the compiler generates:</strong></p>
+<pre><code class="language-cpp">// Generic lambda
+auto lambda = [](auto x) { return x * 2; };
+
+// Becomes approximately:
+struct __Lambda {
+    template&lt;typename T&gt;
+    auto operator()(T x) const {
+        return x * 2;
+    }
+};
+</code></pre>
+<hr>
+<h3 id="c17-constexpr-lambdas--this-capture"><a class="header" href="#c17-constexpr-lambdas--this-capture">C++17: Constexpr Lambdas &amp; *this Capture</a></h3>
+<h4 id="1-constexpr-lambdas"><a class="header" href="#1-constexpr-lambdas">1. Constexpr Lambdas</a></h4>
+<p>Lambdas are implicitly <code>constexpr</code> if they meet the requirements:</p>
+<pre><code class="language-cpp">// Implicitly constexpr
+auto squared = [](int x) { return x * x; };
+constexpr int result = squared(5);  // Evaluated at compile time
+
+// Explicitly constexpr
+constexpr auto cube = [](int x) constexpr { return x * x * x; };
+static_assert(cube(3) == 27);
+
+// Using in constexpr contexts
+template&lt;int N&gt;
+struct Array {
+    static constexpr auto size = [](){ return N * 2; }();
+};
+</code></pre>
+<h4 id="2-capture-this-by-value"><a class="header" href="#2-capture-this-by-value">2. Capture *this by Value</a></h4>
+<p>Before C++17, when you capture this in a lambda inside a class member function, you only capture the pointer to the object, not the object itself.</p>
+<p>This creates a dangling pointer problem if the object is destroyed before the lambda is executed.</p>
+<p>C++17 allows capturing the entire object instead of just the pointer:</p>
+<pre><code class="language-cpp">class Widget {
+    int value = 42;
+    
+public:
+    auto getLambda_Cpp11() {
+        // Captures 'this' pointer - dangerous if object is destroyed
+        return [this]() { return value; };
+    }
+    
+    auto getLambda_Cpp17() {
+        // Captures copy of entire object - safe!
+        return [*this]() { return value; };
+    }
+    
+    auto getLambda_Mutable() {
+        // Captured copy can be modified
+        return [*this]() mutable { return ++value; };
+    }
+};
+
+Widget w;
+auto lambda1 = w.getLambda_Cpp11();  // Captures pointer to w
+auto lambda2 = w.getLambda_Cpp17();  // Captures copy of w
+</code></pre>
+<p><strong>Why this matters:</strong></p>
+<pre><code class="language-cpp">auto getLambda() {
+    Widget w;
+    return [w]() { return w.getValue(); };  // OK: w is copied
+    // return [&amp;w]() { return w.getValue(); };  // DANGER: w destroyed!
+    // return [this]() { return value; };  // DANGER: this pointer dangling!
+    return [*this]() { return value; };  // OK: object copied
+}
+</code></pre>
+<hr>
+<h3 id="c20-template-lambdas--more"><a class="header" href="#c20-template-lambdas--more">C++20: Template Lambdas &amp; More</a></h3>
+<p>C++20 brought several powerful additions:</p>
+<h4 id="1-template-parameter-syntax-for-lambdas"><a class="header" href="#1-template-parameter-syntax-for-lambdas">1. Template Parameter Syntax for Lambdas</a></h4>
+<p>Lambdas can now explicitly specify template parameters:</p>
+<pre><code class="language-cpp">// Explicit template parameters
+auto lambda = []&lt;typename T&gt;(T x) {
+    std::cout &lt;&lt; "Type: " &lt;&lt; typeid(T).name() &lt;&lt; std::endl;
+    return x;
+};
+
+// Multiple template parameters
+auto pair = []&lt;typename T, typename U&gt;(T first, U second) {
+    return std::pair{first, second};
+};
+
+// Template parameter with constraints
+auto process = []&lt;typename T&gt;(std::vector&lt;T&gt;&amp; vec) {
+    // Can use T explicitly in the body
+    T sum = T{};
+    for (const auto&amp; elem : vec) {
+        sum += elem;
+    }
+    return sum;
+};
+
+std::vector&lt;int&gt; nums = {1, 2, 3, 4, 5};
+auto result = process(nums);
+</code></pre>
+<p><strong>Why this is useful:</strong></p>
+<pre><code class="language-cpp">// Before C++20: Can't get the type explicitly
+auto oldWay = [](auto vec) {
+    // How do we get the element type?
+    using T = ???;  // No easy way!
+};
+
+// C++20: Direct access to template parameter
+auto newWay = []&lt;typename T&gt;(std::vector&lt;T&gt; vec) {
+    using ElementType = T;  // Clear and explicit!
+    T defaultValue{};
+    // ...
+};
+</code></pre>
+<h4 id="2-lambdas-in-unevaluated-contexts"><a class="header" href="#2-lambdas-in-unevaluated-contexts">2. Lambdas in Unevaluated Contexts</a></h4>
+<p>C++20 allows lambdas in contexts where they’re not executed:</p>
+<pre><code class="language-cpp">// Lambda in decltype
+auto lambda = [](int x) { return x * 2; };
+using ReturnType = decltype(lambda(0));  // ReturnType is int
+
+// Lambda in template parameter
+template&lt;auto Lambda&gt;
+struct Processor {
+    static constexpr auto value = Lambda(10);
+};
+
+constexpr auto times2 = [](int x) { return x * 2; };
+Processor&lt;times2&gt; p;  // p.value is 20
+
+// Lambda for SFINAE/type traits
+template&lt;typename T&gt;
+concept Addable = requires(T a, T b) {
+    { [](T x, T y) { return x + y; }(a, b) };
+};
+</code></pre>
+<h4 id="3-pack-expansion-in-lambda-init-capture"><a class="header" href="#3-pack-expansion-in-lambda-init-capture">3. Pack Expansion in Lambda Init-Capture</a></h4>
+<p>C++20 allows capturing parameter packs:</p>
+<pre><code class="language-cpp">// Variadic template with pack capture
+template&lt;typename... Args&gt;
+auto captureAll(Args... args) {
+    return [...args = std::move(args)] {
+        // Each arg is captured individually
+        return (args + ...);  // Fold expression
+    };
+}
+
+auto lambda = captureAll(1, 2, 3, 4);
+std::cout &lt;&lt; lambda() &lt;&lt; std::endl;  // Output: 10
+
+// More complex example
+template&lt;typename... Funcs&gt;
+auto compose(Funcs... funcs) {
+    return [... f = std::move(funcs)](auto x) {
+        // Apply all functions in sequence
+        return (f(x), ...);  // Fold expression with comma operator
+    };
+}
+</code></pre>
+<h4 id="4-default-constructible-and-assignable-lambdas"><a class="header" href="#4-default-constructible-and-assignable-lambdas">4. Default Constructible and Assignable Lambdas</a></h4>
+<p>C++20 lambdas without captures are default constructible and assignable:</p>
+<pre><code class="language-cpp">// Stateless lambda
+auto lambda = [](int x) { return x * 2; };
+
+// Can default construct
+decltype(lambda) another;  // OK in C++20!
+another = lambda;          // OK in C++20!
+
+// Useful for containers
+std::vector&lt;decltype(lambda)&gt; lambdas(10);  // Vector of 10 lambdas
+
+// Compare lambdas
+auto l1 = [](int x) { return x; };
+auto l2 = l1;
+// l1 == l2;  // Still not allowed - use std::function or comparison operators
+</code></pre>
+<h4 id="5-lambdas-with-concepts-c20"><a class="header" href="#5-lambdas-with-concepts-c20">5. Lambdas with Concepts (C++20)</a></h4>
+<p>Constrain lambda parameters using concepts:</p>
+<pre><code class="language-cpp">#include &lt;concepts&gt;
+
+// Lambda with concept constraint
+auto process = []&lt;std::integral T&gt;(T value) {
+    return value * 2;
+};
+
+process(5);      // OK: int is integral
+// process(5.0);    // Error: double is not integral
+
+// Multiple constraints
+auto compare = []&lt;typename T&gt;(T a, T b) 
+    requires std::equality_comparable&lt;T&gt; {
+    return a == b;
+};
+
+// Constraint on return type
+auto compute = []&lt;typename T&gt;(T x) -&gt; std::integral auto {
+    return static_cast&lt;int&gt;(x * 2);
+};
+</code></pre>
+<hr>
+<p>Let’s see how the same problem evolves across standards:</p>
+<h4 id="problem-create-a-customizable-filter"><a class="header" href="#problem-create-a-customizable-filter">Problem: Create a customizable filter</a></h4>
+<p><strong>C++11:</strong></p>
+<pre><code class="language-cpp">// Need to specify types explicitly
+auto createFilter(int threshold) {
+    return [threshold](int value) {
+        return value &gt; threshold;
+    };
+}
+
+std::vector&lt;int&gt; nums = {1, 5, 10, 15};
+auto filter = createFilter(7);
+// Can only use with int
+</code></pre>
+<p><strong>C++14:</strong></p>
+<pre><code class="language-cpp">// Generic lambda - works with any comparable type
+auto createFilter(auto threshold) {
+    return [threshold](auto value) {
+        return value &gt; threshold;
+    };
+}
+
+std::vector&lt;int&gt; ints = {1, 5, 10, 15};
+std::vector&lt;double&gt; doubles = {1.5, 5.5, 10.5};
+
+auto filter = createFilter(7);
+// Works with both int and double!
+</code></pre>
+<p><strong>C++17:</strong></p>
+<pre><code class="language-cpp">class FilterFactory {
+    int defaultThreshold = 10;
+    
+public:
+    auto createFilter() {
+        // Safe capture of object by value
+        return [*this](auto value) {
+            return value &gt; defaultThreshold;
+        };
+    }
+};
+
+FilterFactory factory;
+auto filter = factory.createFilter();
+// filter still works even if factory is destroyed
+</code></pre>
+<p><strong>C++20:</strong></p>
+<pre><code class="language-cpp">// Full type control with concepts
+auto createFilter = []&lt;std::totally_ordered T&gt;(T threshold) {
+    return [threshold]&lt;std::totally_ordered U&gt;(U value) 
+        requires std::convertible_to&lt;U, T&gt; {
+        return static_cast&lt;T&gt;(value) &gt; threshold;
+    };
+};
+
+auto intFilter = createFilter(10);
+// intFilter(15);     // OK
+// intFilter("test"); // Compile error: not convertible to int
+</code></pre>
+<h3 id="complete-feature-comparison-table"><a class="header" href="#complete-feature-comparison-table">Complete Feature Comparison Table</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>C++11</th><th>C++14</th><th>C++17</th><th>C++20</th></tr>
+</thead>
+<tbody>
+<tr><td>Basic lambdas</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Capture by value/reference</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Mutable lambdas</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Init captures</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Generic lambdas (auto)</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>constexpr lambdas</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>Capture *this by value</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>Template parameter syntax</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Pack expansion in captures</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Unevaluated contexts</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Default constructible</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Concepts constraints</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
+<p>The progression from specific algorithms to general ones with predicates represents a fundamental principle in C++ programming: <strong>abstraction without performance loss</strong>.</p>
+<ul>
+<li><strong>Predicates</strong> allow us to separate the “what to find” from the “how to search”</li>
+<li><strong>Functors</strong> provide a way to package state with behavior</li>
+<li><strong>Lambdas</strong> offer modern, concise syntax that the compiler transforms into functors</li>
+</ul>
+<p>The evolution of lambdas from C++11 to C++20 shows the language’s commitment to:</p>
+<ul>
+<li><strong>Expressiveness</strong>: More ways to capture and initialize state</li>
+<li><strong>Safety</strong>: Better lifetime management with <code>*this</code> captures</li>
+<li><strong>Performance</strong>: Compile-time evaluation with <code>constexpr</code></li>
+<li><strong>Flexibility</strong>: Template parameters and concepts for better type control</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../mds/shared_ptr_weak_ptr.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="shared_ptr_weak_ptr.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../mds/in_class_initialization.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -195,13 +1006,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../mds/shared_ptr_weak_ptr.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="shared_ptr_weak_ptr.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../mds/in_class_initialization.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                    </a>
             </nav>
 
         </div>

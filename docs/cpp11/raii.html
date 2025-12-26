@@ -1,0 +1,789 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>RAII - Resource Acquisition Is Initialization</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-1cdc846b.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-c16d8e8c.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="raii-a-natural-solution-to-resource-management"><a class="header" href="#raii-a-natural-solution-to-resource-management">RAII: A Natural Solution to Resource Management</a></h1>
+<h2 id="the-problem-resource-leaks"><a class="header" href="#the-problem-resource-leaks">The Problem: Resource Leaks</a></h2>
+<p>Let’s start with a common problem. Imagine you’re writing a function that needs to allocate some memory:</p>
+<pre><code class="language-cpp">void processData(int size) {
+    int* data = new int[size];
+    
+    // Do some processing
+    if (size &gt; 1000) {
+        // Oops, early return!
+        return;
+    }
+    
+    // More processing
+    complexCalculation(data);
+    
+    // Clean up
+    delete[] data;
+}
+</code></pre>
+<p><strong>What’s wrong here?</strong> If <code>size &gt; 1000</code>, we return early and never call <code>delete[]</code>. The memory is leaked! The operating system won’t reclaim it until the program terminates.</p>
+<pre><code>Flow Diagram:
+┌─────────────────┐
+│  new int[size]  │
+└────────┬────────┘
+         │
+         ▼
+    ┌─────────┐
+    │size&gt;1000│
+    └────┬────┘
+         │
+    ┌────┴────┐
+    │         │
+   Yes       No
+    │         │
+    ▼         ▼
+┌────────┐  ┌──────────────────┐
+│ return │  │complexCalculation│
+└───┬────┘  └────────┬─────────┘
+    │                │
+    ▼                ▼
+  LEAK!        ┌──────────┐
+               │delete[]  │
+               └────┬─────┘
+                    │
+                    ▼
+                   OK ✓
+</code></pre>
+<p>Let’s add error handling to make it worse:</p>
+<pre><code class="language-cpp">void processData(int size) {
+    int* data = new int[size];
+    
+    // Do some processing
+    if (size &gt; 1000) {
+        return;  // LEAK!
+    }
+    
+    // This might throw an exception
+    riskyOperation(data);
+    
+    // More processing
+    complexCalculation(data);
+    
+    // Clean up
+    delete[] data;  // Never reached if riskyOperation throws!
+}
+</code></pre>
+<p>Now we have <strong>two ways to leak memory</strong>: early returns and exceptions. We could try to fix this with try-catch blocks and remembering to delete in every path, but that’s tedious and error-prone.</p>
+<p><strong>There has to be a better way!</strong></p>
+<h2 id="understanding-the-stack"><a class="header" href="#understanding-the-stack">Understanding the Stack</a></h2>
+<p>Before we solve this, let’s understand how C++ manages automatic variables. When you declare a variable in a function, it lives on the <strong>stack</strong>:</p>
+<pre><code class="language-cpp">void myFunction() {
+    int x = 42;           // x lives on the stack
+    double y = 3.14;      // y lives on the stack
+    
+    if (x &gt; 10) {
+        int z = 100;      // z lives on the stack
+    }  // z automatically destroyed here
+    
+}  // x and y automatically destroyed here
+</code></pre>
+<pre><code>Stack Lifetime:
+┌─────────────────────────────┐
+│ myFunction() called         │
+├─────────────────────────────┤
+│ x = 42        [created]     │
+│ y = 3.14      [created]     │
+│                             │
+│ if (x &gt; 10) {               │
+│   z = 100     [created]     │
+│ }             [z destroyed] │ ← automatic cleanup
+│                             │
+│ }             [y destroyed] │ ← automatic cleanup
+│               [x destroyed] │ ← automatic cleanup
+└─────────────────────────────┘
+</code></pre>
+<p>The beautiful thing about stack variables is they’re <strong>automatically cleaned up</strong> when they go out of scope. You don’t have to do anything—the compiler handles it for you.</p>
+<p>This automatic cleanup happens <strong>even if an exception is thrown</strong>:</p>
+<pre><code class="language-cpp">void myFunction() {
+    int x = 42;
+    
+    riskyOperation();  // Might throw an exception
+    
+}  // x is STILL cleaned up, even if exception thrown!
+</code></pre>
+<p>This is called <strong>stack unwinding</strong>. When an exception occurs or a function returns, C++ walks back through the stack and cleans up all automatic variables.</p>
+<h2 id="constructors-and-destructors"><a class="header" href="#constructors-and-destructors">Constructors and Destructors</a></h2>
+<p>C++ classes have special member functions that run automatically:</p>
+<ul>
+<li><strong>Constructor</strong>: A special member function called when an object is created to initialize the object. If it has an initializer list, members are initialized during object creation itself.</li>
+<li><strong>Destructor</strong>: Called when an object is destroyed</li>
+</ul>
+<pre><code class="language-cpp">class MyClass {
+public:
+    MyClass() {
+        std::cout &lt;&lt; "Object created!\n";
+    }
+    
+    ~MyClass() {
+        std::cout &lt;&lt; "Object destroyed!\n";
+    }
+};
+
+void demo() {
+    MyClass obj;  // Constructor called: "Object created!"
+    
+    // Do stuff...
+    
+}  // Destructor called: "Object destroyed!"
+</code></pre>
+<p>The destructor runs automatically when the object goes out of scope. <strong>Always.</strong> Even if there’s an exception.</p>
+<h2 id="the-brilliant-idea-combine-them"><a class="header" href="#the-brilliant-idea-combine-them">The Brilliant Idea: Combine Them!</a></h2>
+<p>Here’s the insight: What if we <strong>acquire resources in the constructor</strong> and <strong>release them in the destructor</strong>?</p>
+<p>Let’s wrap our problematic memory allocation:</p>
+<pre><code class="language-cpp">class IntArray {
+private:
+    int* data;
+    int size;
+    
+public:
+    // Constructor: acquire the resource
+    IntArray(int s) : size(s) {
+        data = new int[size];
+        std::cout &lt;&lt; "Memory allocated\n";
+    }
+    
+    // Destructor: release the resource
+    ~IntArray() {
+        delete[] data;
+        std::cout &lt;&lt; "Memory freed\n";
+    }
+    
+    int&amp; operator[](int index) {
+        return data[index];
+    }
+};
+</code></pre>
+<p>Now watch what happens when we use it:</p>
+<pre><code class="language-cpp">void processData(int size) {
+    IntArray data(size);  // Memory allocated in constructor
+    
+    // Do some processing
+    if (size &gt; 1000) {
+        return;  // Destructor called automatically - NO LEAK!
+    }
+    
+    // This might throw an exception
+    riskyOperation(data);  // If it throws, destructor still called - NO LEAK!
+    
+    // More processing
+    complexCalculation(data);
+    
+}  // Destructor called automatically - memory freed
+</code></pre>
+<p><strong>Voila!</strong> No manual resource management. No need to worry about ownership. No need to worry about cleanup. It’s all handled automatically when the object goes out of scope.</p>
+<ul>
+<li>Early return? ✓ Memory freed</li>
+<li>Exception thrown? ✓ Memory freed</li>
+<li>Normal path? ✓ Memory freed</li>
+</ul>
+<p><strong>Every single path</strong> through the function automatically cleans up the memory. You literally cannot forget.</p>
+<h2 id="this-technique-is-called-raii"><a class="header" href="#this-technique-is-called-raii">This Technique is Called RAII</a></h2>
+<p><strong>RAII</strong> stands for “Resource Acquisition Is Initialization.”</p>
+<p>The idea is simple:</p>
+<p><strong>Acquire the resource in the constructor</strong> - This is where initialization happens</p>
+<p><strong>Release the resource in the destructor</strong> - This happens automatically when the object goes out of scope</p>
+<h3 id="key-principles"><a class="header" href="#key-principles">Key Principles</a></h3>
+<ul>
+<li><strong>There should never be a half-ready or half-dead object</strong></li>
+<li><strong>When an object is created, it should be in a ready state</strong> - fully initialized and usable</li>
+<li><strong>When an object goes out of scope, it should release its resources</strong> - automatically, without user intervention</li>
+<li><strong>The user shouldn’t have to do anything more</strong> - no manual cleanup calls, no worrying about exceptions</li>
+</ul>
+<p>To be honest, “Resource Acquisition Is Initialization” is a bit of a mouthful. More descriptive names might be:</p>
+<ul>
+<li><strong>Constructor Acquires, Destructor Releases</strong> (CADR)</li>
+<li><strong>Scope-Based Resource Management</strong> (SBRM)</li>
+</ul>
+<p>But we’re stuck with RAII, so let’s embrace it!</p>
+<h2 id="raii-in-action-file-handling"><a class="header" href="#raii-in-action-file-handling">RAII in Action: File Handling</a></h2>
+<p>Let’s see another example with files:</p>
+<pre><code class="language-cpp">// Without RAII: Easy to leak file handles
+void readFile(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    
+    if (!file) {
+        return;  // OK, nothing to clean
+    }
+    
+    // Process the file
+    if (errorCondition) {
+        return;  // LEAK! Forgot to fclose
+    }
+    
+    processData(file);  // Might throw exception - LEAK!
+    
+    fclose(file);  // Only reached on success path
+}
+</code></pre>
+<pre><code class="language-cpp">// With RAII: File handle always closed
+class File {
+private:
+    FILE* file;
+    
+public:
+    File(const char* filename, const char* mode) {
+        file = fopen(filename, mode);
+        if (!file) {
+            throw std::runtime_error("Failed to open file");
+        }
+    }
+    
+    ~File() {
+        fclose(file);
+    }
+    
+    FILE* get() { return file; }
+};
+
+void readFile(const char* filename) {
+    File file(filename, "r");  // File opened
+    
+    // Process the file
+    if (errorCondition) {
+        return;  // File closed automatically
+    }
+    
+    processData(file.get());  // Exception? File still closed automatically
+    
+}  // File closed automatically
+</code></pre>
+<h2 id="wait-can-raii-go-wrong"><a class="header" href="#wait-can-raii-go-wrong">Wait, Can RAII Go Wrong?</a></h2>
+<p>Yes! Even with RAII, you can still leak resources if you’re not careful. Let’s see how:</p>
+<pre><code class="language-cpp">class BadResourceManager {
+private:
+    int* buffer;
+    FILE* file;
+    
+public:
+    BadResourceManager(const char* filename, int size) {
+        // Acquire first resource
+        buffer = new int[size];
+        std::cout &lt;&lt; "Buffer allocated\n";
+        
+        // Try to acquire second resource
+        file = fopen(filename, "r");
+        if (!file) {
+            // Constructor throws exception
+            throw std::runtime_error("Failed to open file");
+            // MEMORY LEAK! buffer is never freed
+        }
+        
+        std::cout &lt;&lt; "File opened\n";
+    }
+    
+    ~BadResourceManager() {
+        std::cout &lt;&lt; "Destructor called\n";
+        delete[] buffer;
+        if (file) fclose(file);
+    }
+};
+
+void demonstrateProblem() {
+    try {
+        BadResourceManager manager("nonexistent.txt", 1000);
+    } catch (const std::exception&amp; e) {
+        std::cout &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; "\n";
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Buffer allocated
+Caught: Failed to open file
+</code></pre>
+<p>Notice what’s missing? <strong>“Destructor called” never prints!</strong></p>
+<p>The memory allocated for <code>buffer</code> is <strong>leaked</strong>. Why?</p>
+<h2 id="understanding-fully-constructed-objects"><a class="header" href="#understanding-fully-constructed-objects">Understanding “Fully Constructed Objects”</a></h2>
+<p>Here’s a critical rule in C++:</p>
+<p><strong>The destructor is only called for fully constructed objects.</strong></p>
+<p>An object is considered <strong>fully constructed</strong> only when its constructor completes successfully (reaches the end without throwing).</p>
+<p>Let’s trace what happens in our bad example:</p>
+<pre><code class="language-cpp">BadResourceManager(const char* filename, int size) {
+    buffer = new int[size];     // ✓ Memory allocated
+    
+    file = fopen(filename, "r");
+    if (!file) {
+        throw std::runtime_error("Failed to open file");
+        // ✗ Constructor did NOT complete
+        // ✗ Object is NOT fully constructed
+        // ✗ Destructor will NOT be called
+        // ✗ buffer memory LEAKED
+    }
+    
+    // Constructor completes here - but we never reach this!
+}
+</code></pre>
+<pre><code>Object Construction Timeline:
+┌────────────────────────────────────┐
+│ Constructor starts                 │
+├────────────────────────────────────┤
+│ buffer = new int[size]   ✓         │ ← Memory allocated
+│ file = fopen(...)        ✗         │ ← Failed!
+│ throw exception          ✗         │ ← Constructor interrupted
+├────────────────────────────────────┤
+│ Constructor did NOT complete       │
+│ Object is NOT fully constructed    │
+│ Destructor will NOT be called      │
+│ buffer is LEAKED!                  │
+└────────────────────────────────────┘
+</code></pre>
+<p>The object is in a <strong>half-baked state</strong>: some resources acquired, some not, constructor failed. C++ considers this object to have never truly existed, so it doesn’t call the destructor.</p>
+<p><strong>Think of it like a failed cake</strong>: if you start baking a cake but the oven breaks halfway through, you don’t have a cake—you have a mess. Similarly, a partially constructed object isn’t really an object.</p>
+<h2 id="the-manual-cleanup-trap"><a class="header" href="#the-manual-cleanup-trap">The Manual Cleanup Trap</a></h2>
+<p>You might think: “I’ll just clean up before throwing!”</p>
+<pre><code class="language-cpp">BadResourceManager(const char* filename, int size) {
+    buffer = new int[size];
+    
+    file = fopen(filename, "r");
+    if (!file) {
+        delete[] buffer;  // Manual cleanup
+        throw std::runtime_error("Failed to open file");
+    }
+}
+</code></pre>
+<p>This works, but now you’re back to <strong>manual resource management</strong>! You have to remember to clean up in every failure path. If you acquire three resources, you need cleanup logic for three different failure points. This is exactly what RAII was supposed to eliminate.</p>
+<p><strong>We need a better solution.</strong></p>
+<h2 id="the-solution-raii-all-the-way-down"><a class="header" href="#the-solution-raii-all-the-way-down">The Solution: RAII All The Way Down</a></h2>
+<p>The key insight: <strong>use RAII objects as members</strong>. When a constructor throws, the destructors of all <strong>fully constructed members</strong> are automatically called.</p>
+<pre><code class="language-cpp">// RAII wrapper for memory
+class Buffer {
+private:
+    int* data;
+    int size;
+    
+public:
+    Buffer(int s) : size(s) {
+        data = new int[size];
+        std::cout &lt;&lt; "Buffer allocated\n";
+    }
+    
+    ~Buffer() {
+        delete[] data;
+        std::cout &lt;&lt; "Buffer freed\n";
+    }
+    
+    int* get() { return data; }
+};
+
+// RAII wrapper for files
+class File {
+private:
+    FILE* handle;
+    
+public:
+    File(const char* filename, const char* mode) {
+        handle = fopen(filename, mode);
+        if (!handle) {
+            throw std::runtime_error("Failed to open file");
+        }
+        std::cout &lt;&lt; "File opened\n";
+    }
+    
+    ~File() {
+        fclose(handle);
+        std::cout &lt;&lt; "File closed\n";
+    }
+    
+    FILE* get() { return handle; }
+};
+
+// Good resource manager using RAII members
+class GoodResourceManager {
+private:
+    Buffer buffer;  // RAII member
+    File file;      // RAII member
+    
+public:
+    GoodResourceManager(const char* filename, int size)
+        : buffer(size),      // Buffer constructor called
+          file(filename, "r") // File constructor called
+    {
+        // If we reach here, both resources acquired successfully
+        std::cout &lt;&lt; "Manager fully constructed\n";
+    }
+    
+    ~GoodResourceManager() {
+        std::cout &lt;&lt; "Manager destructor\n";
+        // buffer and file destructors called automatically
+    }
+};
+
+void demonstrateSolution() {
+    try {
+        GoodResourceManager manager("nonexistent.txt", 1000);
+    } catch (const std::exception&amp; e) {
+        std::cout &lt;&lt; "Caught: " &lt;&lt; e.what() &lt;&lt; "\n";
+    }
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Buffer allocated
+Buffer freed
+Caught: Failed to open file
+</code></pre>
+<p><strong>Look at that!</strong> Even though <code>File</code>’s constructor threw an exception:</p>
+<ol>
+<li><code>Buffer</code> was fully constructed (its constructor completed)</li>
+<li>So <code>Buffer</code>’s destructor was called automatically</li>
+<li>No memory leak!</li>
+</ol>
+<p>The <code>GoodResourceManager</code> object itself was never fully constructed, so its destructor wasn’t called—but that’s fine, because its <strong>member</strong> destructors were called, and they’re the ones managing the actual resources.</p>
+<h2 id="how-member-construction-order-matters"><a class="header" href="#how-member-construction-order-matters">How Member Construction Order Matters</a></h2>
+<p>Members are constructed in the <strong>order they’re declared</strong> in the class:</p>
+<pre><code class="language-cpp">class Manager {
+private:
+    Buffer buffer;  // Constructed first
+    File file;      // Constructed second
+    
+public:
+    Manager(const char* filename, int size)
+        : buffer(size),
+          file(filename, "r")
+    {
+    }
+};
+</code></pre>
+<p>If <code>file</code> construction throws:</p>
+<ul>
+<li><code>buffer</code> was already fully constructed → its destructor runs ✓</li>
+<li><code>file</code> was never fully constructed → its destructor doesn’t run (but it never acquired anything anyway)</li>
+<li><code>Manager</code> was never fully constructed → its destructor doesn’t run (but that’s OK, the members handle cleanup)</li>
+</ul>
+<pre><code>Member Construction Flow with Exception:
+┌──────────────────────────────────────────┐
+│ Manager construction starts              │
+├──────────────────────────────────────────┤
+│ 1. buffer(size)           ✓ SUCCESS      │ ← Fully constructed
+│    - new int[size]                       │
+│    - Buffer ready                        │
+├──────────────────────────────────────────┤
+│ 2. file(filename, "r")    ✗ THROWS       │ ← Construction fails
+│    - fopen fails                         │
+│    - throw exception                     │
+├──────────────────────────────────────────┤
+│ Exception caught - cleanup begins:       │
+│                                          │
+│ • buffer destructor called ✓             │ ← Automatic!
+│   - delete[] data                        │
+│   - No leak!                             │
+│                                          │
+│ • file destructor NOT called             │ ← Never constructed
+│ • Manager destructor NOT called          │ ← Never constructed
+└──────────────────────────────────────────┘
+</code></pre>
+<p><strong>This is the magic</strong>: by composing RAII objects, you get <strong>automatic exception safety</strong>. Each layer handles its own cleanup, and the language guarantees it all happens in the right order.</p>
+<h2 id="the-standard-library-does-this"><a class="header" href="#the-standard-library-does-this">The Standard Library Does This</a></h2>
+<p>You rarely need to write your own RAII wrappers because the standard library provides them:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;fstream&gt;
+
+class ModernResourceManager {
+private:
+    std::unique_ptr&lt;int[]&gt; buffer;  // RAII for memory
+    std::ifstream file;              // RAII for files
+    
+public:
+    ModernResourceManager(const char* filename, int size)
+        : buffer(std::make_unique&lt;int[]&gt;(size)),
+          file(filename)
+    {
+        if (!file.is_open()) {
+            // buffer automatically cleaned up when exception thrown!
+            throw std::runtime_error("Failed to open file");
+        }
+    }
+    
+    // Compiler-generated destructor does the right thing
+    ~ModernResourceManager() = default;
+};
+</code></pre>
+<p>If the file fails to open, <code>std::unique_ptr</code>’s destructor is automatically called and frees the memory. You don’t write any cleanup code—the language does it for you.</p>
+<h2 id="what-can-you-manage-with-raii"><a class="header" href="#what-can-you-manage-with-raii">What Can You Manage with RAII?</a></h2>
+<p>RAII isn’t just for memory and files. It works for <strong>any resource</strong>:</p>
+<ul>
+<li><strong>Memory</strong> - <code>new</code>/<code>delete</code>, <code>malloc</code>/<code>free</code></li>
+<li><strong>Files</strong> - <code>fopen</code>/<code>fclose</code>, file descriptors</li>
+<li><strong>Locks</strong> - <code>mutex.lock()</code>/<code>mutex.unlock()</code></li>
+<li><strong>Sockets</strong> - <code>socket()</code>/<code>close()</code></li>
+<li><strong>Database connections</strong> - <code>connect()</code>/<code>disconnect()</code></li>
+<li><strong>OpenGL contexts</strong> - <code>createContext()</code>/<code>destroyContext()</code></li>
+<li><strong>Temporary state</strong> - Save/restore settings</li>
+</ul>
+<p>The pattern is always the same:</p>
+<ol>
+<li>Acquire in constructor</li>
+<li>Release in destructor</li>
+<li>Let the stack do the work</li>
+</ol>
+<h2 id="the-c-standard-library-uses-raii-everywhere"><a class="header" href="#the-c-standard-library-uses-raii-everywhere">The C++ Standard Library Uses RAII Everywhere</a></h2>
+<p>You don’t have to write RAII wrappers yourself—C++ provides them:</p>
+<pre><code class="language-cpp">#include &lt;memory&gt;
+#include &lt;fstream&gt;
+#include &lt;vector&gt;
+#include &lt;mutex&gt;
+
+void modernCpp() {
+    // Smart pointers manage memory
+    std::unique_ptr&lt;int[]&gt; data(new int[100]);
+    
+    // Streams manage file handles
+    std::ifstream file("data.txt");
+    
+    // Containers manage their own memory
+    std::vector&lt;int&gt; numbers = {1, 2, 3, 4, 5};
+    
+    // Lock guards manage mutexes
+    std::mutex m;
+    std::lock_guard&lt;std::mutex&gt; lock(m);
+    
+}  // Everything cleaned up automatically!
+</code></pre>
+<h2 id="why-raii-is-beautiful"><a class="header" href="#why-raii-is-beautiful">Why RAII is Beautiful</a></h2>
+<p>RAII transforms resource management from a <strong>manual chore</strong> into an <strong>automatic guarantee</strong>.</p>
+<p>Instead of remembering to clean up, you <strong>cannot forget</strong> to clean up. Instead of writing error-prone cleanup logic in every return path and exception handler, you write it <strong>once</strong> in the destructor.</p>
+<p>The destructor is your cleanup code, and the C++ language guarantees it runs. Always. No matter what.</p>
+<p>That’s the power of RAII: <strong>using the language’s automatic features to enforce correctness.</strong></p>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<ol>
+<li>Resource leaks happen when you forget to clean up</li>
+<li>Stack variables are automatically destroyed when they go out of scope</li>
+<li>Destructors run automatically, even during exceptions (stack unwinding)</li>
+<li>RAII combines these: acquire in constructor, release in destructor</li>
+<li>The result: automatic, leak-free resource management</li>
+</ol>
+<p><strong>RAII = Let the stack do the work for you!</strong></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="memory_leak.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="smart_pointers_intro.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="memory_leak.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="smart_pointers_intro.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
