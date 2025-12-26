@@ -114,9 +114,7 @@ The predicate `pred` is called with only one parameter (`*it`), so we can't pass
 **The Challenge:** 
 
 We need to give our function extra state (the value N) without adding another parameter to the predicate call.
-
 So how can we add a state to the predicate.
-
 The answer is a feature called **Functors (Function Objects)**
 
 A **functor** is an object that can be called like a function. We create this by overloading the `operator()` in a class.
