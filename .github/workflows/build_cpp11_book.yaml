@@ -1,0 +1,43 @@
+name: Build C++11 Book into cpp11_docs
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mds/**'
+      - 'cpp11_summary/**'
+      - 'book_cpp11.toml'
+      - '.github/workflows/build_cpp11_book.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install mdBook
+        run: cargo install mdbook
+      
+      - name: Setup C++11 Book structure
+        run: |
+          mkdir -p cpp11_summary
+          cd cpp11_summary
+          # Create symlinks to reuse md files from mds/ folder
+          for file in ../mds/*.md; do
+            if [ "$(basename $file)" != "SUMMARY.md" ]; then
+              ln -sf "$file" "$(basename $file)"
+            fi
+          done
+          cd ..
+      
+      - name: Build C++11 Book
+        run: mdbook build --config-file book_cpp11.toml
+      
+      - name: Commit and push built docs
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add cpp11_docs
+          git commit -m "Auto-update C++11 book [skip ci]" || echo "No changes to commit"
+          git push
