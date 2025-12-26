@@ -21,8 +21,8 @@ The line of code that does this is:
 if (*it == value)
 ```
 What if i want to find the 1st element that is a prime number or based on some different criteria ?
-The condition `*it == value` is too restrictive. 
 
+The condition `*it == value` is too restrictive. 
 
 Instead of hardcoding the comparison, what if we could pass the condition itself as a parameter?
 
