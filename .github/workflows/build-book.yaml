@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'mds/**'
-      - 'book_all.toml'
+      - 'book.toml'
       - '.github/workflows/build-book.yml'
 
 jobs:
