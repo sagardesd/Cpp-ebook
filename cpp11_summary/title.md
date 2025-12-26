@@ -2,7 +2,8 @@
 
 # C++11 Features
 
-## From the book: C++ Journey: Core Principles to Modern Features
+### From the book: 
+    C++ Journey: Core Principles to Modern Features
 
 ### By Sagar Kumar Madala
 
