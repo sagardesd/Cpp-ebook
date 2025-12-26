@@ -7,6 +7,7 @@ on:
       - 'cpp11_summary/**'
       - 'book_cpp11.toml'
       - '.github/workflows/build_cpp11_book.yml'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
