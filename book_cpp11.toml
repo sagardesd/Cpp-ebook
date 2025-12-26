@@ -9,4 +9,4 @@ build-dir = "cpp11_docs"
 [output.html]
 default-theme = "navy"
 additional-css = ["theme/custom.css"]
-site-url = "/cpp11/"
+site-url = "/Cpp-ebook/cpp11/"
