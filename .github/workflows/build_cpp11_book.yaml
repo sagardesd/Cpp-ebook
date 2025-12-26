@@ -1,4 +1,4 @@
-name: Build C++11 Book into cpp11_docs
+name: Build C++11 Book
 on:
   push:
     branches: [main]
@@ -23,26 +23,21 @@ jobs:
       
       - name: Build C++11 Book
         run: |
-          # Backup original book.toml if exists
           [ -f book.toml ] && mv book.toml book.toml.backup
-          # Use cpp11 config
           cp book_cpp11.toml book.toml
-          # Build
           mdbook build
-          # Restore original
           [ -f book.toml.backup ] && mv book.toml.backup book.toml || rm -f book.toml
       
-      - name: Commit and push built docs
+      - name: Move to docs/cpp11
+        run: |
+          mkdir -p docs/cpp11
+          rm -rf docs/cpp11/*
+          cp -r cpp11_docs/* docs/cpp11/
+      
+      - name: Commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add cpp11_docs
+          git add docs/cpp11
           git commit -m "Auto-update C++11 book [skip ci]" || echo "No changes to commit"
-      
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./cpp11_docs
-          destination_dir: cpp11
-          keep_files: true  # Important: keeps your main book intact
+          git push
