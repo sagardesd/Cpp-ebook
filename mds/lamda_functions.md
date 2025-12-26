@@ -179,52 +179,6 @@ if (pred(*it))  // This becomes: lessThanN.operator()(*it)
 
 The functor has **state** (the `threshold` member variable) that persists across multiple calls!
 
-### Lets see some more examples of Functors
-
-#### Example 1: Checking if a String is Longer Than N
-
-```cpp
-class LongerThan {
-private:
-    size_t minLength;
-    
-public:
-    LongerThan(size_t len) : minLength(len) {}
-    
-    bool operator()(const std::string& str) const {
-        return str.length() > minLength;
-    }
-};
-
-std::vector<std::string> words = {"hi", "hello", "hey", "goodbye"};
-auto it = find_if(words.begin(), words.end(), LongerThan(4));
-// Finds "hello"
-```
-
-#### Example 2: Counting Occurrences (Stateful Functor)
-
-```cpp
-class Counter {
-private:
-    mutable int count;  // mutable allows modification in const function
-    
-public:
-    Counter() : count(0) {}
-    
-    bool operator()(int x) const {
-        count++;
-        return false;  // Never actually "finds" anything
-    }
-    
-    int getCount() const { return count; }
-};
-
-std::vector<int> nums = {1, 2, 3, 4, 5};
-Counter counter;
-find_if(nums.begin(), nums.end(), counter);
-std::cout << "Checked " << counter.getCount() << " elements\n";
-```
-
 ### Advantages of Functors
 
 1. **State preservation**: Can store data between calls
