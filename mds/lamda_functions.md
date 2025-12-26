@@ -74,9 +74,7 @@ std::cin >> n;
 find_if(begin, end, /* lessThan... what? */);
 ```
 
-### The Naive Approach (Doesn't Work!)
-
-We might try creating multiple functions:
+The Naive Approach, We might try creating multiple functions:
 
 ```cpp
 bool lessThan5(int x) { return x < 5; }
