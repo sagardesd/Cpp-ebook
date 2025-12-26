@@ -581,6 +581,8 @@ auto divide = [](int a, int b) -> double {
 - Cannot use `auto` as types for parameters
 - Return type deduction limited to simple cases
 
+---
+
 ### C++14: Generalized Lambda Captures & Generic Lambdas
 
 C++14 added two major features:
@@ -656,6 +658,8 @@ struct __Lambda {
 };
 ```
 
+---
+
 ### C++17: Constexpr Lambdas & *this Capture
 
 #### 1. Constexpr Lambdas
@@ -722,6 +726,8 @@ auto getLambda() {
     return [*this]() { return value; };  // OK: object copied
 }
 ```
+
+---
 
 ### C++20: Template Lambdas & More
 
@@ -873,7 +879,7 @@ auto compute = []<typename T>(T x) -> std::integral auto {
 };
 ```
 
-### Practical Examples: Evolution in Action
+---
 
 Let's see how the same problem evolves across standards:
 
