@@ -111,7 +111,9 @@ It find_if(It first, It last, Pred pred) {
 
 The predicate `pred` is called with only one parameter (`*it`), so we can't pass the threshold value N here.
 
-**The Challenge:** We need to give our function extra state (the value N) without adding another parameter to the predicate call.
+**The Challenge:** 
+
+We need to give our function extra state (the value N) without adding another parameter to the predicate call.
 
 So how can we add a state to the predicate.
 
