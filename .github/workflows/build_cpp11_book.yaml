@@ -23,11 +23,6 @@ jobs:
       - name: Install mdBook
         run: cargo install mdbook
       
-      - name: Setup C++11 Book structure
-        run: |
-          # Copy all MD files from mds/ to cpp11_summary/
-          cp mds/*.md cpp11_summary/
-      
       - name: Build C++11 Book
         run: |
           [ -f book.toml ] && mv book.toml book.toml.backup
