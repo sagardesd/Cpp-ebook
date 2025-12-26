@@ -1,6 +1,6 @@
 <div style="text-align: center; margin-top: 100px;">
 
-# C++11 Features
+# Modern C++ in Practice: A Guide to C++11
 
 ### From the book: 
     C++ Journey: Core Principles to Modern Features
