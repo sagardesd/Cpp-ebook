@@ -30,6 +30,7 @@
   - [Abbreviated Function Templates (>= C++20)](./c++20_abbreviated_templates.md)
   - [Template Meta Programming](./TMP.md)
   - [constexpr (>= C++11), consteval and constinit (>= c++20)](./constexpr.md)
+  - [CRTP (Curiously Recurring Template Pattern)](./crtp_guide.md)
 - [Value Catagories (>= C++11)](./value_categories.md)
 - [Move Semantics (>= C++11)](./move_semantics.md)
   - [RVO (Return Value Optimization)](./rvo.md)
@@ -46,5 +47,4 @@
   - [Exclusive ownership smart pointer - std::unique_ptr<T>](./unique_ptr.md)
   - [Accessing Raw Pointers from `std::unique_ptr<T>`](./unique_ptr_get_release.md)
   - [Shared ownership smart pointer - std::shared_ptr<T> and std::weak_ptr<T>](./shared_ptr_weak_ptr.md)
-- [CRTP (Curiously Recurring Template Pattern)](./crtp_guide.md)
   
