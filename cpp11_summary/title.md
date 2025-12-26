@@ -4,8 +4,7 @@
 
 ### From the book: 
     C++ Journey: Core Principles to Modern Features
-
-### By Sagar Kumar Madala
+    - By Sagar Kumar Madala
 
 ---
 
