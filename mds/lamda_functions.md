@@ -121,7 +121,9 @@ A **functor** is an object that can be called like a function. We create this by
 
 ### What Makes Something Callable?
 
-In `find_if`, we write `pred(*it)`. For this to work, `pred` needs to be **callable**. Three things in C++ are callable:
+In `find_if`, we write `pred(*it)`. For this to work, `pred` needs to be **callable**. 
+
+Three things in C++ are callable:
 1. Regular functions
 2. **Functors (objects with `operator()` overloaded)**
 3. Lambda functions (we'll get to these!)
