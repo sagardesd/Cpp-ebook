@@ -1,0 +1,1044 @@
+<!DOCTYPE HTML>
+<html lang="en" class="navy sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Lamda Functions (&gt;&#x3D; C++11)</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-241208cc.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "navy";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-1cdc846b.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-c16d8e8c.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="from-specific-to-general-a-guide-to-predicates-functors-and-lambda-functions-in-c"><a class="header" href="#from-specific-to-general-a-guide-to-predicates-functors-and-lambda-functions-in-c">From Specific to General: A Guide to Predicates, Functors, and Lambda Functions in C++</a></h1>
+<h2 id="starting-point-a-specific-find-algorithm"><a class="header" href="#starting-point-a-specific-find-algorithm">Starting Point: A Specific Find Algorithm</a></h2>
+<p>Let’s begin with a simple <code>find</code> algorithm that searches for a specific value:</p>
+<pre><code class="language-cpp">template &lt;typename It, typename T&gt;
+It find(It first, It last, const T&amp; value) {
+    for (auto it = first; it != last; ++it) {
+        if (*it == value)  // This condition is too specific!
+            return it;
+    }
+    return last;
+}
+</code></pre>
+<p>This works well for finding exact values.
+The line of code that does this is:</p>
+<pre><code class="language-cpp">if (*it == value)
+</code></pre>
+<p>What if i want to find the 1st element that is a prime number or based on some different criteria ?</p>
+<p>The condition <code>*it == value</code> is too restrictive.</p>
+<p>Instead of hardcoding the comparison, what if we could pass the condition itself as a parameter?</p>
+<p>Let’s replace the specific condition with a general <strong>predicate</strong> function:</p>
+<pre><code class="language-cpp">template &lt;typename It, typename Pred&gt;
+It find_if(It first, It last, Pred pred) {
+    for (auto it = first; it != last; ++it) {
+        if (pred(*it))  // Call the predicate on each element
+            return it;
+    }
+    return last;
+}
+</code></pre>
+<p><strong>What changed?</strong></p>
+<ul>
+<li><code>Pred</code>: The type of our predicate (the compiler figures this out via template deduction)</li>
+<li><code>pred</code>: Our predicate parameter - a function we can call on each element</li>
+<li><code>pred(*it)</code>: We call the predicate to test each element</li>
+</ul>
+<p>Lets rename it to <code>find_if</code> to distinguish it from the original <code>find</code> function.</p>
+<p>Finding Prime Numbers <code>predicate</code> function.</p>
+<pre><code class="language-cpp">bool isPrime(size_t n) {
+    if (n &lt; 2) return false;
+    for (size_t i = 2; i &lt;= std::sqrt(n); i++)
+        if (n % i == 0) return false;
+    return true;
+}
+
+std::vector&lt;int&gt; ints = {1, 0, 6};
+auto it = find_if(ints.begin(), ints.end(), isPrime);
+assert(it == ints.end());  // No primes found!
+</code></pre>
+<p>So the observation here is by passing functions as parameters allows us to generalize algorithms with user-defined behavior !</p>
+<h2 id="the-problem-what-about-runtime-values"><a class="header" href="#the-problem-what-about-runtime-values">The Problem: What About Runtime Values?</a></h2>
+<p>Suppose we want to find a number less than N, where N is determined at runtime:</p>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+find_if(begin, end, /* lessThan... what? */);
+</code></pre>
+<p>The Naive Approach, We might try creating multiple functions:</p>
+<pre><code class="language-cpp">bool lessThan5(int x) { return x &lt; 5; }
+bool lessThan6(int x) { return x &lt; 6; }
+bool lessThan7(int x) { return x &lt; 7; }
+
+find_if(begin, end, lessThan5);
+find_if(begin, end, lessThan6);
+find_if(begin, end, lessThan7);
+</code></pre>
+<p><strong>Problem:</strong> We can’t create a function for every possible value of N at compile time!</p>
+<h3 id="can-we-add-another-parameter"><a class="header" href="#can-we-add-another-parameter">Can We Add Another Parameter?</a></h3>
+<pre><code class="language-cpp">bool isLessThan(int elem, int n) {
+    return elem &lt; n;
+}
+</code></pre>
+<p><strong>Problem:</strong> This won’t work with <code>find_if</code>! Look at our algorithm:</p>
+<pre><code class="language-cpp">template &lt;typename It, typename Pred&gt;
+It find_if(It first, It last, Pred pred) {
+    for (auto it = first; it != last; ++it) {
+        if (pred(*it))  // We only pass ONE parameter to pred!
+            return it;
+    }
+    return last;
+}
+</code></pre>
+<p>The predicate <code>pred</code> is called with only one parameter (<code>*it</code>), so we can’t pass the threshold value N here.</p>
+<p><strong>The Challenge:</strong></p>
+<p>We need to give our function extra state (the value N) without adding another parameter to the predicate call.
+So how can we add a state to the predicate.
+The answer is a feature called <strong>Functors (Function Objects)</strong></p>
+<p>A <strong>functor</strong> is an object that can be called like a function. We create this by overloading the <code>operator()</code> in a class.</p>
+<h3 id="what-makes-something-callable"><a class="header" href="#what-makes-something-callable">What Makes Something Callable?</a></h3>
+<p>In <code>find_if</code>, we write <code>pred(*it)</code>. For this to work, <code>pred</code> needs to be <strong>callable</strong>.</p>
+<p>Three things in C++ are callable:</p>
+<ol>
+<li>Regular functions</li>
+<li><strong>Functors (objects with <code>operator()</code> overloaded)</strong></li>
+<li>Lambda functions (we’ll get to these!)</li>
+</ol>
+<h3 id="creating-a-functor"><a class="header" href="#creating-a-functor">Creating a Functor</a></h3>
+<pre><code class="language-cpp">class LessThanN {
+private:
+    int threshold;
+    
+public:
+    LessThanN(int n) : threshold(n) {}
+    
+    bool operator()(int x) const {
+        return x &lt; threshold;
+    }
+};
+</code></pre>
+<p><strong>How it works:</strong></p>
+<ul>
+<li><code>LessThanN</code> is a class that stores the threshold value as member data</li>
+<li>The constructor allows us to set the threshold at runtime</li>
+<li><code>operator()</code> makes objects of this class callable like a function</li>
+<li>The <code>const</code> means this doesn’t modify the object’s state</li>
+</ul>
+<h3 id="using-the-functor"><a class="header" href="#using-the-functor">Using the Functor</a></h3>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+
+LessThanN lessThanN(n);  // Create a functor object with threshold n
+find_if(begin, end, lessThanN);  // Pass the functor to the algorithm
+</code></pre>
+<p>Or more concisely:</p>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+find_if(begin, end, LessThanN(n));  // Create and pass in one line
+</code></pre>
+<h3 id="why-this-works"><a class="header" href="#why-this-works">Why This Works</a></h3>
+<p>When <code>find_if</code> calls <code>pred(*it)</code>, it’s actually calling <code>lessThanN.operator()(*it)</code>:</p>
+<pre><code class="language-cpp">// Inside find_if:
+if (pred(*it))  // This becomes: lessThanN.operator()(*it)
+</code></pre>
+<p>The functor has <strong>state</strong> (the <code>threshold</code> member variable) that persists across multiple calls!</p>
+<h3 id="advantages-of-functors"><a class="header" href="#advantages-of-functors">Advantages of Functors</a></h3>
+<ol>
+<li><strong>State preservation</strong>: Can store data between calls</li>
+<li><strong>Type safety</strong>: Each functor is its own type</li>
+<li><strong>Optimization</strong>: Compiler can inline the <code>operator()</code> calls</li>
+<li><strong>Flexibility</strong>: Can have multiple member functions and complex state</li>
+</ol>
+<h3 id="disadvantages-of-functors"><a class="header" href="#disadvantages-of-functors">Disadvantages of Functors</a></h3>
+<ol>
+<li><strong>Verbose</strong>: Requires writing an entire class</li>
+<li><strong>Boilerplate</strong>: Lots of code for simple predicates</li>
+<li><strong>Readability</strong>: The logic is separated from where it’s used</li>
+</ol>
+<p>So in C++11 a wonderful feature has been introdcued named <strong>Lamda functions</strong>.</p>
+<h2 id="lambda-functions---the-modern-way"><a class="header" href="#lambda-functions---the-modern-way">Lambda Functions - The Modern Way</a></h2>
+<p>Lambda functions give us the benefits of functors with much cleaner syntax:</p>
+<pre><code class="language-cpp">int n;
+std::cin &gt;&gt; n;
+
+auto lessThanN = [n](int x) {
+    return x &lt; n;
+};
+
+find_if(begin, end, lessThanN);
+</code></pre>
+<h3 id="lambda-syntax-breakdown"><a class="header" href="#lambda-syntax-breakdown">Lambda Syntax Breakdown</a></h3>
+<pre><code class="language-cpp">[capture](parameters) { body }
+</code></pre>
+<ul>
+<li><strong>Capture clause <code>[n]</code></strong>: What variables from the outer scope to “remember” (like member variables in a functor or state)</li>
+<li><strong>Parameters <code>(int x)</code></strong>: What gets passed when the lambda is called (like the parameters to <code>operator()</code>)</li>
+<li><strong>Body <code>{ return x &lt; n; }</code></strong>: The code to execute (like the body of <code>operator()</code>)</li>
+</ul>
+<p><strong>Lambdas are syntactic sugar for functors. They give us the power of function objects with the convenience of inline code!</strong></p>
+<h3 id="capture-modes"><a class="header" href="#capture-modes">Capture Modes</a></h3>
+<p>The parameters from the outerscope can be captured in varius modes.
+Below are the modes.</p>
+<pre><code class="language-cpp">int x = 10, y = 20;
+
+[x]        // Capture x by value (Variables captured by value are const by default (read-only))
+[&amp;x]       // Capture x by reference (Variables captured by reference can be modified)
+[x, &amp;y]    // Capture x by value, y by reference
+[=]        // Capture all used variables by value
+[&amp;]        // Capture all used variables by reference
+[=, &amp;y]    // Capture all by value except y (by reference)
+[&amp;, x]     // Capture all by reference except x (by value)
+</code></pre>
+<p>Example:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    int x = 10, y = 20;
+    
+    // [x] - Capture x by value (Read only)
+    auto lambda1 = [x]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; endl;
+        // x = 15; // ERROR: cannot modify x (captured by value is const)
+    };
+    lambda1();
+    
+    
+    // [&amp;x] - Capture x by reference (Can modify)
+    auto lambda2 = [&amp;x]() {
+        cout &lt;&lt; "Original x = " &lt;&lt; x &lt;&lt; endl;
+        x = 15; // OK: can modify x
+        cout &lt;&lt; "Modified x = " &lt;&lt; x &lt;&lt; endl;
+    };
+    lambda2();
+    cout &lt;&lt; "x after lambda2: " &lt;&lt; x &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [x, &amp;y] - Capture x by value, y by reference
+    x = 10; // Reset x
+    auto lambda3 = [x, &amp;y]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 100; // ERROR: cannot modify x (captured by value)
+        y = 25; // OK: can modify y (captured by reference)
+    };
+    lambda3();
+    cout &lt;&lt; "y after lambda3: " &lt;&lt; y &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [=] - Capture all used variables by value (Read only)
+    auto lambda4 = [=]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 50; // ERROR: cannot modify x (captured by value)
+        // y = 50; // ERROR: cannot modify y (captured by value)
+    };
+    lambda4();
+    
+    
+    // [&amp;] - Capture all used variables by reference (Can modify)
+    auto lambda5 = [&amp;]() {
+        cout &lt;&lt; "Before: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        x = 30; // OK: can modify x
+        y = 40; // OK: can modify y
+        cout &lt;&lt; "After: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+    };
+    lambda5();
+    cout &lt;&lt; "After lambda5: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [=, &amp;y] - Capture all by value except y (by reference)
+    auto lambda6 = [=, &amp;y]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 100; // ERROR: cannot modify x (captured by value)
+        y = 50; // OK: can modify y (captured by reference)
+    };
+    lambda6();
+    cout &lt;&lt; "y after lambda6: " &lt;&lt; y &lt;&lt; endl &lt;&lt; endl;
+    
+    
+    // [&amp;, x] - Capture all by reference except x (by value)
+    auto lambda7 = [&amp;, x]() {
+        cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+        // x = 200; // ERROR: cannot modify x (captured by value)
+        y = 60; // OK: can modify y (captured by reference)
+    };
+    lambda7();
+    cout &lt;&lt; "After lambda7: x = " &lt;&lt; x &lt;&lt; ", y = " &lt;&lt; y &lt;&lt; endl;
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>x = 10
+Original x = 10
+Modified x = 15
+x after lambda2: 15
+
+x = 10, y = 20
+y after lambda3: 25
+
+x = 10, y = 25
+
+Before: x = 10, y = 25
+After: x = 30, y = 40
+After lambda5: x = 30, y = 40
+
+x = 30, y = 40
+y after lambda6: 50
+
+x = 30, y = 50
+After lambda7: x = 30, y = 60
+</code></pre>
+<h2 id="lambda-capture-with-mutable"><a class="header" href="#lambda-capture-with-mutable">Lambda Capture with <code>mutable</code></a></h2>
+<p>By default, variables captured <strong>by value</strong> in a lambda are <strong>read-only</strong> (const).
+If you need to modify the captured variable inside the lambda, use the <code>mutable</code> keyword.</p>
+<p>However, <code>mutable</code> only allows you to modify a <strong>local read-write copy</strong> of the variable
+inside the lambda. Any changes made are <strong>local to the lambda</strong> and do not affect the
+original variable outside.</p>
+<p>If you want to modify the <strong>original variable</strong>, you must capture it <strong>by reference</strong>
+using <code>&amp;</code>.</p>
+<h3 id="example"><a class="header" href="#example">Example:</a></h3>
+<pre><code class="language-cpp">int x = 10;
+
+// Without mutable - Read only
+auto lambda1 = [x]() {
+    // x = 20; // ERROR: cannot modify
+};
+
+// With mutable - Local read-write copy
+auto lambda2 = [x]() mutable {
+    x = 20; // OK: modifies LOCAL copy only
+};
+lambda2();
+cout &lt;&lt; x; // Output: 10 (original unchanged)
+
+// By reference - Modifies original
+auto lambda3 = [&amp;x]() {
+    x = 30; // Modifies original x
+};
+lambda3();
+cout &lt;&lt; x; // Output: 30 (original changed)
+</code></pre>
+<p><strong>Note:</strong> <code>mutable</code> gives you a read-write copy, but changes stay inside the lambda.
+Use <code>&amp;</code> (reference) if you need to modify the actual variable.</p>
+<h3 id="what-lambdas-really-are-"><a class="header" href="#what-lambdas-really-are-">What Lambdas Really Are ?</a></h3>
+<p>Here is the fun part.
+<strong>Behind the scenes, the compiler turns a lambda into a functor!</strong></p>
+<p>When you write:</p>
+<pre><code class="language-cpp">auto lessThanN = [n](int x) { return x &lt; n; };
+auto output = lessThanN(20);
+</code></pre>
+<p>The compiler generates something like the below:</p>
+<pre><code class="language-cpp">
+  class __lambda_6_22 // Compiler-generated name
+  {
+    public: 
+    inline /*constexpr */ bool operator()(int x) const
+    {
+      return x &lt; n;
+    }
+    
+    private: 
+    int n;
+    
+    public:
+    __lambda_6_22(int &amp; _n)
+    : n{_n}
+    {}
+    
+  };
+  
+__lambda_6_22 lessThanN = __lambda_6_22{n};
+bool output = lessThanN.operator()(20);
+</code></pre>
+<h2 id="passing-lambdas-to-functions"><a class="header" href="#passing-lambdas-to-functions">Passing Lambdas to Functions</a></h2>
+<p>One of the key advatage of <code>lamdas</code> is you can pass them to functions as paramters.
+This feature is very useful for usecase like callback systems, Eventing etc.</p>
+<p>Below are various ways you can accept <code>lamdas</code> as function parameters:</p>
+<h3 id="method-1-using-stdfunction-most-flexible"><a class="header" href="#method-1-using-stdfunction-most-flexible">Method 1: Using <code>std::function</code> (Most Flexible)</a></h3>
+<p><code>std::function</code> is a general-purpose wrapper that can hold any callable object (lambda, function pointer, functor).</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;functional&gt;
+using namespace std;
+
+// Function accepting lambda via std::function
+void executeOperation(int a, int b, function&lt;int(int, int)&gt; operation) {
+    int result = operation(a, b);
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+}
+
+int main() {
+    // Pass different lambdas
+    executeOperation(10, 5, [](int x, int y) { return x + y; });     // 15
+    executeOperation(10, 5, [](int x, int y) { return x - y; });     // 5
+    executeOperation(10, 5, [](int x, int y) { return x * y; });     // 50
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Pros:</strong> Flexible, can store lambdas with different captures<br><strong>Cons:</strong> Slight performance overhead (type erasure, heap allocation)</p>
+<hr>
+<h3 id="method-2-using-template-best-performance"><a class="header" href="#method-2-using-template-best-performance">Method 2: Using Template (Best Performance)</a></h3>
+<p>Templates allow the compiler to optimize the lambda call directly.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Template function - accepts any callable
+template&lt;typename Func&gt;
+void executeOperation(int a, int b, Func operation) {
+    int result = operation(a, b);
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+}
+
+int main() {
+    executeOperation(10, 5, [](int x, int y) { return x + y; });
+    executeOperation(10, 5, [](int x, int y) { return x * y; });
+    
+    // Works with captures too
+    int multiplier = 2;
+    executeOperation(10, 5, [multiplier](int x, int y) { 
+        return (x + y) * multiplier; 
+    });
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Pros:</strong> Zero overhead, compiler optimizations, works with any callable<br><strong>Cons:</strong> Template code in header files, longer compile times</p>
+<hr>
+<h3 id="method-3-using-function-pointer-c-style-limited"><a class="header" href="#method-3-using-function-pointer-c-style-limited">Method 3: Using Function Pointer (C-Style, Limited)</a></h3>
+<p>Only works with lambdas that <strong>don’t capture</strong> anything (stateless).</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Function pointer for int(int, int) signature
+void executeOperation(int a, int b, int (*operation)(int, int)) {
+    int result = operation(a, b);
+    cout &lt;&lt; "Result: " &lt;&lt; result &lt;&lt; endl;
+}
+
+int main() {
+    // Works - no capture
+    executeOperation(10, 5, [](int x, int y) { return x + y; });
+    
+    // ERROR - cannot convert lambda with capture to function pointer
+    int multiplier = 2;
+    // executeOperation(10, 5, [multiplier](int x, int y) { return x * y; });
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Pros:</strong> Lightweight, C-compatible<br><strong>Cons:</strong> Only works with non-capturing lambdas</p>
+<hr>
+<h3 id="method-4-using-auto-c14-generic"><a class="header" href="#method-4-using-auto-c14-generic">Method 4: Using <code>auto</code> (C++14+, Generic)</a></h3>
+<p>Perfect for generic code where you don’t care about the exact type.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+
+// Generic function using auto
+auto executeOperation(int a, int b, auto operation) {
+    return operation(a, b);
+}
+
+int main() {
+    auto result1 = executeOperation(10, 5, [](int x, int y) { return x + y; });
+    auto result2 = executeOperation(10, 5, [](int x, int y) { return x * y; });
+    
+    cout &lt;&lt; "Result1: " &lt;&lt; result1 &lt;&lt; endl; // 15
+    cout &lt;&lt; "Result2: " &lt;&lt; result2 &lt;&lt; endl; // 50
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Note:</strong> <code>auto</code> parameters require C++20, but templates work in C++11+.</p>
+<hr>
+<h2 id="lambda-evolution-c11-to-c20"><a class="header" href="#lambda-evolution-c11-to-c20">Lambda Evolution: C++11 to C++20</a></h2>
+<p>Lambdas have evolved significantly since their introduction in C++11.
+Let’s explore the incremental improvements across C++ standards.</p>
+<h3 id="c11-lambda-introduction"><a class="header" href="#c11-lambda-introduction">C++11: Lambda Introduction</a></h3>
+<p>C++11 introduced lambdas with basic functionality:</p>
+<pre><code class="language-cpp">// Basic lambda syntax
+auto add = [](int a, int b) { return a + b; };
+
+// Capture by value and reference
+int x = 10;
+auto byValue = [x]() { return x; };      // Captures copy of x
+auto byRef = [&amp;x]() { return x; };       // Captures reference to x
+
+// Capture all
+auto captureAll = [=]() { return x; };   // Capture all by value
+auto captureAllRef = [&amp;]() { return x; }; // Capture all by reference
+
+// Mutable lambdas (can modify captured values)
+auto counter = [count = 0]() mutable {
+    return ++count;
+};
+
+// Explicit return type
+auto divide = [](int a, int b) -&gt; double {
+    return static_cast&lt;double&gt;(a) / b;
+};
+</code></pre>
+<p><strong>C++11 Limitations:</strong></p>
+<ul>
+<li>Cannot capture <code>*this</code> by value</li>
+<li>No <code>constexpr</code> support</li>
+<li>Cannot use <code>auto</code> as types for parameters</li>
+<li>Return type deduction limited to simple cases</li>
+</ul>
+<hr>
+<h3 id="c14-generalized-lambda-captures--generic-lambdas"><a class="header" href="#c14-generalized-lambda-captures--generic-lambdas">C++14: Generalized Lambda Captures &amp; Generic Lambdas</a></h3>
+<p>C++14 added two major features:</p>
+<h4 id="1-generalized-lambda-captures-init-captures"><a class="header" href="#1-generalized-lambda-captures-init-captures">1. Generalized Lambda Captures (Init Captures)</a></h4>
+<p>You can now initialize captured variables with arbitrary expressions:</p>
+<pre><code class="language-cpp">// Move-only types in captures
+auto ptr = std::make_unique&lt;int&gt;(42);
+auto lambda = [ptr = std::move(ptr)]() {
+    return *ptr;
+};
+
+// Initialize new variables in capture
+auto lambda2 = [value = 5 * 2]() {
+    return value;  // value is 10
+};
+
+// Complex initializations
+std::string str = "Hello";
+auto lambda3 = [s = std::move(str)]() {
+    return s;  // str is moved into lambda
+};
+
+// Multiple initializations
+auto lambda4 = [x = 1, y = 2, z = x + y]() {
+    return z;  // z is 3
+};
+</code></pre>
+<h4 id="2-generic-lambdas-auto-parameters"><a class="header" href="#2-generic-lambdas-auto-parameters">2. Generic Lambdas (Auto Parameters)</a></h4>
+<p>Lambdas can now use <code>auto</code> for parameters, making them templates:</p>
+<pre><code class="language-cpp">// Generic lambda - works with any type
+auto print = [](auto x) {
+    std::cout &lt;&lt; x &lt;&lt; std::endl;
+};
+
+print(42);           // int
+print(3.14);         // double
+print("Hello");      // const char*
+
+// Multiple auto parameters
+auto add = [](auto a, auto b) {
+    return a + b;
+};
+
+add(1, 2);           // int + int
+add(1.5, 2.5);       // double + double
+add(std::string("Hello"), std::string(" World"));  // string + string
+
+// Mixing auto and concrete types
+auto mixed = [](int x, auto y) {
+    return x + y;
+};
+</code></pre>
+<p><strong>What the compiler generates:</strong></p>
+<pre><code class="language-cpp">// Generic lambda
+auto lambda = [](auto x) { return x * 2; };
+
+// Becomes approximately:
+struct __Lambda {
+    template&lt;typename T&gt;
+    auto operator()(T x) const {
+        return x * 2;
+    }
+};
+</code></pre>
+<hr>
+<h3 id="c17-constexpr-lambdas--this-capture"><a class="header" href="#c17-constexpr-lambdas--this-capture">C++17: Constexpr Lambdas &amp; *this Capture</a></h3>
+<h4 id="1-constexpr-lambdas"><a class="header" href="#1-constexpr-lambdas">1. Constexpr Lambdas</a></h4>
+<p>Lambdas are implicitly <code>constexpr</code> if they meet the requirements:</p>
+<pre><code class="language-cpp">// Implicitly constexpr
+auto squared = [](int x) { return x * x; };
+constexpr int result = squared(5);  // Evaluated at compile time
+
+// Explicitly constexpr
+constexpr auto cube = [](int x) constexpr { return x * x * x; };
+static_assert(cube(3) == 27);
+
+// Using in constexpr contexts
+template&lt;int N&gt;
+struct Array {
+    static constexpr auto size = [](){ return N * 2; }();
+};
+</code></pre>
+<h4 id="2-capture-this-by-value"><a class="header" href="#2-capture-this-by-value">2. Capture *this by Value</a></h4>
+<p>Before C++17, when you capture this in a lambda inside a class member function, you only capture the pointer to the object, not the object itself.</p>
+<p>This creates a dangling pointer problem if the object is destroyed before the lambda is executed.</p>
+<p>C++17 allows capturing the entire object instead of just the pointer:</p>
+<pre><code class="language-cpp">class Widget {
+    int value = 42;
+    
+public:
+    auto getLambda_Cpp11() {
+        // Captures 'this' pointer - dangerous if object is destroyed
+        return [this]() { return value; };
+    }
+    
+    auto getLambda_Cpp17() {
+        // Captures copy of entire object - safe!
+        return [*this]() { return value; };
+    }
+    
+    auto getLambda_Mutable() {
+        // Captured copy can be modified
+        return [*this]() mutable { return ++value; };
+    }
+};
+
+Widget w;
+auto lambda1 = w.getLambda_Cpp11();  // Captures pointer to w
+auto lambda2 = w.getLambda_Cpp17();  // Captures copy of w
+</code></pre>
+<p><strong>Why this matters:</strong></p>
+<pre><code class="language-cpp">auto getLambda() {
+    Widget w;
+    return [w]() { return w.getValue(); };  // OK: w is copied
+    // return [&amp;w]() { return w.getValue(); };  // DANGER: w destroyed!
+    // return [this]() { return value; };  // DANGER: this pointer dangling!
+    return [*this]() { return value; };  // OK: object copied
+}
+</code></pre>
+<hr>
+<h3 id="c20-template-lambdas--more"><a class="header" href="#c20-template-lambdas--more">C++20: Template Lambdas &amp; More</a></h3>
+<p>C++20 brought several powerful additions:</p>
+<h4 id="1-template-parameter-syntax-for-lambdas"><a class="header" href="#1-template-parameter-syntax-for-lambdas">1. Template Parameter Syntax for Lambdas</a></h4>
+<p>Lambdas can now explicitly specify template parameters:</p>
+<pre><code class="language-cpp">// Explicit template parameters
+auto lambda = []&lt;typename T&gt;(T x) {
+    std::cout &lt;&lt; "Type: " &lt;&lt; typeid(T).name() &lt;&lt; std::endl;
+    return x;
+};
+
+// Multiple template parameters
+auto pair = []&lt;typename T, typename U&gt;(T first, U second) {
+    return std::pair{first, second};
+};
+
+// Template parameter with constraints
+auto process = []&lt;typename T&gt;(std::vector&lt;T&gt;&amp; vec) {
+    // Can use T explicitly in the body
+    T sum = T{};
+    for (const auto&amp; elem : vec) {
+        sum += elem;
+    }
+    return sum;
+};
+
+std::vector&lt;int&gt; nums = {1, 2, 3, 4, 5};
+auto result = process(nums);
+</code></pre>
+<p><strong>Why this is useful:</strong></p>
+<pre><code class="language-cpp">// Before C++20: Can't get the type explicitly
+auto oldWay = [](auto vec) {
+    // How do we get the element type?
+    using T = ???;  // No easy way!
+};
+
+// C++20: Direct access to template parameter
+auto newWay = []&lt;typename T&gt;(std::vector&lt;T&gt; vec) {
+    using ElementType = T;  // Clear and explicit!
+    T defaultValue{};
+    // ...
+};
+</code></pre>
+<h4 id="2-lambdas-in-unevaluated-contexts"><a class="header" href="#2-lambdas-in-unevaluated-contexts">2. Lambdas in Unevaluated Contexts</a></h4>
+<p>C++20 allows lambdas in contexts where they’re not executed:</p>
+<pre><code class="language-cpp">// Lambda in decltype
+auto lambda = [](int x) { return x * 2; };
+using ReturnType = decltype(lambda(0));  // ReturnType is int
+
+// Lambda in template parameter
+template&lt;auto Lambda&gt;
+struct Processor {
+    static constexpr auto value = Lambda(10);
+};
+
+constexpr auto times2 = [](int x) { return x * 2; };
+Processor&lt;times2&gt; p;  // p.value is 20
+
+// Lambda for SFINAE/type traits
+template&lt;typename T&gt;
+concept Addable = requires(T a, T b) {
+    { [](T x, T y) { return x + y; }(a, b) };
+};
+</code></pre>
+<h4 id="3-pack-expansion-in-lambda-init-capture"><a class="header" href="#3-pack-expansion-in-lambda-init-capture">3. Pack Expansion in Lambda Init-Capture</a></h4>
+<p>C++20 allows capturing parameter packs:</p>
+<pre><code class="language-cpp">// Variadic template with pack capture
+template&lt;typename... Args&gt;
+auto captureAll(Args... args) {
+    return [...args = std::move(args)] {
+        // Each arg is captured individually
+        return (args + ...);  // Fold expression
+    };
+}
+
+auto lambda = captureAll(1, 2, 3, 4);
+std::cout &lt;&lt; lambda() &lt;&lt; std::endl;  // Output: 10
+
+// More complex example
+template&lt;typename... Funcs&gt;
+auto compose(Funcs... funcs) {
+    return [... f = std::move(funcs)](auto x) {
+        // Apply all functions in sequence
+        return (f(x), ...);  // Fold expression with comma operator
+    };
+}
+</code></pre>
+<h4 id="4-default-constructible-and-assignable-lambdas"><a class="header" href="#4-default-constructible-and-assignable-lambdas">4. Default Constructible and Assignable Lambdas</a></h4>
+<p>C++20 lambdas without captures are default constructible and assignable:</p>
+<pre><code class="language-cpp">// Stateless lambda
+auto lambda = [](int x) { return x * 2; };
+
+// Can default construct
+decltype(lambda) another;  // OK in C++20!
+another = lambda;          // OK in C++20!
+
+// Useful for containers
+std::vector&lt;decltype(lambda)&gt; lambdas(10);  // Vector of 10 lambdas
+
+// Compare lambdas
+auto l1 = [](int x) { return x; };
+auto l2 = l1;
+// l1 == l2;  // Still not allowed - use std::function or comparison operators
+</code></pre>
+<h4 id="5-lambdas-with-concepts-c20"><a class="header" href="#5-lambdas-with-concepts-c20">5. Lambdas with Concepts (C++20)</a></h4>
+<p>Constrain lambda parameters using concepts:</p>
+<pre><code class="language-cpp">#include &lt;concepts&gt;
+
+// Lambda with concept constraint
+auto process = []&lt;std::integral T&gt;(T value) {
+    return value * 2;
+};
+
+process(5);      // OK: int is integral
+// process(5.0);    // Error: double is not integral
+
+// Multiple constraints
+auto compare = []&lt;typename T&gt;(T a, T b) 
+    requires std::equality_comparable&lt;T&gt; {
+    return a == b;
+};
+
+// Constraint on return type
+auto compute = []&lt;typename T&gt;(T x) -&gt; std::integral auto {
+    return static_cast&lt;int&gt;(x * 2);
+};
+</code></pre>
+<hr>
+<p>Let’s see how the same problem evolves across standards:</p>
+<h4 id="problem-create-a-customizable-filter"><a class="header" href="#problem-create-a-customizable-filter">Problem: Create a customizable filter</a></h4>
+<p><strong>C++11:</strong></p>
+<pre><code class="language-cpp">// Need to specify types explicitly
+auto createFilter(int threshold) {
+    return [threshold](int value) {
+        return value &gt; threshold;
+    };
+}
+
+std::vector&lt;int&gt; nums = {1, 5, 10, 15};
+auto filter = createFilter(7);
+// Can only use with int
+</code></pre>
+<p><strong>C++14:</strong></p>
+<pre><code class="language-cpp">// Generic lambda - works with any comparable type
+auto createFilter(auto threshold) {
+    return [threshold](auto value) {
+        return value &gt; threshold;
+    };
+}
+
+std::vector&lt;int&gt; ints = {1, 5, 10, 15};
+std::vector&lt;double&gt; doubles = {1.5, 5.5, 10.5};
+
+auto filter = createFilter(7);
+// Works with both int and double!
+</code></pre>
+<p><strong>C++17:</strong></p>
+<pre><code class="language-cpp">class FilterFactory {
+    int defaultThreshold = 10;
+    
+public:
+    auto createFilter() {
+        // Safe capture of object by value
+        return [*this](auto value) {
+            return value &gt; defaultThreshold;
+        };
+    }
+};
+
+FilterFactory factory;
+auto filter = factory.createFilter();
+// filter still works even if factory is destroyed
+</code></pre>
+<p><strong>C++20:</strong></p>
+<pre><code class="language-cpp">// Full type control with concepts
+auto createFilter = []&lt;std::totally_ordered T&gt;(T threshold) {
+    return [threshold]&lt;std::totally_ordered U&gt;(U value) 
+        requires std::convertible_to&lt;U, T&gt; {
+        return static_cast&lt;T&gt;(value) &gt; threshold;
+    };
+};
+
+auto intFilter = createFilter(10);
+// intFilter(15);     // OK
+// intFilter("test"); // Compile error: not convertible to int
+</code></pre>
+<h3 id="complete-feature-comparison-table"><a class="header" href="#complete-feature-comparison-table">Complete Feature Comparison Table</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>C++11</th><th>C++14</th><th>C++17</th><th>C++20</th></tr>
+</thead>
+<tbody>
+<tr><td>Basic lambdas</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Capture by value/reference</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Mutable lambdas</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Init captures</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Generic lambdas (auto)</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>constexpr lambdas</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>Capture *this by value</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+<tr><td>Template parameter syntax</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Pack expansion in captures</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Unevaluated contexts</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Default constructible</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Concepts constraints</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
+<p>The progression from specific algorithms to general ones with predicates represents a fundamental principle in C++ programming: <strong>abstraction without performance loss</strong>.</p>
+<ul>
+<li><strong>Predicates</strong> allow us to separate the “what to find” from the “how to search”</li>
+<li><strong>Functors</strong> provide a way to package state with behavior</li>
+<li><strong>Lambdas</strong> offer modern, concise syntax that the compiler transforms into functors</li>
+</ul>
+<p>The evolution of lambdas from C++11 to C++20 shows the language’s commitment to:</p>
+<ul>
+<li><strong>Expressiveness</strong>: More ways to capture and initialize state</li>
+<li><strong>Safety</strong>: Better lifetime management with <code>*this</code> captures</li>
+<li><strong>Performance</strong>: Compile-time evaluation with <code>constexpr</code></li>
+<li><strong>Flexibility</strong>: Template parameters and concepts for better type control</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="shared_ptr_weak_ptr.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="shared_ptr_weak_ptr.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
