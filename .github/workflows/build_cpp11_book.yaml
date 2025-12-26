@@ -38,4 +38,11 @@ jobs:
           git config user.email github-actions@github.com
           git add cpp11_docs
           git commit -m "Auto-update C++11 book [skip ci]" || echo "No changes to commit"
-          git push
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./cpp11_docs
+          destination_dir: cpp11
+          keep_files: true  # Important: keeps your main book intact
