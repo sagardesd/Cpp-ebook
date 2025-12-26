@@ -1,4 +1,5 @@
 name: Build C++11 Book
+
 on:
   push:
     branches: [main]
@@ -6,6 +7,7 @@ on:
       - 'mds/**'
       - 'cpp11_summary/**'
       - 'book_cpp11.toml'
+      - 'theme/**'
       - '.github/workflows/build_cpp11_book.yml'
   workflow_dispatch:
 
@@ -20,6 +22,11 @@ jobs:
       
       - name: Install mdBook
         run: cargo install mdbook
+      
+      - name: Setup C++11 Book structure
+        run: |
+          # Copy all MD files from mds/ to cpp11_summary/
+          cp mds/*.md cpp11_summary/
       
       - name: Build C++11 Book
         run: |
