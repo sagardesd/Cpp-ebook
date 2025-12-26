@@ -1,7 +1,7 @@
 # Summary
 
-- [auto (>= C++11)](./auto_c++11.md)
-- [decltype (>= C++11)](./decltype.md)
+- [auto (>= C++11)](../mds/auto_c++11.md)
+- [decltype (>= C++11)](../mds/decltype.md)
 - [Range Based for loops (>= C++11)](./range-based-for-loops.md)
 - [C++11 Advanced Constructor Features](./cpp11_constructors.md)
 - [Final keyword (>= C++11)](./cpp11_final_keyword.md)
