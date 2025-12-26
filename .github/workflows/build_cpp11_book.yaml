@@ -8,6 +8,7 @@ on:
       - 'book_cpp11.toml'
       - '.github/workflows/build_cpp11_book.yml'
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,20 +21,16 @@ jobs:
       - name: Install mdBook
         run: cargo install mdbook
       
-      - name: Setup C++11 Book structure
-        run: |
-          mkdir -p cpp11_summary
-          cd cpp11_summary
-          # Create symlinks to reuse md files from mds/ folder
-          for file in ../mds/*.md; do
-            if [ "$(basename $file)" != "SUMMARY.md" ]; then
-              ln -sf "$file" "$(basename $file)"
-            fi
-          done
-          cd ..
-      
       - name: Build C++11 Book
-        run: mdbook build --config-file book_cpp11.toml
+        run: |
+          # Backup original book.toml if exists
+          [ -f book.toml ] && mv book.toml book.toml.backup
+          # Use cpp11 config
+          cp book_cpp11.toml book.toml
+          # Build
+          mdbook build
+          # Restore original
+          [ -f book.toml.backup ] && mv book.toml.backup book.toml || rm -f book.toml
       
       - name: Commit and push built docs
         run: |
