@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-be5bc1d4.js";
+            window.path_to_searchindex_js = "searchindex-5fa0d67c.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-c16d8e8c.js"></script>
@@ -16238,28 +16238,6 @@ min&lt;StudentId&gt;(thomas, rachel);  // NOW the error appears!
 <p>Think of concepts as “compile-time interfaces” or “type constraints” for templates.</p>
 <h3 id="how-concepts-solve-the-instantiation-problem"><a class="header" href="#how-concepts-solve-the-instantiation-problem">How Concepts Solve the Instantiation Problem</a></h3>
 <p>Concepts solve the instantiation problem by checking constraints <strong>before</strong> the compiler tries to instantiate the template.</p>
-<h3 id="key-benefit-early-error-detection"><a class="header" href="#key-benefit-early-error-detection">Key Benefit: Early Error Detection</a></h3>
-<p><strong>Without concepts:</strong></p>
-<ol>
-<li>Compiler tries to instantiate <code>min&lt;StudentId&gt;</code></li>
-<li>Compiler generates the function body</li>
-<li>Compiler tries to compile <code>a &lt; b</code></li>
-<li><strong>Error discovered!</strong> (too late)</li>
-</ol>
-<p><strong>With concepts:</strong></p>
-<ol>
-<li>Compiler checks: “Does <code>StudentId</code> satisfy <code>Comparable</code>?”</li>
-<li><strong>Error discovered immediately!</strong> (before instantiation)</li>
-<li>Compiler never even tries to instantiate the template</li>
-<li>You get a clear error at the call site</li>
-</ol>
-<p>Concepts allow us to:</p>
-<ul>
-<li><strong>Check constraints BEFORE instantiation</strong> (most important!)</li>
-<li>Be explicit about what we require of a template type</li>
-<li>Prevent template instantiation unless all constraints are met</li>
-<li>Get much better compiler error messages</li>
-</ul>
 <h3 id="concept-syntax"><a class="header" href="#concept-syntax">Concept Syntax</a></h3>
 <p>The general syntax for defining a concept is:</p>
 <pre><code class="language-cpp">template &lt;typename T&gt;
@@ -16378,6 +16356,28 @@ note: because 'StudentId' does not satisfy 'Comparable'
 </tbody>
 </table>
 </div>
+<h3 id="key-benefit-early-error-detection"><a class="header" href="#key-benefit-early-error-detection">Key Benefit: Early Error Detection</a></h3>
+<p><strong>Without concepts:</strong></p>
+<ol>
+<li>Compiler tries to instantiate <code>min&lt;StudentId&gt;</code></li>
+<li>Compiler generates the function body</li>
+<li>Compiler tries to compile <code>a &lt; b</code></li>
+<li><strong>Error discovered!</strong> (too late)</li>
+</ol>
+<p><strong>With concepts:</strong></p>
+<ol>
+<li>Compiler checks: “Does <code>StudentId</code> satisfy <code>Comparable</code>?”</li>
+<li><strong>Error discovered immediately!</strong> (before instantiation)</li>
+<li>Compiler never even tries to instantiate the template</li>
+<li>You get a clear error at the call site</li>
+</ol>
+<p>Concepts allow us to:</p>
+<ul>
+<li><strong>Check constraints BEFORE instantiation</strong> (most important!)</li>
+<li>Be explicit about what we require of a template type</li>
+<li>Prevent template instantiation unless all constraints are met</li>
+<li>Get much better compiler error messages</li>
+</ul>
 <p><a href="#table-of-contents-21">↑ Back to Table of Contents</a></p>
 <hr>
 <h2 id="3-more-concept-examples"><a class="header" href="#3-more-concept-examples">3. More Concept Examples</a></h2>
