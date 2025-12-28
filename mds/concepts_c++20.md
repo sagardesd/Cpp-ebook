@@ -151,26 +151,6 @@ Think of concepts as "compile-time interfaces" or "type constraints" for templat
 
 Concepts solve the instantiation problem by checking constraints **before** the compiler tries to instantiate the template.
 
-### Key Benefit: Early Error Detection
-
-**Without concepts:**
-1. Compiler tries to instantiate `min<StudentId>`
-2. Compiler generates the function body
-3. Compiler tries to compile `a < b`
-4. **Error discovered!** (too late)
-
-**With concepts:**
-1. Compiler checks: "Does `StudentId` satisfy `Comparable`?"
-2. **Error discovered immediately!** (before instantiation)
-3. Compiler never even tries to instantiate the template
-4. You get a clear error at the call site
-
-Concepts allow us to:
-- **Check constraints BEFORE instantiation** (most important!)
-- Be explicit about what we require of a template type
-- Prevent template instantiation unless all constraints are met
-- Get much better compiler error messages
-
 ### Concept Syntax
 
 The general syntax for defining a concept is:
@@ -314,6 +294,26 @@ This is the crucial difference:
 | ❌ Try to compile generated code | ✅ Never instantiate bad templates |
 | ❌ Error deep in template code | ✅ Error at call site |
 | ❌ "invalid operands to binary expression" | ✅ "does not satisfy Comparable" |
+
+### Key Benefit: Early Error Detection
+
+**Without concepts:**
+1. Compiler tries to instantiate `min<StudentId>`
+2. Compiler generates the function body
+3. Compiler tries to compile `a < b`
+4. **Error discovered!** (too late)
+
+**With concepts:**
+1. Compiler checks: "Does `StudentId` satisfy `Comparable`?"
+2. **Error discovered immediately!** (before instantiation)
+3. Compiler never even tries to instantiate the template
+4. You get a clear error at the call site
+
+Concepts allow us to:
+- **Check constraints BEFORE instantiation** (most important!)
+- Be explicit about what we require of a template type
+- Prevent template instantiation unless all constraints are met
+- Get much better compiler error messages
 
 [↑ Back to Table of Contents](#table-of-contents)
 
