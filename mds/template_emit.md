@@ -110,7 +110,7 @@ During Phase 1:
 ┌─────────────────────────────────────────────┐
 │ Phase 2: Template Instantiation             │
 ├─────────────────────────────────────────────┤
-│ ✓ Triggered when template is USED          │
+│ ✓ Triggered when template is USED           │
 │ ✓ Substitute template parameters (T = int)  │
 │ ✓ Resolve all type-dependent operations     │
 │ ✓ Check if operations are valid for type    │
