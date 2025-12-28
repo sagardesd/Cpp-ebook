@@ -310,7 +310,7 @@ auto min(const T1& a, const T2& b) {
 
 **C++20 does NOT support abbreviated class templates.** You cannot write:
 ```cpp
-// ❌ This is NOT valid C++20
+// This is NOT valid C++20
 class MyClass<auto T> {  // Error!
     T value;
 };
@@ -320,14 +320,14 @@ class MyClass<auto T> {  // Error!
 
 You must still use traditional template syntax for classes:
 ```cpp
-// ✅ Correct way for class templates
+// Correct way for class templates
 template<typename T>
 class MyClass {
     T value;
 public:
     MyClass(T v) : value(v) {}
     
-    // ✅ But member functions CAN use abbreviated templates!
+    // But member functions CAN use abbreviated templates!
     auto add(auto other) {
         return value + other;
     }
