@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1cdc846b.js";
+            window.path_to_searchindex_js = "searchindex-be5bc1d4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-c16d8e8c.js"></script>
@@ -431,21 +431,21 @@ auto min(const T1&amp; a, const T2&amp; b) {
 <hr>
 <h2 id="important-limitation-no-abbreviated-class-templates"><a class="header" href="#important-limitation-no-abbreviated-class-templates">Important Limitation: No Abbreviated Class Templates</a></h2>
 <p><strong>C++20 does NOT support abbreviated class templates.</strong> You cannot write:</p>
-<pre><code class="language-cpp">// ❌ This is NOT valid C++20
+<pre><code class="language-cpp">// This is NOT valid C++20
 class MyClass&lt;auto T&gt; {  // Error!
     T value;
 };
 </code></pre>
 <p><strong>Reason:</strong> Abbreviated function templates work because the compiler can deduce template parameters from function arguments at the call site. Class templates require explicit instantiation (e.g., <code>MyClass&lt;int&gt;</code>), so there’s no argument deduction context for <code>auto</code> to work with.</p>
 <p>You must still use traditional template syntax for classes:</p>
-<pre><code class="language-cpp">// ✅ Correct way for class templates
+<pre><code class="language-cpp">// Correct way for class templates
 template&lt;typename T&gt;
 class MyClass {
     T value;
 public:
     MyClass(T v) : value(v) {}
     
-    // ✅ But member functions CAN use abbreviated templates!
+    // But member functions CAN use abbreviated templates!
     auto add(auto other) {
         return value + other;
     }
