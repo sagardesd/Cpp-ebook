@@ -581,7 +581,7 @@ class A {
 
 ## Best Practices
 
-### ✅ DO
+### DO
 
 1. **Put template definitions in header files**
    ```cpp
@@ -608,7 +608,7 @@ class A {
 
 5. **Document which types are supported** (if using explicit instantiation)
 
-### ❌ DON'T
+### DON'T
 
 1. **Don't put template definitions in `.cpp` files** (unless using explicit instantiation)
 
