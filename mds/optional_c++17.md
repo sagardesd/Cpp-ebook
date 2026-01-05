@@ -24,7 +24,8 @@ div_3("hello");  // Won't compile!
 ```
 
 C++ catches type errors at compile time, preventing the program from running with invalid code.
-More specifically: **Type Safety is the extent to which a function signature guarantees the behavior of a function.**
+
+Let's rephrase with funtion context: **Type Safety is the extent to which a function signature guarantees the behavior of a function.**
 
 ## Lets understand the problem with an example
 
@@ -130,7 +131,7 @@ if (logLevel == "UNSET") {  // Why "UNSET" and not ""?
 // What if a valid log level is actually called "UNSET"?
 ```
 
-**Problems Summary:**
+**Below are some of the problems with this approch:**
 - Magic values are arbitrary and inconsistent (`-1`, `""`, `"UNSET"`)
 - Magic values might conflict with valid values
 - No way to distinguish "not set" from an actual value that equals the magic value
@@ -443,7 +444,19 @@ theme=dark
 enableLogging=true
 ```
 
-## std::optional<T> Interface Summary
+## `std::optional<T>` Interface Summary
+| **Operation** | **Syntax** | **Description** |
+|---------------|------------|-----------------|
+| **Check if value exists** | `opt.has_value()` | Returns `true` if optional contains a value, `false` otherwise |
+| | `if (opt) { }` | Boolean context - evaluates to `true` if value exists |
+| **Access the value** | `opt.value()` | Returns the contained value; throws `std::bad_optional_access` if empty |
+| | `opt.value_or(100)` | Returns the contained value, or the provided default (`100`) if empty |
+| | `*opt` | Dereferences to get value; **undefined behavior if empty** |
+| | `opt->member` | Accesses member of contained object (if value is an object type) |
+| **Modify** | `opt = 50;` | Assigns a new value to the optional |
+| | `opt = std::nullopt;` | Clears the optional (makes it empty) |
+| | `opt.reset();` | Clears the optional (makes it empty) |
+| | `opt.emplace(args...);` | Constructs a new value in-place using the provided arguments |
 
 ```cpp
 std::optional<int> opt = 42;
