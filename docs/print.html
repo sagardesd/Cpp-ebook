@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-948d44ae.js";
+            window.path_to_searchindex_js = "searchindex-600fb8fc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-c16d8e8c.js"></script>
+        <script src="toc-f9b8dbd0.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -28677,6 +28677,759 @@ auto intFilter = createFilter(10);
 <li><strong>Performance</strong>: Compile-time evaluation with <code>constexpr</code></li>
 <li><strong>Flexibility</strong>: Template parameters and concepts for better type control</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="understanding-stdoptionalt-and-type-safety-in-c"><a class="header" href="#understanding-stdoptionalt-and-type-safety-in-c">Understanding <code>std::optional&lt;T&gt;</code> and Type Safety in C++</a></h1>
+<h2 id="what-is-type-safety"><a class="header" href="#what-is-type-safety">What is Type Safety?</a></h2>
+<p><strong>Type Safety</strong>: The extent to which a language prevents typing errors and guarantees predictable program behavior.</p>
+<h3 id="python-vs-c"><a class="header" href="#python-vs-c">Python vs C++</a></h3>
+<pre><code class="language-python"># Python - Runtime error
+def div_3(x):
+    return x / 3
+
+div_3("hello")  # CRASH during runtime
+</code></pre>
+<pre><code class="language-cpp">// C++ - Compile-time error
+int div_3(int x) {
+    return x / 3;
+}
+
+div_3("hello");  // Won't compile!
+</code></pre>
+<p>C++ catches type errors at compile time, preventing the program from running with invalid code.</p>
+<p>Let’s rephrase with funtion context: <strong>Type Safety is the extent to which a function signature guarantees the behavior of a function.</strong></p>
+<h2 id="lets-understand-the-problem-with-an-example"><a class="header" href="#lets-understand-the-problem-with-an-example">Lets understand the problem with an example</a></h2>
+<p>The best way to learn a new feature is to first understand what existing problem that feature will solve.
+Imagine you’re building a parser that reads settings from a configuration file.
+Some settings are required, but many are optional. How do you represent values that might not be present?</p>
+<h3 id="using-magic-values-or-default-values"><a class="header" href="#using-magic-values-or-default-values">Using “Magic Values” or “default” values</a></h3>
+<pre><code class="language-cpp">class AppConfig {
+private:
+    int port;
+    int maxConnections;
+    std::string theme;
+    std::string logLevel;
+    
+public:
+    AppConfig() {
+        // Initialize with "magic values" to signal "not set"
+        port = -1;
+        maxConnections = -1;
+        theme = "";
+        logLevel = "UNSET";
+    }
+    
+    void loadFromFile(const std::string&amp; filename) {
+        // Read config file...
+        // Only some values might be in the file
+        
+        // If port is in file: port = parsedPort;
+        // If maxConnections is in file: maxConnections = parsedValue;
+        // If theme is in file: theme = parsedTheme;
+        // etc.
+    }
+    
+    int getPort() {
+        return port;  // Returns -1 if not set
+    }
+    
+    int getMaxConnections() {
+        return maxConnections;  // Returns -1 if not set
+    }
+    
+    std::string getTheme() {
+        return theme;  // Returns "" if not set
+    }
+    
+    std::string getLogLevel() {
+        return logLevel;  // Returns "UNSET" if not set
+    }
+};
+</code></pre>
+<p>Think of a function signature as a <strong>promise</strong> or <strong>contract</strong>:</p>
+<pre><code class="language-cpp">int getPort();  // Promise: "I will return an integer port number"
+</code></pre>
+<p>But what if there’s no port configured? The function <strong>cannot keep its promise</strong>!
+This breaks type safety because the signature lies about what the function actually does.</p>
+<pre><code class="language-cpp">int getPort() {
+    if (portNotConfigured) {
+        return -1;  // Breaking the contract! -1 isn't a real port
+    }
+    return configuredPort;
+}
+</code></pre>
+<p>The signature says “I return an int (a port number)” but sometimes it returns <code>-1</code>, which isn’t actually a valid port. The signature is <strong>lying</strong> about the function’s behavior.</p>
+<h3 id="why-this-is-problematic"><a class="header" href="#why-this-is-problematic">Why This Is Problematic</a></h3>
+<pre><code class="language-cpp">AppConfig config;
+config.loadFromFile("app.conf");
+
+// Problem 1: Magic values are confusing
+int port = config.getPort();
+if (port == -1) {  // Wait, is -1 the magic value? Or was it 0?
+    port = 8080;  // Use default
+}
+server.listen(port);
+
+// Problem 2: What if -1 becomes a valid value?
+int maxConn = config.getMaxConnections();
+// Is -1 really "not set" or is it "unlimited connections"?
+
+// Problem 3: Empty string vs "not set" vs actual empty value
+std::string theme = config.getTheme();
+if (theme == "") {  // Did user want no theme, or was it not set?
+    theme = "default";
+}
+
+// Problem 4: Different magic values for different types
+std::string logLevel = config.getLogLevel();
+if (logLevel == "UNSET") {  // Why "UNSET" and not ""?
+    logLevel = "INFO";
+}
+// What if a valid log level is actually called "UNSET"?
+</code></pre>
+<p><strong>Below are some of the problems with this approch:</strong></p>
+<ul>
+<li>Magic values are arbitrary and inconsistent (<code>-1</code>, <code>""</code>, <code>"UNSET"</code>)</li>
+<li>Magic values might conflict with valid values</li>
+<li>No way to distinguish “not set” from an actual value that equals the magic value</li>
+<li>Code becomes filled with magic value checks</li>
+<li>New developers must memorize what each magic value means</li>
+<li>Easy to forget to check for magic values, leading to bugs</li>
+</ul>
+<p>Is there any better way ?</p>
+<h2 id="introducing-stdoptional-c17"><a class="header" href="#introducing-stdoptional-c17">Introducing std::optional (C++17)</a></h2>
+<p><code>std::optional&lt;T&gt;</code> is a template class introduced in <strong>C++17</strong> that either contains a value of type <code>T</code> or explicitly contains nothing (represented as <code>std::nullopt</code>).</p>
+<p>Think of it like a <strong>vending machine slot</strong>: when you select a snack, the machine either dispenses your item, or it doesn’t (maybe it’s out of stock). Instead of the machine pretending to give you something by dispensing an empty wrapper, it honestly tells you “nothing available.” You know to check the outcome before reaching in to grab your snack - did I actually get something, or did the machine give me nothing? The type system ensures you always check which case you’re in.</p>
+<h3 id="basic-syntax-10"><a class="header" href="#basic-syntax-10">Basic Syntax</a></h3>
+<pre><code class="language-cpp">#include &lt;optional&gt;
+
+// Creating optionals
+std::optional&lt;int&gt; opt1;                    // Empty (no value)
+std::optional&lt;int&gt; opt2 = 42;               // Contains 42
+std::optional&lt;int&gt; opt3 = std::nullopt;     // Explicitly empty
+std::optional&lt;int&gt; opt4 = {};               // Also empty
+
+// Checking if it has a value
+if (opt2.has_value()) {
+    std::cout &lt;&lt; "Has value!\n";
+}
+
+// Shorter way: treat it like a boolean
+if (opt2) {
+    std::cout &lt;&lt; "Has value!\n";
+}
+
+// Getting the value
+int x = opt2.value();        // Returns 42, or throws if empty
+int y = opt2.value_or(100);  // Returns 42, or 100 if empty
+int z = *opt2;               // Returns 42 (undefined if empty!)
+
+// Setting values
+opt1 = 50;              // Now contains 50
+opt1 = std::nullopt;    // Now empty again
+opt1.reset();           // Also makes it empty
+</code></pre>
+<h3 id="key-distinction"><a class="header" href="#key-distinction">Key Distinction</a></h3>
+<ul>
+<li><code>nullptr</code>: Used for pointers (memory addresses)</li>
+<li><code>nullopt</code>: Used for optionals (absence of a value)</li>
+</ul>
+<h2 id="lets-improve-the-config-parser-with-stdoptional"><a class="header" href="#lets-improve-the-config-parser-with-stdoptional">Lets improve the config parser with std::optional</a></h2>
+<pre><code class="language-cpp">class AppConfig {
+private:
+    std::optional&lt;int&gt; port;
+    std::optional&lt;int&gt; maxConnections;
+    std::optional&lt;std::string&gt; theme;
+    std::optional&lt;std::string&gt; logLevel;
+    
+public:
+    AppConfig() {
+        // Everything starts as nullopt (empty)
+        // No need for magic values!
+    }
+    
+    void loadFromFile(const std::string&amp; filename) {
+        // Read config file...
+        // Only set values that are actually present
+        
+        if (fileContainsPort) {
+            port = parsedPort;  // Set only if present
+        }
+        
+        if (fileContainsMaxConnections) {
+            maxConnections = parsedMaxConn;
+        }
+        
+        if (fileContainsTheme) {
+            theme = parsedTheme;
+        }
+        
+        if (fileContainsLogLevel) {
+            logLevel = parsedLogLevel;
+        }
+    }
+    
+    // Return optional - let caller decide what to do
+    std::optional&lt;int&gt; getPort() const {
+        return port;
+    }
+    
+    std::optional&lt;int&gt; getMaxConnections() const {
+        return maxConnections;
+    }
+    
+    std::optional&lt;std::string&gt; getTheme() const {
+        return theme;
+    }
+    
+    std::optional&lt;std::string&gt; getLogLevel() const {
+        return logLevel;
+    }
+    
+    // Or provide methods with built-in defaults
+    int getPortOrDefault() const {
+        return port.value_or(8080);
+    }
+    
+    int getMaxConnectionsOrDefault() const {
+        return maxConnections.value_or(100);
+    }
+    
+    std::string getThemeOrDefault() const {
+        return theme.value_or("default");
+    }
+    
+    std::string getLogLevelOrDefault() const {
+        return logLevel.value_or("INFO");
+    }
+};
+</code></pre>
+<h3 id="using-the-fixed-configuration"><a class="header" href="#using-the-fixed-configuration">Using the Fixed Configuration</a></h3>
+<pre><code class="language-cpp">AppConfig config;
+config.loadFromFile("app.conf");
+
+// Approach 1: Use defaults with value_or()
+int port = config.getPortOrDefault();  // Clear and safe!
+server.listen(port);
+
+int maxConn = config.getMaxConnectionsOrDefault();
+connectionPool.setMaxSize(maxConn);
+
+// Approach 2: Check explicitly if you need different behavior
+auto theme = config.getTheme();
+if (theme) {
+    applyTheme(*theme);  // User specified a theme
+} else {
+    askUserForTheme();   // No theme in config, ask user
+}
+
+// Approach 3: Direct value_or at call site
+std::string logLevel = config.getLogLevel().value_or("INFO");
+logger.setLevel(logLevel);
+
+// The type system helps you!
+// You CANNOT accidentally use an optional without checking:
+// int port = config.getPort();  // ERROR! Can't assign optional&lt;int&gt; to int
+// You must explicitly handle both cases
+</code></pre>
+<h3 id="why-this-is-better"><a class="header" href="#why-this-is-better">Why This Is Better</a></h3>
+<pre><code class="language-cpp">// Before: Confusing and error-prone
+int port = config.getPort();  // Returns -1 if not set
+if (port == -1) {  // Easy to forget this check!
+    port = 8080;
+}
+
+// After: Clear and safe
+int port = config.getPort().value_or(8080);
+
+// Or if you need different logic:
+auto portOpt = config.getPort();
+if (portOpt) {
+    int port = *portOpt;
+    // Use configured port
+} else {
+    // No port configured, handle specially
+}
+</code></pre>
+<p>Here is the complete code of the example:</p>
+<pre><code class="language-cpp">#include &lt;optional&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;map&gt;
+
+class AppConfig {
+private:
+    std::optional&lt;int&gt; port;
+    std::optional&lt;int&gt; maxConnections;
+    std::optional&lt;std::string&gt; databaseUrl;
+    std::optional&lt;std::string&gt; theme;
+    std::optional&lt;bool&gt; enableLogging;
+    
+public:
+    void loadFromFile(const std::string&amp; filename) {
+        std::ifstream file(filename);
+        std::map&lt;std::string, std::string&gt; settings;
+        
+        // Parse file into key-value pairs
+        std::string line;
+        while (std::getline(file, line)) {
+            // Assume format: key=value
+            auto pos = line.find('=');
+            if (pos != std::string::npos) {
+                std::string key = line.substr(0, pos);
+                std::string value = line.substr(pos + 1);
+                settings[key] = value;
+            }
+        }
+        
+        // Set optional values only if present
+        if (settings.count("port")) {
+            port = std::stoi(settings["port"]);
+        }
+        
+        if (settings.count("maxConnections")) {
+            maxConnections = std::stoi(settings["maxConnections"]);
+        }
+        
+        if (settings.count("databaseUrl")) {
+            databaseUrl = settings["databaseUrl"];
+        }
+        
+        if (settings.count("theme")) {
+            theme = settings["theme"];
+        }
+        
+        if (settings.count("enableLogging")) {
+            enableLogging = (settings["enableLogging"] == "true");
+        }
+    }
+    
+    // Getters with clear defaults
+    int getPort() const {
+        return port.value_or(8080);
+    }
+    
+    int getMaxConnections() const {
+        return maxConnections.value_or(100);
+    }
+    
+    std::string getDatabaseUrl() const {
+        return databaseUrl.value_or("localhost:5432");
+    }
+    
+    std::string getTheme() const {
+        return theme.value_or("default");
+    }
+    
+    bool isLoggingEnabled() const {
+        return enableLogging.value_or(false);
+    }
+    
+    // Also provide direct access to optionals for custom handling
+    std::optional&lt;int&gt; getPortOptional() const {
+        return port;
+    }
+    
+    void displayConfig() const {
+        std::cout &lt;&lt; "Configuration:\n";
+        std::cout &lt;&lt; "  Port: ";
+        if (port) {
+            std::cout &lt;&lt; *port &lt;&lt; "\n";
+        } else {
+            std::cout &lt;&lt; "not set (using default: 8080)\n";
+        }
+        
+        std::cout &lt;&lt; "  Max Connections: ";
+        if (maxConnections) {
+            std::cout &lt;&lt; *maxConnections &lt;&lt; "\n";
+        } else {
+            std::cout &lt;&lt; "not set (using default: 100)\n";
+        }
+        
+        std::cout &lt;&lt; "  Database: " &lt;&lt; getDatabaseUrl() &lt;&lt; "\n";
+        std::cout &lt;&lt; "  Theme: " &lt;&lt; getTheme() &lt;&lt; "\n";
+        std::cout &lt;&lt; "  Logging: " &lt;&lt; (isLoggingEnabled() ? "enabled" : "disabled") &lt;&lt; "\n";
+    }
+};
+
+int main() {
+    AppConfig config;
+    config.loadFromFile("app.conf");
+    
+    config.displayConfig();
+    
+    // Use configuration safely
+    int port = config.getPort();
+    std::cout &lt;&lt; "\nStarting server on port " &lt;&lt; port &lt;&lt; "...\n";
+    
+    // Check if a specific setting was provided
+    auto portOpt = config.getPortOptional();
+    if (portOpt) {
+        std::cout &lt;&lt; "Using user-configured port: " &lt;&lt; *portOpt &lt;&lt; "\n";
+    } else {
+        std::cout &lt;&lt; "Using default port\n";
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="example-config-file-appconf"><a class="header" href="#example-config-file-appconf">Example config file (app.conf):</a></h3>
+<pre><code>port=3000
+databaseUrl=postgresql://localhost:5432/mydb
+theme=dark
+enableLogging=true
+</code></pre>
+<h2 id="stdoptionalt-interface-summary"><a class="header" href="#stdoptionalt-interface-summary"><code>std::optional&lt;T&gt;</code> Interface Summary</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th><strong>Operation</strong></th><th><strong>Syntax</strong></th><th><strong>Description</strong></th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Check if value exists</strong></td><td><code>opt.has_value()</code></td><td>Returns <code>true</code> if optional contains a value, <code>false</code> otherwise</td></tr>
+<tr><td></td><td><code>if (opt) { }</code></td><td>Boolean context - evaluates to <code>true</code> if value exists</td></tr>
+<tr><td><strong>Access the value</strong></td><td><code>opt.value()</code></td><td>Returns the contained value; throws <code>std::bad_optional_access</code> if empty</td></tr>
+<tr><td></td><td><code>opt.value_or(100)</code></td><td>Returns the contained value, or the provided default (<code>100</code>) if empty</td></tr>
+<tr><td></td><td><code>*opt</code></td><td>Dereferences to get value; <strong>undefined behavior if empty</strong></td></tr>
+<tr><td></td><td><code>opt-&gt;member</code></td><td>Accesses member of contained object (if value is an object type)</td></tr>
+<tr><td><strong>Modify</strong></td><td><code>opt = 50;</code></td><td>Assigns a new value to the optional</td></tr>
+<tr><td></td><td><code>opt = std::nullopt;</code></td><td>Clears the optional (makes it empty)</td></tr>
+<tr><td></td><td><code>opt.reset();</code></td><td>Clears the optional (makes it empty)</td></tr>
+<tr><td></td><td><code>opt.emplace(args...);</code></td><td>Constructs a new value in-place using the provided arguments</td></tr>
+</tbody>
+</table>
+</div>
+<pre><code class="language-cpp">std::optional&lt;int&gt; opt = 42;
+
+// Check if value exists
+opt.has_value()           // Returns true if has value
+if (opt) { }              // Can use in boolean context
+
+// Access the value
+opt.value()               // Returns value or throws bad_optional_access
+opt.value_or(100)         // Returns value or 100 if empty
+*opt                      // Returns value (undefined behavior if empty!)
+opt-&gt;member               // Access member if value is an object
+
+// Modify
+opt = 50;                 // Assign new value
+opt = std::nullopt;       // Clear value
+opt.reset();              // Clear value
+opt.emplace(args...);     // Construct value in-place
+</code></pre>
+<h2 id="advanced-monadic-operations-c23"><a class="header" href="#advanced-monadic-operations-c23">Advanced: Monadic Operations (C++23)</a></h2>
+<p><strong>Note</strong>: The following features require <strong>C++23</strong> or later. If you’re using C++17 or C++20, you’ll need to stick with the basic <code>.value()</code>, <code>.value_or()</code>, and <code>.has_value()</code> methods.</p>
+<p>One of the most powerful features added to <code>std::optional</code> in C++23 is the ability to chain operations that might fail. This is called “monadic” programming - a functional programming concept where you chain operations together, and if any step fails (returns <code>nullopt</code>), the entire chain short-circuits.</p>
+<h3 id="the-problem-nested-checks"><a class="header" href="#the-problem-nested-checks">The Problem: Nested Checks</a></h3>
+<p>Without monadic operations, handling multiple optional values gets messy:</p>
+<pre><code class="language-cpp">std::optional&lt;User&gt; findUser(int id);
+std::optional&lt;std::string&gt; getUserEmail(const User&amp; user);
+std::optional&lt;std::string&gt; validateEmail(const std::string&amp; email);
+
+// Get and validate a user's email
+std::optional&lt;int&gt; userId = parseUserId(input);
+
+std::optional&lt;std::string&gt; validatedEmail;
+
+if (userId) {
+    auto user = findUser(*userId);
+    if (user) {
+        auto email = getUserEmail(*user);
+        if (email) {
+            validatedEmail = validateEmail(*email);
+        }
+    }
+}
+
+// Deeply nested, hard to read!
+</code></pre>
+<h3 id="and_thenfunction"><a class="header" href="#and_thenfunction">.and_then(function)</a></h3>
+<p>Calls the function on the value if it exists, and the function itself must return an <code>std::optional</code>. If the original optional is empty, returns <code>nullopt</code> without calling the function.</p>
+<p><strong>Signature</strong>: <code>std::optional&lt;U&gt; and_then(function&lt;std::optional&lt;U&gt;(T)&gt; f)</code></p>
+<pre><code class="language-cpp">class UserDatabase {
+public:
+    std::optional&lt;User&gt; findUser(int id) {
+        // Find user logic...
+    }
+    
+    std::optional&lt;std::string&gt; getUserEmail(const User&amp; user) {
+        if (!user.email.empty()) {
+            return user.email;
+        }
+        return std::nullopt;
+    }
+    
+    std::optional&lt;std::string&gt; validateEmail(const std::string&amp; email) {
+        if (email.find('@') != std::string::npos) {
+            return email;  // Valid
+        }
+        return std::nullopt;  // Invalid
+    }
+};
+
+// Clean chaining with .and_then()
+std::optional&lt;int&gt; userId = parseUserId(input);
+
+auto validatedEmail = userId
+    .and_then([&amp;](int id) { return db.findUser(id); })
+    .and_then([&amp;](const User&amp; u) { return db.getUserEmail(u); })
+    .and_then([&amp;](const std::string&amp; e) { return db.validateEmail(e); });
+
+if (validatedEmail) {
+    sendEmail(*validatedEmail);
+} else {
+    std::cout &lt;&lt; "Could not get valid email\n";
+}
+</code></pre>
+<p><strong>How it works:</strong></p>
+<ul>
+<li>If <code>userId</code> is empty → entire chain returns <code>nullopt</code></li>
+<li>If <code>findUser</code> returns <code>nullopt</code> → chain stops, returns <code>nullopt</code></li>
+<li>If <code>getUserEmail</code> returns <code>nullopt</code> → chain stops, returns <code>nullopt</code></li>
+<li>If <code>validateEmail</code> returns <code>nullopt</code> → final result is <code>nullopt</code></li>
+<li>Only if ALL steps succeed do you get the final value</li>
+</ul>
+<h3 id="transformfunction"><a class="header" href="#transformfunction">.transform(function)</a></h3>
+<p>Similar to <code>.and_then()</code>, but the function returns a regular value (not an optional). The result is automatically wrapped in an optional.</p>
+<p><strong>Signature</strong>: <code>std::optional&lt;U&gt; transform(function&lt;U(T)&gt; f)</code></p>
+<pre><code class="language-cpp">std::optional&lt;std::string&gt; getConfigValue(const std::string&amp; key);
+
+// Convert config value to uppercase
+auto upperValue = getConfigValue("theme")
+    .transform([](const std::string&amp; s) {
+        std::string result = s;
+        std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+        return result;  // Regular string, not optional!
+    });
+
+// If config value exists, upperValue contains uppercase version
+// If config value is nullopt, upperValue is nullopt
+</code></pre>
+<h3 id="or_elsefunction"><a class="header" href="#or_elsefunction">.or_else(function)</a></h3>
+<p>Returns the value if it exists, otherwise calls the function to provide an alternative.</p>
+<p><strong>Signature</strong>: <code>std::optional&lt;T&gt; or_else(function&lt;std::optional&lt;T&gt;()&gt; f)</code></p>
+<pre><code class="language-cpp">std::optional&lt;AppConfig&gt; loadConfig(const std::string&amp; filename) {
+    // Try to load config...
+}
+
+std::optional&lt;AppConfig&gt; createDefaultConfig() {
+    return AppConfig{};  // Return default settings
+}
+
+// Try to load config, or create default
+auto config = loadConfig("app.conf")
+    .or_else([]() { 
+        std::cout &lt;&lt; "Using default config\n";
+        return createDefaultConfig(); 
+    });
+</code></pre>
+<h3 id="lets-improve-our-config-file-parser-example-with-validation"><a class="header" href="#lets-improve-our-config-file-parser-example-with-validation">Lets improve our Config file parser example with Validation</a></h3>
+<pre><code class="language-cpp">class ConfigValidator {
+public:
+    std::optional&lt;int&gt; parsePort(const std::string&amp; value) {
+        try {
+            int port = std::stoi(value);
+            if (port &gt; 0 &amp;&amp; port &lt; 65536) {
+                return port;
+            }
+        } catch (...) {}
+        return std::nullopt;
+    }
+    
+    std::optional&lt;int&gt; validatePort(int port) {
+        if (port &gt;= 1024) {  // Only non-privileged ports
+            return port;
+        }
+        std::cout &lt;&lt; "Warning: Port " &lt;&lt; port &lt;&lt; " requires privileges\n";
+        return std::nullopt;
+    }
+    
+    std::optional&lt;std::string&gt; formatPort(int port) {
+        return "Using port: " + std::to_string(port);
+    }
+};
+
+// Chain the operations
+ConfigValidator validator;
+std::string userInput = "8080";
+
+auto result = validator.parsePort(userInput)           // Parse string to int
+    .and_then([&amp;](int p) { 
+        return validator.validatePort(p);              // Validate the port
+    })
+    .transform([](int p) { 
+        return "Using port: " + std::to_string(p);     // Format message
+    })
+    .or_else([]() { 
+        return std::optional&lt;std::string&gt;("Using default port: 8080");
+    });
+
+std::cout &lt;&lt; result.value() &lt;&lt; "\n";
+</code></pre>
+<h3 id="comparison-without-vs-with-monadic-operations"><a class="header" href="#comparison-without-vs-with-monadic-operations">Comparison: Without vs With Monadic Operations</a></h3>
+<p><strong>Without (nested ifs):</strong></p>
+<pre><code class="language-cpp">std::optional&lt;std::string&gt; result;
+
+auto port = validator.parsePort(userInput);
+if (port) {
+    auto validated = validator.validatePort(*port);
+    if (validated) {
+        result = "Using port: " + std::to_string(*validated);
+    } else {
+        result = "Using default port: 8080";
+    }
+} else {
+    result = "Using default port: 8080";
+}
+</code></pre>
+<p><strong>With (clean chain):</strong></p>
+<pre><code class="language-cpp">auto result = validator.parsePort(userInput)
+    .and_then([&amp;](int p) { return validator.validatePort(p); })
+    .transform([](int p) { return "Using port: " + std::to_string(p); })
+    .or_else([]() { return std::optional&lt;std::string&gt;("Using default port: 8080"); });
+</code></pre>
+<h3 id="when-to-use-monadic-operations"><a class="header" href="#when-to-use-monadic-operations">When to Use Monadic Operations</a></h3>
+<p><strong>Use when:</strong></p>
+<ul>
+<li>You have multiple operations that might fail</li>
+<li>Each operation depends on the previous one</li>
+<li>You want to avoid nested if statements</li>
+<li>You’re comfortable with functional programming style</li>
+</ul>
+<p><strong>Avoid when:</strong></p>
+<ul>
+<li>You need detailed error messages for each failure point</li>
+<li>The chain is very long and hard to read</li>
+<li>You’re working with teammates unfamiliar with functional programming</li>
+<li>Simple if-statements would be clearer</li>
+</ul>
+<h2 id="why-stdoptionalt-is-not-supported"><a class="header" href="#why-stdoptionalt-is-not-supported">Why std::optional&lt;T&amp;&gt; Is Not Supported</a></h2>
+<p>You might wonder: “Can I have an optional reference?” The answer is <strong>no</strong> - <code>std::optional&lt;T&amp;&gt;</code> is not allowed in C++.</p>
+<pre><code class="language-cpp">// This does NOT compile!
+std::optional&lt;int&amp;&gt; optRef;  // ERROR!
+</code></pre>
+<h3 id="the-fundamental-problem"><a class="header" href="#the-fundamental-problem">The Fundamental Problem</a></h3>
+<p>A reference in C++ <strong>must always refer to a valid object</strong>. It cannot be “empty” or “null” - that’s a core guarantee of references:</p>
+<pre><code class="language-cpp">int x = 10;
+int&amp; ref = x;  // ref MUST point to a valid int
+// There's no way to have ref point to "nothing"
+</code></pre>
+<p>But <code>std::optional&lt;T&gt;</code> is all about representing “something or nothing.” These two concepts are incompatible:</p>
+<ul>
+<li><strong>Reference</strong>: Must always be valid</li>
+<li><strong>Optional</strong>: Might be empty (nothing)</li>
+</ul>
+<h3 id="what-happens-if-we-try"><a class="header" href="#what-happens-if-we-try">What Happens If We Try?</a></h3>
+<p>If <code>std::optional&lt;int&amp;&gt;</code> existed, what would <code>std::nullopt</code> mean?</p>
+<pre><code class="language-cpp">std::optional&lt;int&amp;&gt; opt = std::nullopt;  // What does this mean?
+// A reference to nothing? That violates the definition of a reference!
+</code></pre>
+<p>When you access an empty optional, you get nothing. But a reference can’t be “nothing” - it must point to something valid. This creates a logical contradiction.</p>
+<h3 id="the-workaround-use-pointers"><a class="header" href="#the-workaround-use-pointers">The Workaround: Use Pointers</a></h3>
+<p>If you need optional semantics with references, use a <strong>pointer</strong> instead:</p>
+<pre><code class="language-cpp">int* optPtr = nullptr;  // Can be null!
+
+int x = 10;
+optPtr = &amp;x;  // Now points to x
+
+if (optPtr) {
+    std::cout &lt;&lt; *optPtr &lt;&lt; "\n";  // Dereference to use
+}
+</code></pre>
+<p>Or wrap the pointer in an optional:</p>
+<pre><code class="language-cpp">std::optional&lt;int*&gt; opt = nullptr;  // Empty
+
+int x = 10;
+opt = &amp;x;  // Now contains pointer to x
+
+if (opt &amp;&amp; *opt) {  // Check optional exists AND pointer is not null
+    std::cout &lt;&lt; **opt &lt;&lt; "\n";
+}
+</code></pre>
+<h3 id="alternative-stdreference_wrapper"><a class="header" href="#alternative-stdreference_wrapper">Alternative: std::reference_wrapper</a></h3>
+<p>C++ provides <code>std::reference_wrapper&lt;T&gt;</code> which acts like a reference but can be reassigned and stored in containers:</p>
+<pre><code class="language-cpp">#include &lt;functional&gt;
+
+int x = 10;
+int y = 20;
+
+std::optional&lt;std::reference_wrapper&lt;int&gt;&gt; opt;
+opt = std::ref(x);  // Now refers to x
+
+if (opt) {
+    opt-&gt;get() = 15;  // Modify x through the reference
+    std::cout &lt;&lt; x &lt;&lt; "\n";  // Prints 15
+}
+
+opt = std::ref(y);  // Can be reassigned to refer to y!
+</code></pre>
+<p>This is the closest you can get to <code>std::optional&lt;T&amp;&gt;</code>, but it’s more verbose.</p>
+<h3 id="summary-references-vs-optionals"><a class="header" href="#summary-references-vs-optionals">Summary: References vs Optionals</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Reference (<code>T&amp;</code>)</th><th>Optional (<code>std::optional&lt;T&gt;</code>)</th></tr>
+</thead>
+<tbody>
+<tr><td>Can be empty?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Can be reassigned?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Must be initialized?</td><td>Yes</td><td>No</td></tr>
+<tr><td>Can represent “nothing”?</td><td>No</td><td>Yes</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Why no <code>std::optional&lt;T&amp;&gt;</code>?</strong> Because references and optionals have fundamentally incompatible semantics. References must always be valid; optionals can be empty.</p>
+<h2 id="when-to-use-stdoptional"><a class="header" href="#when-to-use-stdoptional">When to Use std::optional</a></h2>
+<h3 id="good-use-cases-1"><a class="header" href="#good-use-cases-1">Good Use Cases</a></h3>
+<ul>
+<li>Configuration settings that might not be present</li>
+<li>Function return values that might fail (search, parse, lookup)</li>
+<li>Class members that might not be initialized</li>
+<li>Optional function parameters (as members, not parameters directly)</li>
+<li>Eliminating magic values and sentinel values</li>
+</ul>
+<h3 id="when-not-to-use"><a class="header" href="#when-not-to-use">When NOT to Use</a></h3>
+<ul>
+<li>Values that will always exist (just use the type directly)</li>
+<li>When performance is absolutely critical (has small overhead)</li>
+<li>As function parameters (use pointers or references instead)</li>
+<li>When a simple boolean flag would be clearer</li>
+</ul>
+<h2 id="benefits-of-stdoptional"><a class="header" href="#benefits-of-stdoptional">Benefits of std::optional</a></h2>
+<ol>
+<li><strong>Type safety</strong>: Compiler forces you to handle the “no value” case</li>
+<li><strong>Self-documenting</strong>: Function signature clearly shows a value might not exist</li>
+<li><strong>No magic values</strong>: No confusion about what <code>-1</code>, <code>""</code>, or <code>0</code> means</li>
+<li><strong>Explicit intent</strong>: Code clearly shows when values are truly optional</li>
+<li><strong>Prevents bugs</strong>: Can’t accidentally use a value that doesn’t exist (if you check properly)</li>
+</ol>
+<h2 id="key-takeaway-2"><a class="header" href="#key-takeaway-2">Key Takeaway</a></h2>
+<blockquote>
+<p>“Well typed programs cannot go wrong.” — Robin Milner</p>
+</blockquote>
+<p><code>std::optional</code> makes your code honest. Instead of using confusing magic values or returning potentially invalid data, you explicitly declare when a value might not exist. This forces you (and anyone using your code) to handle both cases properly, preventing an entire class of bugs.</p>
+<h2 id="quick-reference-card-1"><a class="header" href="#quick-reference-card-1">Quick Reference Card</a></h2>
+<pre><code class="language-cpp">#include &lt;optional&gt;
+
+// Create
+std::optional&lt;int&gt; opt;              // Empty
+std::optional&lt;int&gt; opt = 42;         // Has value
+std::optional&lt;int&gt; opt = std::nullopt;  // Empty
+
+// Check
+if (opt) { }                         // True if has value
+if (opt.has_value()) { }             // Same thing
+
+// Get value
+int x = opt.value();                 // Throws if empty
+int y = opt.value_or(0);             // Safe: returns 0 if empty
+int z = *opt;                        // Unsafe: undefined if empty
+
+// Set/Clear
+opt = 100;                           // Set value
+opt = std::nullopt;                  // Clear
+opt.reset();                         // Clear
+</code></pre>
 
                     </main>
 
