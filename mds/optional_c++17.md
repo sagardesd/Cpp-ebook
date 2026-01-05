@@ -1,4 +1,4 @@
-# Understanding std::optional and Type Safety in C++
+# Understanding `std::optional<T>` and Type Safety in C++
 
 ## What is Type Safety?
 
