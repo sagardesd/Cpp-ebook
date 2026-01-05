@@ -594,10 +594,10 @@ public:
 ```
 
 **Problems:**
-- ❌ Lots of boilerplate code
-- ❌ Error-prone (easy to forget a constructor)
-- ❌ Hard to maintain (every base constructor needs forwarding)
-- ❌ Repetitive and tedious
+- Lots of boilerplate code
+- Error-prone (easy to forget a constructor)
+- Hard to maintain (every base constructor needs forwarding)
+- Repetitive and tedious
 
 ### The Solution: `using` to Inherit Constructors (C++11)
 
@@ -922,7 +922,7 @@ public:
 class Derived : public Base1, public Base2 {
 public:
     using Base1::Base1;  // Brings Base1(int)
-    using Base2::Base2;  // ❌ ERROR: Ambiguous - both have (int)
+    using Base2::Base2;  // ERROR: Ambiguous - both have (int)
 };
 ```
 
@@ -951,7 +951,7 @@ public:
 };
 
 int main() {
-    // Derived d(10);  // ❌ ERROR: Base(int) is protected
+    // Derived d(10);  // ERROR: Base(int) is protected
 }
 ```
 
@@ -966,7 +966,7 @@ public:
 };
 
 class Derived : public Base {
-    int member;  // ❌ Uninitialized when using inherited constructors!
+    int member;  // Uninitialized when using inherited constructors!
     
 public:
     using Base::Base;
@@ -983,7 +983,7 @@ public:
 
 ### When NOT to Use Inherited Constructors
 
-❌ **Don't use inherited constructors when:**
+**Don't use inherited constructors when:**
 - Derived class needs to initialize its own members in specific ways
 - You need different behavior than just forwarding to base
 - Multiple bases have constructors with same signature
@@ -1031,11 +1031,11 @@ public:
     Derived3(int x) : Base(x * 2), member(x) { }
 };
 
-// ❌ BAD: Inherited constructors can't initialize this properly
+// BAD: Inherited constructors can't initialize this properly
 class Derived4 : public Base {
     int member;  // No default, will be uninitialized!
 public:
-    using Base::Base;  // ❌ member not initialized
+    using Base::Base;  // member not initialized
 };
 ```
 
@@ -1046,7 +1046,7 @@ public:
 
 When an object of a **derived class** is destroyed, destructors are called in the **reverse order of construction**.
 
-### 🧩 Order of Destruction:
+### Order of Destruction:
 1. **Derived class destructor** — called **first**  
 2. **Base class destructor** — called **last**
 
@@ -1054,7 +1054,7 @@ This ensures that the derived class cleans up its resources before the base clas
 
 ---
 
-### 📘 Example Code
+### Example
 
 ```cpp
 #include <iostream>
@@ -1079,7 +1079,7 @@ int main() {
 
 ---
 
-### 🖥️ Expected Output
+### Expected Output
 
 ```
 Inside base class constructor
@@ -1090,7 +1090,7 @@ Inside base class destructor
 
 ---
 
-### 💡 Why Destructors Are Called in Reverse Order
+### Why Destructors Are Called in Reverse Order
 
 - During **construction**, the base class is created **first**, forming a foundation for the derived class.  
 - During **destruction**, the **derived destructor** runs first to clean up resources that might depend on the base class still being valid.  
@@ -1126,10 +1126,10 @@ This reverse order:
 - ✓ Less error-prone
 
 **Limitations:**
-- ⚠️ Same signature in derived class hides inherited constructor
-- ⚠️ Cannot inherit from multiple bases with same signature
-- ⚠️ Access levels are preserved
-- ⚠️ Derived members need default initialization
+- Same signature in derived class hides inherited constructor
+- Cannot inherit from multiple bases with same signature
+- Access levels are preserved
+- Derived members need default initialization
 
 **Golden Rule:** Inherited constructors are a convenience feature for simple cases. When you need custom initialization logic, write explicit constructors.
 
