@@ -48,4 +48,6 @@
   - [Accessing Raw Pointers from `std::unique_ptr<T>`](./unique_ptr_get_release.md)
   - [Shared ownership smart pointer - std::shared_ptr<T> and std::weak_ptr<T>](./shared_ptr_weak_ptr.md)
 - [Lamda Functions (>= C++11)](./lamda_functions.md)
+- [std::optional<T> (>= C++17)](./optional_c++17.md)
+
   
