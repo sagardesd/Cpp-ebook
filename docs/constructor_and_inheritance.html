@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5fa0d67c.js";
+            window.path_to_searchindex_js = "searchindex-948d44ae.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-c16d8e8c.js"></script>
@@ -674,10 +674,10 @@ public:
 </code></pre>
 <p><strong>Problems:</strong></p>
 <ul>
-<li>❌ Lots of boilerplate code</li>
-<li>❌ Error-prone (easy to forget a constructor)</li>
-<li>❌ Hard to maintain (every base constructor needs forwarding)</li>
-<li>❌ Repetitive and tedious</li>
+<li>Lots of boilerplate code</li>
+<li>Error-prone (easy to forget a constructor)</li>
+<li>Hard to maintain (every base constructor needs forwarding)</li>
+<li>Repetitive and tedious</li>
 </ul>
 <h3 id="the-solution-using-to-inherit-constructors-c11"><a class="header" href="#the-solution-using-to-inherit-constructors-c11">The Solution: <code>using</code> to Inherit Constructors (C++11)</a></h3>
 <p>C++11 introduced the <code>using</code> declaration to inherit base class constructors:</p>
@@ -971,7 +971,7 @@ public:
 class Derived : public Base1, public Base2 {
 public:
     using Base1::Base1;  // Brings Base1(int)
-    using Base2::Base2;  // ❌ ERROR: Ambiguous - both have (int)
+    using Base2::Base2;  // ERROR: Ambiguous - both have (int)
 };
 </code></pre>
 <p><strong>Solution:</strong> Define your own constructor to resolve ambiguity:</p>
@@ -993,7 +993,7 @@ public:
 };
 
 int main() {
-    // Derived d(10);  // ❌ ERROR: Base(int) is protected
+    // Derived d(10);  // ERROR: Base(int) is protected
 }
 </code></pre>
 <h3 id="limitation-4-default-member-initialization"><a class="header" href="#limitation-4-default-member-initialization">Limitation 4: Default Member Initialization</a></h3>
@@ -1004,7 +1004,7 @@ public:
 };
 
 class Derived : public Base {
-    int member;  // ❌ Uninitialized when using inherited constructors!
+    int member;  // Uninitialized when using inherited constructors!
     
 public:
     using Base::Base;
@@ -1019,7 +1019,7 @@ public:
 };
 </code></pre>
 <h3 id="when-not-to-use-inherited-constructors"><a class="header" href="#when-not-to-use-inherited-constructors">When NOT to Use Inherited Constructors</a></h3>
-<p>❌ <strong>Don’t use inherited constructors when:</strong></p>
+<p><strong>Don’t use inherited constructors when:</strong></p>
 <ul>
 <li>Derived class needs to initialize its own members in specific ways</li>
 <li>You need different behavior than just forwarding to base</li>
@@ -1067,25 +1067,25 @@ public:
     Derived3(int x) : Base(x * 2), member(x) { }
 };
 
-// ❌ BAD: Inherited constructors can't initialize this properly
+// BAD: Inherited constructors can't initialize this properly
 class Derived4 : public Base {
     int member;  // No default, will be uninitialized!
 public:
-    using Base::Base;  // ❌ member not initialized
+    using Base::Base;  // member not initialized
 };
 </code></pre>
 <p><a href="#table-of-contents">↑ Back to Table of Contents</a></p>
 <p><a id="destructors-order-inheritance"></a></p>
 <h2 id="7understanding-destructor-execution-order"><a class="header" href="#7understanding-destructor-execution-order">7.Understanding Destructor Execution Order</a></h2>
 <p>When an object of a <strong>derived class</strong> is destroyed, destructors are called in the <strong>reverse order of construction</strong>.</p>
-<h3 id="-order-of-destruction"><a class="header" href="#-order-of-destruction">🧩 Order of Destruction:</a></h3>
+<h3 id="order-of-destruction"><a class="header" href="#order-of-destruction">Order of Destruction:</a></h3>
 <ol>
 <li><strong>Derived class destructor</strong> — called <strong>first</strong></li>
 <li><strong>Base class destructor</strong> — called <strong>last</strong></li>
 </ol>
 <p>This ensures that the derived class cleans up its resources before the base class is destroyed.</p>
 <hr>
-<h3 id="-example-code"><a class="header" href="#-example-code">📘 Example Code</a></h3>
+<h3 id="example"><a class="header" href="#example">Example</a></h3>
 <pre><code class="language-cpp">#include &lt;iostream&gt;
 
 class Parent {
@@ -1106,14 +1106,14 @@ int main() {
 }
 </code></pre>
 <hr>
-<h3 id="-expected-output"><a class="header" href="#-expected-output">🖥️ Expected Output</a></h3>
+<h3 id="expected-output"><a class="header" href="#expected-output">Expected Output</a></h3>
 <pre><code>Inside base class constructor
 Inside derived class constructor
 Inside derived class destructor
 Inside base class destructor
 </code></pre>
 <hr>
-<h3 id="-why-destructors-are-called-in-reverse-order"><a class="header" href="#-why-destructors-are-called-in-reverse-order">💡 Why Destructors Are Called in Reverse Order</a></h3>
+<h3 id="why-destructors-are-called-in-reverse-order"><a class="header" href="#why-destructors-are-called-in-reverse-order">Why Destructors Are Called in Reverse Order</a></h3>
 <ul>
 <li>During <strong>construction</strong>, the base class is created <strong>first</strong>, forming a foundation for the derived class.</li>
 <li>During <strong>destruction</strong>, the <strong>derived destructor</strong> runs first to clean up resources that might depend on the base class still being valid.</li>
@@ -1146,10 +1146,10 @@ Inside base class destructor
 </ul>
 <p><strong>Limitations:</strong></p>
 <ul>
-<li>⚠️ Same signature in derived class hides inherited constructor</li>
-<li>⚠️ Cannot inherit from multiple bases with same signature</li>
-<li>⚠️ Access levels are preserved</li>
-<li>⚠️ Derived members need default initialization</li>
+<li>Same signature in derived class hides inherited constructor</li>
+<li>Cannot inherit from multiple bases with same signature</li>
+<li>Access levels are preserved</li>
+<li>Derived members need default initialization</li>
 </ul>
 <p><strong>Golden Rule:</strong> Inherited constructors are a convenience feature for simple cases. When you need custom initialization logic, write explicit constructors.</p>
 <h3 id="destructor-execution-order"><a class="header" href="#destructor-execution-order">Destructor execution order</a></h3>
