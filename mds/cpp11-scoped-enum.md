@@ -53,7 +53,9 @@ Let's examine each drawback one by one before exploring how C++11 scoped enums s
 
 ### Problem 1: Scope Issues and Name Conflicts
 
-C-style enums have their enumerators placed in the same scope as the enum itself. This means the enumerator names (like `OFF`, `ON`, `AUTO`) are visible throughout the entire scope where the enum is declared.
+C-style enums have their enumerators placed in the same scope as the enum itself. 
+
+This means the enumerator names (like `OFF`, `ON`, `AUTO`) are visible throughout the entire scope where the enum is declared.
 
 Lets look at the below example:
 
@@ -86,7 +88,8 @@ int main() {
 }
 ```
 
-The enumerators `OFF`, `ON`, and `AUTO` are visible throughout the file. If we try to create another enum with a duplicate enumerator name (like `OFF` in `PowerState`), the compiler throws an error because `OFF` is already defined in the same scope.
+The enumerators `OFF`, `ON`, and `AUTO` are visible throughout the file. 
+If we try to create another enum with a duplicate enumerator name (like `OFF` in `PowerState`), the compiler throws an error because `OFF` is already defined in the same scope.
 
 **Workaround (Ugly):**
 
@@ -111,7 +114,8 @@ int main() {
 
 ### Problem 2: Non-Fixed Underlying Type
 
-The underlying type of a C-style enum is implementation-defined. The compiler optimizes the storage type based on the enum's content, which can lead to portability and interoperability issues.
+The underlying type of a C-style enum is implementation-defined. 
+The compiler optimizes the storage type based on the enum's content, which can lead to portability and interoperability issues.
 
 **Example:**
 
@@ -273,11 +277,12 @@ int main() {
 
 **Why is this a problem?**
 
-1. **Compilation dependencies**: Every file that includes a header with an enum must see the complete definition, even if it only needs to know the enum exists. This increases compilation time and creates tight coupling.
+1. **Compilation dependencies**: Every file that includes a header with an enum must see the complete definition, even if it only needs to know the enum exists.
+   This increases compilation time and creates tight coupling.
 
-2. **Circular dependencies**: If two classes need to reference each other's enums, you can't forward declare, leading to difficult header organization.
+3. **Circular dependencies**: If two classes need to reference each other's enums, you can't forward declare, leading to difficult header organization.
 
-3. **Reduced encapsulation**: You can't hide the enum values in the header; everything is exposed.
+4. **Reduced encapsulation**: You can't hide the enum values in the header; everything is exposed.
 
 **Example showing the circular dependency problem:**
 
