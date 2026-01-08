@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-600fb8fc.js";
+            window.path_to_searchindex_js = "searchindex-12ac71df.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f9b8dbd0.js"></script>
+        <script src="toc-e9988c04.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -21444,10 +21444,954 @@ auto wrapper(Func&amp;&amp; f) -&gt; RemoveRef&lt;decltype(f())&gt; {
 <p>Understanding the two forms of <code>decltype</code> (variable vs expression) and value categories is crucial for avoiding bugs. The evolution from C++11 through C++20 has made <code>decltype</code> progressively more powerful and easier to use, especially with <code>decltype(auto)</code> in C++14 and concepts in C++20.</p>
 <p>Remember: <strong>Parentheses matter!</strong> <code>decltype(x)</code> and <code>decltype((x))</code> can be completely different types.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="c11-scoped-enum"><a class="header" href="#c11-scoped-enum">C++11 Scoped Enum</a></h1>
+<p><strong>Enumerations (enums)</strong> are a user-defined data type in C++ that consists of a set of named integral constants. They allow programmers to define a type with a restricted set of possible values, making code more readable, self-documenting, and type-safe.</p>
+<p>An enum defines a new type and a set of named constants (enumerators) that belong to that type:</p>
+<pre><code class="language-cpp">enum DayOfWeek {
+    MONDAY,    // 0
+    TUESDAY,   // 1
+    WEDNESDAY, // 2
+    THURSDAY,  // 3
+    FRIDAY,    // 4
+    SATURDAY,  // 5
+    SUNDAY     // 6
+};
+
+DayOfWeek today = WEDNESDAY;  // today has value 2
+</code></pre>
+<p>By default, enumerators start at 0 and increment by 1, but you can assign custom values:</p>
+<pre><code class="language-cpp">enum HttpStatus {
+    OK = 200,
+    NOT_FOUND = 404,
+    INTERNAL_ERROR = 500
+};
+</code></pre>
+<p>Instead of using “magic numbers” or strings scattered throughout your code, enums provide meaningful names for values:</p>
+<pre><code class="language-cpp">// Without enums - unclear and error-prone
+int status = 2;  // What does 2 mean?
+if (status == 1) {
+    // Do something
+}
+
+// With enums - clear and maintainable
+enum Status { IDLE, RUNNING, STOPPED };
+Status status = RUNNING;
+if (status == RUNNING) {
+    // Do something
+}
+</code></pre>
+<hr>
+<p>Before C++11, C++ used <strong>C-style enums</strong> (also called “unscoped enums” or “plain enums”). While useful, C-style enums used in C++ programming before C++11 have several issues and drawbacks that can lead to bugs, maintenance problems, and poor code quality.</p>
+<p>Let’s examine each drawback one by one before exploring how C++11 scoped enums solve these problems.</p>
+<h3 id="problem-1-scope-issues-and-name-conflicts"><a class="header" href="#problem-1-scope-issues-and-name-conflicts">Problem 1: Scope Issues and Name Conflicts</a></h3>
+<p>C-style enums have their enumerators placed in the same scope as the enum itself.</p>
+<p>This means the enumerator names (like <code>OFF</code>, <code>ON</code>, <code>AUTO</code>) are visible throughout the entire scope where the enum is declared.</p>
+<p>Lets look at the below example:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+enum DisplayMode {
+    OFF,
+    ON,
+    AUTO
+};
+
+/*
+enum PowerState {
+    SLEEP,
+    OFF,    // ERROR: 'OFF' already declared in DisplayMode
+    RUN
+};
+*/
+
+int main() {
+    DisplayMode mode_1 = OFF;                    // Works
+    DisplayMode mode_2 = DisplayMode::OFF;       // Also works
+    
+    // If PowerState was uncommented:
+    // PowerState state_1 = OFF;                 // Ambiguous!
+    // PowerState state_2 = PowerState::OFF;     // Still ambiguous!
+    
+    return 0;
+}
+</code></pre>
+<p>The enumerators <code>OFF</code>, <code>ON</code>, and <code>AUTO</code> are visible throughout the file.
+If we try to create another enum with a duplicate enumerator name (like <code>OFF</code> in <code>PowerState</code>), the compiler throws an error because <code>OFF</code> is already defined in the same scope.</p>
+<p><strong>Workaround (Ugly):</strong></p>
+<p>You could wrap enums in namespaces, but this is verbose and cumbersome:</p>
+<pre><code class="language-cpp">namespace Display {
+    enum Mode { OFF, ON, AUTO };
+}
+
+namespace Power {
+    enum State { SLEEP, OFF, RUN };
+}
+
+int main() {
+    Display::Mode mode = Display::OFF;
+    Power::State state = Power::OFF;
+}
+</code></pre>
+<hr>
+<h3 id="problem-2-non-fixed-underlying-type"><a class="header" href="#problem-2-non-fixed-underlying-type">Problem 2: Non-Fixed Underlying Type</a></h3>
+<p>The underlying type of a C-style enum is implementation-defined.
+The compiler optimizes the storage type based on the enum’s content, which can lead to portability and interoperability issues.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+#include &lt;cstdint&gt;
+
+// 1. Standard C-style enum (Usually defaults to int)
+enum Standard { A, B };
+
+// 2. Large C-style enum (Forces a 64-bit underlying type)
+enum Huge { 
+    BigValue = 0xFFFFFFFFFFFFFFFFULL 
+};
+
+// 3. Explicitly fixed type (Using C++11 fixed underlying type syntax)
+enum Small : std::uint8_t { 
+    Low, 
+    High 
+};
+
+// Helper template to print the name and size of the underlying type
+template &lt;typename T&gt;
+void printUnderlyingTypeInfo(const char* enumName) {
+    using Underlying = std::underlying_type_t&lt;T&gt;;
+    
+    std::cout &lt;&lt; "Enum [" &lt;&lt; enumName &lt;&lt; "]:\n";
+    std::cout &lt;&lt; "  - Size: " &lt;&lt; sizeof(Underlying) &lt;&lt; " byte(s)\n";
+    
+    if (std::is_signed_v&lt;Underlying&gt;)
+        std::cout &lt;&lt; "  - Signed: Yes\n";
+    else
+        std::cout &lt;&lt; "  - Signed: No\n";
+    std::cout &lt;&lt; "--------------------------\n";
+}
+
+int main() {
+    printUnderlyingTypeInfo&lt;Standard&gt;("Standard");
+    printUnderlyingTypeInfo&lt;Huge&gt;("Huge");
+    printUnderlyingTypeInfo&lt;Small&gt;("Small");
+
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Enum [Standard]:
+  - Size: 4 byte(s)
+  - Signed: No
+--------------------------
+Enum [Huge]:
+  - Size: 8 byte(s)
+  - Signed: No
+--------------------------
+Enum [Small]:
+  - Size: 1 byte(s)
+  - Signed: No
+--------------------------
+</code></pre>
+<p><strong>Note:</strong> This example uses C++17 type traits (<code>std::underlying_type_t</code> and <code>std::is_signed_v</code>) to identify the underlying storage size.</p>
+<p>The size varies based on the enum values. This causes issues in:</p>
+<ul>
+<li>Network communication protocols (where fixed sizes are expected)</li>
+<li>Binary file formats</li>
+<li>Interfacing with hardware or external libraries</li>
+<li>Cross-platform compatibility</li>
+</ul>
+<p>While C++11 allows specifying a fixed underlying type (as shown with <code>Small</code>), it’s not enforced by default for C-style enums.</p>
+<hr>
+<h3 id="problem-3-implicit-conversion-to-int-type-safety-issues"><a class="header" href="#problem-3-implicit-conversion-to-int-type-safety-issues">Problem 3: Implicit Conversion to int (Type Safety Issues)</a></h3>
+<p>C-style enums can be implicitly converted to integers, breaking type safety and potentially causing undefined behavior.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+enum Color { Red, Green, Blue };
+
+void draw(Color c) {
+    std::cout &lt;&lt; "draw(Color) called\n";
+}
+
+void draw(int x) {
+    std::cout &lt;&lt; "draw(int) called with " &lt;&lt; x &lt;&lt; "\n";
+}
+
+int main() {
+    Color c = Red;
+    
+    draw(c);   // OK: calls draw(Color)
+    
+    draw(42);  // OK: calls draw(int), but 42 is not a valid Color
+    
+    int n = Green;  // Implicit conversion from Color to int
+    draw(n);   // OK: calls draw(int), even though n came from Color
+    
+    // Even worse:
+    Color invalid = static_cast&lt;Color&gt;(999);  // Compiles! Undefined behavior!
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>draw(Color) called
+draw(int) called with 42
+draw(int) called with 1
+</code></pre>
+<p>Enums are not type-safe. You can:</p>
+<ul>
+<li>Assign arbitrary integers to enum variables</li>
+<li>Implicitly convert enums to integers</li>
+<li>Lose the semantic meaning of the enum type</li>
+<li>Accidentally pass wrong values without compiler warnings</li>
+</ul>
+<hr>
+<h3 id="problem-4-no-forward-declaration"><a class="header" href="#problem-4-no-forward-declaration">Problem 4: No Forward Declaration</a></h3>
+<p>C-style enums cannot be forward declared (in C++03 and earlier) because the compiler needs to know the underlying type to determine the enum’s size.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// This WILL NOT compile in C++03:
+// enum Color;  // Error: cannot forward declare
+
+// You must provide the full definition:
+enum Color { Red, Green, Blue };
+
+class Widget {
+    Color favoriteColor;  // Must have full enum definition above
+public:
+    void setColor(Color c);
+};
+
+void Widget::setColor(Color c) {
+    favoriteColor = c;
+}
+
+int main() {
+    Widget w;
+    w.setColor(Red);
+    return 0;
+}
+</code></pre>
+<p><strong>Why is this a problem?</strong></p>
+<ol>
+<li>
+<p><strong>Compilation dependencies</strong>: Every file that includes a header with an enum must see the complete definition, even if it only needs to know the enum exists.
+This increases compilation time and creates tight coupling.</p>
+</li>
+<li>
+<p><strong>Circular dependencies</strong>: If two classes need to reference each other’s enums, you can’t forward declare, leading to difficult header organization.</p>
+</li>
+<li>
+<p><strong>Reduced encapsulation</strong>: You can’t hide the enum values in the header; everything is exposed.</p>
+</li>
+</ol>
+<p><strong>Example showing the circular dependency problem:</strong></p>
+<pre><code class="language-cpp">// device.h
+#ifndef DEVICE_H
+#define DEVICE_H
+
+// Cannot forward declare!
+// enum PowerState;  // Error!
+
+// Must include full definition
+enum PowerState { SLEEP, OFF, RUN };
+
+class Device {
+    PowerState state;
+public:
+    void setState(PowerState s);
+};
+
+#endif
+</code></pre>
+<p>Compare this to classes/structs where forward declaration works fine:</p>
+<pre><code class="language-cpp">// device.h
+#ifndef DEVICE_H
+#define DEVICE_H
+
+class PowerManager;  // Forward declaration works!
+
+class Device {
+    PowerManager* manager;  // Only need pointer/reference
+public:
+    void setManager(PowerManager* pm);
+};
+
+#endif
+</code></pre>
+<p><strong>Why forward declaration fails for C-style enums:</strong></p>
+<p>The compiler must know the size of the enum to allocate memory for enum variables. Since the underlying type is implementation-defined and depends on the enum’s values (as shown in Problem 2), the compiler needs to see all the enumerators to determine the size.</p>
+<hr>
+<h2 id="c11-scoped-enums-enum-class---the-solution"><a class="header" href="#c11-scoped-enums-enum-class---the-solution">C++11 Scoped Enums (<code>enum class</code>) - The Solution</a></h2>
+<p>C++11 introduced <strong>scoped enums</strong> (also called <strong>strongly-typed enums</strong>) using the <code>enum class</code> or <code>enum struct</code> syntax.</p>
+<h3 id="basic-syntax-7"><a class="header" href="#basic-syntax-7">Basic Syntax</a></h3>
+<pre><code class="language-cpp">// Basic scoped enum syntax
+enum class EnumName {
+    Enumerator1,
+    Enumerator2,
+    Enumerator3
+};
+
+// With explicit underlying type
+enum class EnumName : UnderlyingType {
+    Enumerator1,
+    Enumerator2,
+    Enumerator3
+};
+
+// Both 'enum class' and 'enum struct' are equivalent
+enum class Mode { A, B, C };   // More commonly used
+enum struct Mode { A, B, C };  // Exactly the same behavior
+</code></pre>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-cpp">enum class DisplayMode {
+    OFF,
+    ON,
+    AUTO
+};
+
+enum class PowerState {
+    SLEEP,
+    OFF,    // No conflict! Different scope
+    RUN
+};
+
+// With explicit underlying type
+enum class Priority : std::uint8_t {
+    LOW = 0,
+    MEDIUM = 1,
+    HIGH = 2
+};
+
+// With custom values
+enum class ErrorCode : int {
+    SUCCESS = 0,
+    FILE_NOT_FOUND = 404,
+    INTERNAL_ERROR = 500
+};
+</code></pre>
+<p>The new C++11 scoped enums solve all the problems we have discussed above when we use c-style enums.</p>
+<p>Lets now look at how its solving these problems and why you should start using the C++11 scoped enums.</p>
+<hr>
+<h3 id="solution-1-proper-scoping---no-more-name-conflicts"><a class="header" href="#solution-1-proper-scoping---no-more-name-conflicts">Solution 1: Proper Scoping - No More Name Conflicts</a></h3>
+<p>Scoped enums keep their enumerators within the enum’s scope, preventing naming conflicts.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+enum class DisplayMode {
+    OFF,
+    ON,
+    AUTO
+};
+
+enum class PowerState {
+    SLEEP,
+    OFF,    // No conflict with DisplayMode::OFF
+    RUN
+};
+
+int main() {
+    // Must use scope resolution operator
+    DisplayMode mode = DisplayMode::OFF;
+    PowerState state = PowerState::OFF;
+    
+    // This won't compile:
+    // DisplayMode bad = OFF;  // Error: 'OFF' not found in this scope
+    
+    std::cout &lt;&lt; "Code compiles successfully!\n";
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>No naming conflicts between different enums</li>
+<li>More explicit and readable code</li>
+<li>Clearer intent and namespace pollution prevention</li>
+</ul>
+<hr>
+<h3 id="solution-2-fixed-underlying-type"><a class="header" href="#solution-2-fixed-underlying-type">Solution 2: Fixed Underlying Type</a></h3>
+<p>Scoped enums have a default underlying type of <code>int</code>, and you can explicitly specify any integral type you want. This ensures consistency across platforms.</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+#include &lt;cstdint&gt;
+
+// Default underlying type is int
+enum class Status {
+    OK,
+    ERROR,
+    PENDING
+};
+
+// Explicitly specify underlying type
+enum class Priority : std::uint8_t {
+    LOW,
+    MEDIUM,
+    HIGH
+};
+
+enum class LargeValue : std::uint64_t {
+    HUGE = 0xFFFFFFFFFFFFFFFFULL
+};
+
+template &lt;typename T&gt;
+void printEnumInfo(const char* enumName) {
+    using Underlying = std::underlying_type_t&lt;T&gt;;
+    
+    std::cout &lt;&lt; "Enum [" &lt;&lt; enumName &lt;&lt; "]:\n";
+    std::cout &lt;&lt; "  - Size: " &lt;&lt; sizeof(Underlying) &lt;&lt; " byte(s)\n";
+    std::cout &lt;&lt; "  - Signed: " &lt;&lt; (std::is_signed_v&lt;Underlying&gt; ? "Yes" : "No") &lt;&lt; "\n";
+    std::cout &lt;&lt; "--------------------------\n";
+}
+
+int main() {
+    printEnumInfo&lt;Status&gt;("Status");
+    printEnumInfo&lt;Priority&gt;("Priority");
+    printEnumInfo&lt;LargeValue&gt;("LargeValue");
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Enum [Status]:
+  - Size: 4 byte(s)
+  - Signed: Yes
+--------------------------
+Enum [Priority]:
+  - Size: 1 byte(s)
+  - Signed: No
+--------------------------
+Enum [LargeValue]:
+  - Size: 8 byte(s)
+  - Signed: No
+--------------------------
+</code></pre>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Predictable size across platforms</li>
+<li>Safe for serialization and network protocols</li>
+<li>Memory-efficient when using smaller types like <code>uint8_t</code></li>
+</ul>
+<hr>
+<h3 id="solution-3-no-implicit-conversion---type-safety"><a class="header" href="#solution-3-no-implicit-conversion---type-safety">Solution 3: No Implicit Conversion - Type Safety</a></h3>
+<p><strong>The key feature of C++11 scoped enums:</strong> They do NOT allow implicit conversion to integers or other types. This provides strong type safety and prevents many common programming errors.</p>
+<p><strong>The Rule:</strong></p>
+<ul>
+<li><strong>No implicit conversion</strong> from scoped enum to int or any other type</li>
+<li><strong>Must use <code>static_cast</code></strong> for explicit conversion when needed</li>
+<li>This forces programmers to be explicit about their intentions</li>
+</ul>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+enum class Color {
+    Red,
+    Green,
+    Blue
+};
+
+enum class Size {
+    Small,
+    Medium,
+    Large
+};
+
+void draw(Color c) {
+    std::cout &lt;&lt; "draw(Color) called\n";
+}
+
+void draw(int x) {
+    std::cout &lt;&lt; "draw(int) called with " &lt;&lt; x &lt;&lt; "\n";
+}
+
+int main() {
+    Color c = Color::Red;
+    
+    draw(c);   // OK: calls draw(Color)
+    draw(42);  // OK: calls draw(int)
+    
+    // ===== These WON'T compile (No implicit conversion) =====
+    // int n = Color::Green;           // Error: cannot convert Color to int
+    // int m = c;                      // Error: cannot convert Color to int
+    // Color c2 = 1;                   // Error: cannot convert int to Color
+    // Size s = Color::Red;            // Error: cannot convert Color to Size
+    // if (c == 0) { }                 // Error: cannot compare Color with int
+    // bool b = c;                     // Error: cannot convert Color to bool
+    
+    // ===== Must use static_cast for explicit conversion =====
+    
+    // Enum to int
+    int value = static_cast&lt;int&gt;(Color::Green);
+    std::cout &lt;&lt; "Green value: " &lt;&lt; value &lt;&lt; "\n";
+    
+    // Enum to underlying type
+    auto underlying_value = static_cast&lt;std::underlying_type_t&lt;Color&gt;&gt;(c);
+    std::cout &lt;&lt; "Red underlying value: " &lt;&lt; underlying_value &lt;&lt; "\n";
+    
+    // Int to enum (use with caution - no validation!)
+    Color c3 = static_cast&lt;Color&gt;(2);  // Becomes Color::Blue
+    
+    // Enum to another enum type (requires double cast)
+    Size s = static_cast&lt;Size&gt;(static_cast&lt;int&gt;(Color::Medium));
+    
+    // Comparison between enums (same type only)
+    Color c4 = Color::Red;
+    if (c == c4) {  // OK: same enum type
+        std::cout &lt;&lt; "Colors match!\n";
+    }
+    
+    // if (c == Size::Small) { }  // Error: cannot compare different enum types
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>draw(Color) called
+draw(int) called with 42
+Green value: 1
+Red underlying value: 0
+Colors match!
+</code></pre>
+<p><strong>Why This Matters - Comparison with C-Style Enums:</strong></p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+// C-style enum (OLD - implicit conversion allowed)
+enum OldColor { OLD_RED, OLD_GREEN, OLD_BLUE };
+
+// Scoped enum (NEW - no implicit conversion)
+enum class NewColor { RED, GREEN, BLUE };
+
+void processColor(int value) {
+    std::cout &lt;&lt; "Processing value: " &lt;&lt; value &lt;&lt; "\n";
+}
+
+int main() {
+    OldColor oldColor = OLD_RED;
+    NewColor newColor = NewColor::RED;
+    
+    // C-style enum problems:
+    processColor(oldColor);           // Compiles! Implicit conversion
+    int x = oldColor;                 // Compiles! Implicit conversion
+    if (oldColor == 0) { }            // Compiles! Can compare with int
+    bool b = oldColor;                // Compiles! Converts to bool
+    OldColor bad = 999;               // Compiles! Invalid value allowed
+    
+    // Scoped enum - all these are errors:
+    // processColor(newColor);        // Error: no implicit conversion
+    // int y = newColor;               // Error: no implicit conversion
+    // if (newColor == 0) { }          // Error: cannot compare with int
+    // bool c = newColor;              // Error: no implicit conversion
+    // NewColor bad2 = 999;            // Error: cannot convert int to NewColor
+    
+    // Must be explicit with scoped enums:
+    processColor(static_cast&lt;int&gt;(newColor));  // OK: explicit intent
+    int y = static_cast&lt;int&gt;(newColor);        // OK: explicit conversion
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Benefits of No Implicit Conversion:</strong></p>
+<ul>
+<li><strong>Type safety</strong>: Prevents accidental mixing of unrelated enum types</li>
+<li><strong>Compiler protection</strong>: Catches errors at compile time instead of runtime</li>
+<li><strong>Explicit intent</strong>: Forces you to be clear about conversions</li>
+<li><strong>Prevents invalid values</strong>: Can’t accidentally assign random integers</li>
+<li><strong>More maintainable</strong>: Clear what the code is doing</li>
+<li><strong>Prevents logic errors</strong>: Can’t accidentally compare enums with integers</li>
+</ul>
+<hr>
+<h3 id="solution-4-forward-declaration-support"><a class="header" href="#solution-4-forward-declaration-support">Solution 4: Forward Declaration Support</a></h3>
+<p>Scoped enums can be forward declared because they have a known underlying type (default <code>int</code> or explicitly specified).</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-cpp">// device.h
+#ifndef DEVICE_H
+#define DEVICE_H
+
+// Forward declaration works!
+enum class PowerState;
+enum class DisplayMode : unsigned char;  // With explicit type
+
+class Device {
+    PowerState* state;        // Pointer to forward-declared enum
+    DisplayMode* display;      // Pointer to forward-declared enum
+public:
+    void setState(PowerState s);
+    void setDisplay(DisplayMode d);
+};
+
+#endif
+</code></pre>
+<pre><code class="language-cpp">// device.cpp
+#include "device.h"
+
+// Full definitions in implementation file
+enum class PowerState {
+    SLEEP,
+    OFF,
+    RUN
+};
+
+enum class DisplayMode : unsigned char {
+    OFF,
+    ON,
+    AUTO
+};
+
+void Device::setState(PowerState s) {
+    // Implementation
+}
+
+void Device::setDisplay(DisplayMode d) {
+    // Implementation
+}
+</code></pre>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Reduces compilation dependencies</li>
+<li>Enables better header organization</li>
+<li>Solves circular dependency issues</li>
+<li>Faster compilation times</li>
+<li>Better encapsulation</li>
+</ul>
+<hr>
+<p>Here’s a side-by-side comparison showing all the differences:</p>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+// ========== C-STYLE ENUM ==========
+enum OldColor {
+    OLD_RED,
+    OLD_GREEN,
+    OLD_BLUE
+};
+
+// ========== SCOPED ENUM ==========
+enum class NewColor {
+    RED,
+    GREEN,
+    BLUE
+};
+
+void processOldColor(OldColor c) {
+    std::cout &lt;&lt; "Old color value: " &lt;&lt; c &lt;&lt; "\n";
+}
+
+void processNewColor(NewColor c) {
+    // Must explicitly cast to print value
+    std::cout &lt;&lt; "New color value: " &lt;&lt; static_cast&lt;int&gt;(c) &lt;&lt; "\n";
+}
+
+int main() {
+    // ===== C-style enum usage =====
+    OldColor old1 = OLD_RED;          // Works
+    OldColor old2 = OldColor::OLD_RED; // Also works
+    
+    int oldVal = OLD_GREEN;            // Implicit conversion - BAD!
+    processOldColor(old1);
+    
+    // ===== Scoped enum usage =====
+    NewColor new1 = NewColor::RED;     // Must use scope
+    // NewColor new2 = RED;            // ERROR: RED not in scope
+    
+    // int newVal = NewColor::GREEN;   // ERROR: no implicit conversion
+    int newVal = static_cast&lt;int&gt;(NewColor::GREEN);  // Must be explicit
+    processNewColor(new1);
+    
+    // ===== Size comparison =====
+    std::cout &lt;&lt; "\nSize comparison:\n";
+    std::cout &lt;&lt; "sizeof(OldColor): " &lt;&lt; sizeof(OldColor) &lt;&lt; " bytes\n";
+    std::cout &lt;&lt; "sizeof(NewColor): " &lt;&lt; sizeof(NewColor) &lt;&lt; " bytes\n";
+    
+    // ===== Underlying type =====
+    std::cout &lt;&lt; "\nUnderlying types:\n";
+    std::cout &lt;&lt; "OldColor is signed: " 
+              &lt;&lt; std::is_signed_v&lt;std::underlying_type_t&lt;OldColor&gt;&gt; &lt;&lt; "\n";
+    std::cout &lt;&lt; "NewColor is signed: " 
+              &lt;&lt; std::is_signed_v&lt;std::underlying_type_t&lt;NewColor&gt;&gt; &lt;&lt; "\n";
+    
+    return 0;
+}
+</code></pre>
+<hr>
+<h2 id="best-practices-and-recommendations"><a class="header" href="#best-practices-and-recommendations">Best Practices and Recommendations</a></h2>
+<h3 id="when-to-use-scoped-enums"><a class="header" href="#when-to-use-scoped-enums">When to Use Scoped Enums</a></h3>
+<p><strong>Always prefer <code>enum class</code> over plain <code>enum</code> in modern C++ code</strong> unless you have a specific reason not to.</p>
+<p>Use scoped enums when:</p>
+<ul>
+<li>You want type safety and explicit scoping</li>
+<li>Working with APIs, serialization, or network protocols</li>
+<li>You need forward declarations</li>
+<li>Multiple enums might have similar enumerator names</li>
+<li>Writing new code (C++11 and later)</li>
+</ul>
+<h3 id="when-c-style-enums-might-be-acceptable"><a class="header" href="#when-c-style-enums-might-be-acceptable">When C-Style Enums Might Be Acceptable</a></h3>
+<ul>
+<li>Legacy code that you cannot modify</li>
+<li>When you explicitly want implicit conversion (rare cases)</li>
+<li>When working with C APIs that expect C-style enums</li>
+</ul>
+<h3 id="syntax-variations"><a class="header" href="#syntax-variations">Syntax Variations</a></h3>
+<p>Both <code>enum class</code> and <code>enum struct</code> are equivalent:</p>
+<pre><code class="language-cpp">enum class Mode { A, B, C };    // More common
+enum struct Mode { A, B, C };   // Exactly the same
+</code></pre>
+<h3 id="specifying-underlying-type"><a class="header" href="#specifying-underlying-type">Specifying Underlying Type</a></h3>
+<pre><code class="language-cpp">// Default (int)
+enum class Status { OK, ERROR };
+
+// Custom type
+enum class TinyEnum : std::uint8_t { A, B, C };
+enum class BigEnum : std::uint64_t { HUGE = 0xFFFFFFFF };
+</code></pre>
+<h3 id="working-with-underlying-values"><a class="header" href="#working-with-underlying-values">Working with Underlying Values</a></h3>
+<p>When you need the integer value:</p>
+<pre><code class="language-cpp">enum class Level : int { LOW = 1, MEDIUM = 5, HIGH = 10 };
+
+Level lv = Level::MEDIUM;
+
+// Get underlying value
+int value = static_cast&lt;int&gt;(lv);
+std::cout &lt;&lt; "Level value: " &lt;&lt; value &lt;&lt; "\n";  // Prints: 5
+
+// Convert integer to enum (be careful!)
+Level lv2 = static_cast&lt;Level&gt;(10);
+</code></pre>
+<hr>
+<h2 id="summary-15"><a class="header" href="#summary-15">Summary</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>C-Style Enum</th><th>Scoped Enum (<code>enum class</code>)</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Scoping</strong></td><td>Enumerators in surrounding scope</td><td>Enumerators in enum scope</td></tr>
+<tr><td><strong>Name conflicts</strong></td><td>Common problem</td><td>No conflicts</td></tr>
+<tr><td><strong>Type safety</strong></td><td>Weak (implicit int conversion)</td><td>Strong (no implicit conversion)</td></tr>
+<tr><td><strong>Underlying type</strong></td><td>Implementation-defined</td><td><code>int</code> by default, explicitly specifiable</td></tr>
+<tr><td><strong>Forward declaration</strong></td><td>Not possible (C++03)</td><td>Supported</td></tr>
+<tr><td><strong>Syntax</strong></td><td><code>enum Name { ... }</code></td><td><code>enum class Name { ... }</code></td></tr>
+<tr><td><strong>Access</strong></td><td><code>Name</code> or <code>EnumName::Name</code></td><td><code>EnumName::Name</code> only</td></tr>
+<tr><td><strong>Usage recommendation</strong></td><td>Legacy code only</td><td>Modern C++ (C++11+)</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Key Takeaway</strong>: Scoped enums (<code>enum class</code>) solve all major problems with C-style enums and should be your default choice in modern C++ programming.</p>
+<hr>
+<h2 id="type-traits-for-enums"><a class="header" href="#type-traits-for-enums">Type Traits for Enums</a></h2>
+<p>C++11 and later versions provide several type traits in the <code>&lt;type_traits&gt;</code> header for working with enums.</p>
+<p>These are useful for template metaprogramming and generic code.</p>
+<h3 id="available-enum-type-traits"><a class="header" href="#available-enum-type-traits">Available Enum Type Traits</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+#include &lt;cstdint&gt;
+
+enum OldStyle { A, B, C };
+
+enum class NewStyle : std::uint16_t {
+    X = 100,
+    Y = 200,
+    Z = 300
+};
+
+enum class DefaultStyle {
+    P, Q, R
+};
+
+int main() {
+    // ===== 1. std::is_enum =====
+    // Checks if a type is an enumeration type
+    std::cout &lt;&lt; std::boolalpha;
+    std::cout &lt;&lt; "std::is_enum:\n";
+    std::cout &lt;&lt; "  OldStyle: " &lt;&lt; std::is_enum&lt;OldStyle&gt;::value &lt;&lt; "\n";
+    std::cout &lt;&lt; "  NewStyle: " &lt;&lt; std::is_enum&lt;NewStyle&gt;::value &lt;&lt; "\n";
+    std::cout &lt;&lt; "  int: " &lt;&lt; std::is_enum&lt;int&gt;::value &lt;&lt; "\n";
+    std::cout &lt;&lt; "  DefaultStyle: " &lt;&lt; std::is_enum&lt;DefaultStyle&gt;::value &lt;&lt; "\n\n";
+    
+    // C++17 shorthand
+    std::cout &lt;&lt; "  OldStyle (v): " &lt;&lt; std::is_enum_v&lt;OldStyle&gt; &lt;&lt; "\n\n";
+    
+    // ===== 2. std::underlying_type =====
+    // Gets the underlying integer type of an enum
+    std::cout &lt;&lt; "std::underlying_type:\n";
+    
+    using OldUnderlying = std::underlying_type&lt;OldStyle&gt;::type;
+    using NewUnderlying = std::underlying_type&lt;NewStyle&gt;::type;
+    using DefaultUnderlying = std::underlying_type&lt;DefaultStyle&gt;::type;
+    
+    std::cout &lt;&lt; "  OldStyle underlying type size: " 
+              &lt;&lt; sizeof(OldUnderlying) &lt;&lt; " bytes\n";
+    std::cout &lt;&lt; "  NewStyle underlying type size: " 
+              &lt;&lt; sizeof(NewUnderlying) &lt;&lt; " bytes\n";
+    std::cout &lt;&lt; "  DefaultStyle underlying type size: " 
+              &lt;&lt; sizeof(DefaultUnderlying) &lt;&lt; " bytes\n\n";
+    
+    // C++14 shorthand: std::underlying_type_t
+    using NewUnderlyingT = std::underlying_type_t&lt;NewStyle&gt;;
+    std::cout &lt;&lt; "  NewStyle underlying (using _t): " 
+              &lt;&lt; sizeof(NewUnderlyingT) &lt;&lt; " bytes\n\n";
+    
+    // ===== 3. Checking if underlying type is signed =====
+    std::cout &lt;&lt; "Is underlying type signed:\n";
+    std::cout &lt;&lt; "  OldStyle: " 
+              &lt;&lt; std::is_signed&lt;std::underlying_type_t&lt;OldStyle&gt;&gt;::value &lt;&lt; "\n";
+    std::cout &lt;&lt; "  NewStyle: " 
+              &lt;&lt; std::is_signed&lt;std::underlying_type_t&lt;NewStyle&gt;&gt;::value &lt;&lt; "\n";
+    std::cout &lt;&lt; "  DefaultStyle: " 
+              &lt;&lt; std::is_signed&lt;std::underlying_type_t&lt;DefaultStyle&gt;&gt;::value &lt;&lt; "\n\n";
+    
+    // C++17 shorthand
+    std::cout &lt;&lt; "  NewStyle (v): " 
+              &lt;&lt; std::is_signed_v&lt;std::underlying_type_t&lt;NewStyle&gt;&gt; &lt;&lt; "\n\n";
+    
+    // ===== 4. Checking if underlying type is unsigned =====
+    std::cout &lt;&lt; "Is underlying type unsigned:\n";
+    std::cout &lt;&lt; "  OldStyle: " 
+              &lt;&lt; std::is_unsigned_v&lt;std::underlying_type_t&lt;OldStyle&gt;&gt; &lt;&lt; "\n";
+    std::cout &lt;&lt; "  NewStyle: " 
+              &lt;&lt; std::is_unsigned_v&lt;std::underlying_type_t&lt;NewStyle&gt;&gt; &lt;&lt; "\n";
+    std::cout &lt;&lt; "  DefaultStyle: " 
+              &lt;&lt; std::is_unsigned_v&lt;std::underlying_type_t&lt;DefaultStyle&gt;&gt; &lt;&lt; "\n\n";
+    
+    // ===== 5. std::is_scoped_enum (C++23) =====
+    // Note: This requires C++23 support
+    #if __cplusplus &gt;= 202302L
+    std::cout &lt;&lt; "std::is_scoped_enum (C++23):\n";
+    std::cout &lt;&lt; "  OldStyle: " &lt;&lt; std::is_scoped_enum_v&lt;OldStyle&gt; &lt;&lt; "\n";
+    std::cout &lt;&lt; "  NewStyle: " &lt;&lt; std::is_scoped_enum_v&lt;NewStyle&gt; &lt;&lt; "\n\n";
+    #endif
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>std::is_enum:
+  OldStyle: true
+  NewStyle: true
+  int: false
+  DefaultStyle: true
+
+  OldStyle (v): true
+
+std::underlying_type:
+  OldStyle underlying type size: 4 bytes
+  NewStyle underlying type size: 2 bytes
+  DefaultStyle underlying type size: 4 bytes
+
+  NewStyle underlying (using _t): 2 bytes
+
+Is underlying type signed:
+  OldStyle: false
+  NewStyle: false
+  DefaultStyle: true
+
+  NewStyle (v): false
+
+Is underlying type unsigned:
+  OldStyle: true
+  NewStyle: true
+  DefaultStyle: false
+</code></pre>
+<h3 id="practical-example-generic-enum-to-string-conversion"><a class="header" href="#practical-example-generic-enum-to-string-conversion">Practical Example: Generic Enum to String Conversion</a></h3>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+#include &lt;string&gt;
+
+// Generic function to convert any enum to its underlying value
+template&lt;typename E&gt;
+constexpr auto toUnderlying(E e) noexcept {
+    static_assert(std::is_enum_v&lt;E&gt;, "toUnderlying requires an enum type");
+    return static_cast&lt;std::underlying_type_t&lt;E&gt;&gt;(e);
+}
+
+enum class Status : std::uint8_t {
+    IDLE = 0,
+    RUNNING = 1,
+    PAUSED = 2,
+    STOPPED = 3
+};
+
+enum class Priority : int {
+    LOW = -1,
+    NORMAL = 0,
+    HIGH = 1
+};
+
+int main() {
+    Status s = Status::RUNNING;
+    Priority p = Priority::HIGH;
+    
+    std::cout &lt;&lt; "Status value: " &lt;&lt; toUnderlying(s) &lt;&lt; "\n";
+    std::cout &lt;&lt; "Priority value: " &lt;&lt; toUnderlying(p) &lt;&lt; "\n";
+    
+    // Type information
+    std::cout &lt;&lt; "\nStatus underlying type size: " 
+              &lt;&lt; sizeof(std::underlying_type_t&lt;Status&gt;) &lt;&lt; " byte(s)\n";
+    std::cout &lt;&lt; "Priority underlying type size: " 
+              &lt;&lt; sizeof(std::underlying_type_t&lt;Priority&gt;) &lt;&lt; " byte(s)\n";
+    
+    std::cout &lt;&lt; "\nStatus is signed: " 
+              &lt;&lt; std::is_signed_v&lt;std::underlying_type_t&lt;Status&gt;&gt; &lt;&lt; "\n";
+    std::cout &lt;&lt; "Priority is signed: " 
+              &lt;&lt; std::is_signed_v&lt;std::underlying_type_t&lt;Priority&gt;&gt; &lt;&lt; "\n";
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>Status value: 1
+Priority value: 1
+
+Status underlying type size: 1 byte(s)
+Priority underlying type size: 4 byte(s)
+
+Status is signed: 0
+Priority is signed: 1
+</code></pre>
+<h3 id="summary-of-enum-type-traits"><a class="header" href="#summary-of-enum-type-traits">Summary of Enum Type Traits</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type Trait</th><th>C++ Version</th><th>Purpose</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><code>std::is_enum&lt;T&gt;</code></td><td>C++11</td><td>Check if T is an enum</td><td><code>std::is_enum&lt;Color&gt;::value</code></td></tr>
+<tr><td><code>std::is_enum_v&lt;T&gt;</code></td><td>C++17</td><td>Shorthand for <code>is_enum</code></td><td><code>std::is_enum_v&lt;Color&gt;</code></td></tr>
+<tr><td><code>std::underlying_type&lt;T&gt;</code></td><td>C++11</td><td>Get underlying type</td><td><code>std::underlying_type&lt;Color&gt;::type</code></td></tr>
+<tr><td><code>std::underlying_type_t&lt;T&gt;</code></td><td>C++14</td><td>Shorthand for <code>underlying_type</code></td><td><code>std::underlying_type_t&lt;Color&gt;</code></td></tr>
+<tr><td><code>std::is_scoped_enum&lt;T&gt;</code></td><td>C++23</td><td>Check if enum is scoped</td><td><code>std::is_scoped_enum_v&lt;Color&gt;</code></td></tr>
+<tr><td><code>std::is_signed&lt;T&gt;</code></td><td>C++11</td><td>Check if type is signed</td><td>Works on underlying type</td></tr>
+<tr><td><code>std::is_unsigned&lt;T&gt;</code></td><td>C++11</td><td>Check if type is unsigned</td><td>Works on underlying type</td></tr>
+<tr><td><code>std::is_signed_v&lt;T&gt;</code></td><td>C++17</td><td>Shorthand for <code>is_signed</code></td><td><code>std::is_signed_v&lt;int&gt;</code></td></tr>
+<tr><td><code>std::is_unsigned_v&lt;T&gt;</code></td><td>C++17</td><td>Shorthand for <code>is_unsigned</code></td><td><code>std::is_unsigned_v&lt;uint8_t&gt;</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="common-use-cases-for-enum-type-traits"><a class="header" href="#common-use-cases-for-enum-type-traits">Common Use Cases for Enum Type Traits</a></h3>
+<ol>
+<li><strong>Template constraints</strong>: Ensure template parameters are enums</li>
+<li><strong>Generic conversions</strong>: Write functions that work with any enum type</li>
+<li><strong>Serialization</strong>: Determine the size needed to serialize an enum</li>
+<li><strong>Reflection</strong>: Build runtime type information systems</li>
+<li><strong>Static assertions</strong>: Enforce enum properties at compile time</li>
+</ol>
+<pre><code class="language-cpp">#include &lt;type_traits&gt;
+#include &lt;cstdint&gt;
+
+// Example: Ensure an enum uses a specific underlying type
+enum class ErrorCode : std::uint32_t {
+    SUCCESS = 0,
+    FAILURE = 1
+};
+
+static_assert(std::is_enum_v&lt;ErrorCode&gt;, "ErrorCode must be an enum");
+static_assert(sizeof(std::underlying_type_t&lt;ErrorCode&gt;) == 4, 
+              "ErrorCode must be 4 bytes");
+static_assert(std::is_unsigned_v&lt;std::underlying_type_t&lt;ErrorCode&gt;&gt;, 
+              "ErrorCode must be unsigned");
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="c11-range-based-for-loops"><a class="header" href="#c11-range-based-for-loops">C++11 Range-Based For Loops</a></h1>
 <h2 id="introduction-4"><a class="header" href="#introduction-4">Introduction</a></h2>
 <p>The range-based <code>for</code> loop, introduced in C++11, provides a simpler, more readable syntax for iterating over elements of a range, such as arrays, standard library containers, and custom types that satisfy the necessary requirements.</p>
-<h2 id="basic-syntax-7"><a class="header" href="#basic-syntax-7">Basic Syntax</a></h2>
+<h2 id="basic-syntax-8"><a class="header" href="#basic-syntax-8">Basic Syntax</a></h2>
 <pre><code class="language-cpp">for (declaration : expression) {
     // loop statement(s)
 }
@@ -21764,7 +22708,7 @@ for (auto num : numbers) {
     num *= 2;  // modifies the copy, not the original
 }
 </code></pre>
-<h2 id="summary-15"><a class="header" href="#summary-15">Summary</a></h2>
+<h2 id="summary-16"><a class="header" href="#summary-16">Summary</a></h2>
 <p>Range-based for loops provide:</p>
 <ul>
 <li><strong>Cleaner syntax</strong>: No need for explicit iterators or index management</li>
@@ -21873,7 +22817,7 @@ public:
 </code></pre>
 <h2 id="in-class-member-initialization-c11-1"><a class="header" href="#in-class-member-initialization-c11-1">In-Class Member Initialization (C++11)</a></h2>
 <p>C++11 introduced the ability to initialize non-static data members directly at their point of declaration.</p>
-<h3 id="basic-syntax-8"><a class="header" href="#basic-syntax-8">Basic Syntax</a></h3>
+<h3 id="basic-syntax-9"><a class="header" href="#basic-syntax-9">Basic Syntax</a></h3>
 <pre><code class="language-cpp">class MyClass {
 private:
     int value = 42;                    // Direct initialization
@@ -22412,7 +23356,7 @@ public:
     }
 };
 </code></pre>
-<h2 id="summary-16"><a class="header" href="#summary-16">Summary</a></h2>
+<h2 id="summary-17"><a class="header" href="#summary-17">Summary</a></h2>
 <p>In-class member initialization, introduced in C++11, dramatically simplified C++ class initialization by:</p>
 <p><strong>Key Benefits:</strong></p>
 <ul>
@@ -22672,7 +23616,7 @@ Widget w2{10, 5.0};   // ERROR: narrowing conversion (5.0 to int)
 Widget w3{10, 5};     // Calls Constructor 2 (initializer_list preferred!)
 </code></pre>
 <p>The <code>initializer_list</code> constructor is <strong>strongly preferred</strong> during overload resolution when brace initialization is used.</p>
-<h2 id="summary-17"><a class="header" href="#summary-17">Summary</a></h2>
+<h2 id="summary-18"><a class="header" href="#summary-18">Summary</a></h2>
 <p>Uniform initialization provides a consistent, safer way to initialize objects in modern C++. It prevents narrowing conversions, resolves parsing ambiguities, and enables powerful features like initializer lists and designated initializers. While it’s not always the perfect choice for every situation, understanding uniform initialization is essential for writing robust, modern C++ code.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
@@ -23217,7 +24161,7 @@ Point p5{100, 200, 300};        // Not self-documenting
 <p>The limitation? You couldn’t skip members or initialize them out of order, and the code wasn’t self-documenting.</p>
 <h2 id="designated-initialization-c20-1"><a class="header" href="#designated-initialization-c20-1">Designated Initialization (C++20)</a></h2>
 <p>Designated initialization allows you to explicitly name which members you’re initializing, making code more readable, maintainable, and less error-prone.</p>
-<h3 id="basic-syntax-9"><a class="header" href="#basic-syntax-9">Basic Syntax</a></h3>
+<h3 id="basic-syntax-10"><a class="header" href="#basic-syntax-10">Basic Syntax</a></h3>
 <pre><code class="language-cpp">struct Point {
     int x;
     int y;
@@ -23594,7 +24538,7 @@ Point p{10, 20};  // Clear enough
 // Designated might be overkill
 Point p{.x = 10, .y = 20};  // Also fine, but more verbose
 </code></pre>
-<h2 id="summary-18"><a class="header" href="#summary-18">Summary</a></h2>
+<h2 id="summary-19"><a class="header" href="#summary-19">Summary</a></h2>
 <p>Designated initialization is a powerful C++20 feature that makes code more readable, maintainable, and less error-prone. It works exclusively with aggregate types, which are simple data structures without user-provided constructors, private members, or virtual functions.</p>
 <p><strong>Key Takeaways:</strong></p>
 <ul>
@@ -24519,7 +25463,7 @@ void modernCpp() {
 <p>Instead of remembering to clean up, you <strong>cannot forget</strong> to clean up. Instead of writing error-prone cleanup logic in every return path and exception handler, you write it <strong>once</strong> in the destructor.</p>
 <p>The destructor is your cleanup code, and the C++ language guarantees it runs. Always. No matter what.</p>
 <p>That’s the power of RAII: <strong>using the language’s automatic features to enforce correctness.</strong></p>
-<h2 id="summary-19"><a class="header" href="#summary-19">Summary</a></h2>
+<h2 id="summary-20"><a class="header" href="#summary-20">Summary</a></h2>
 <ol>
 <li>Resource leaks happen when you forget to clean up</li>
 <li>Stack variables are automatically destroyed when they go out of scope</li>
@@ -25444,7 +26388,7 @@ int main() {
 <li><strong>Never mix approaches</strong> in the same codebase without clear reasoning</li>
 </ol>
 <hr>
-<h2 id="summary-20"><a class="header" href="#summary-20">Summary</a></h2>
+<h2 id="summary-21"><a class="header" href="#summary-21">Summary</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -28799,7 +29743,7 @@ if (logLevel == "UNSET") {  // Why "UNSET" and not ""?
 <h2 id="introducing-stdoptional-c17"><a class="header" href="#introducing-stdoptional-c17">Introducing std::optional (C++17)</a></h2>
 <p><code>std::optional&lt;T&gt;</code> is a template class introduced in <strong>C++17</strong> that either contains a value of type <code>T</code> or explicitly contains nothing (represented as <code>std::nullopt</code>).</p>
 <p>Think of it like a <strong>vending machine slot</strong>: when you select a snack, the machine either dispenses your item, or it doesn’t (maybe it’s out of stock). Instead of the machine pretending to give you something by dispensing an empty wrapper, it honestly tells you “nothing available.” You know to check the outcome before reaching in to grab your snack - did I actually get something, or did the machine give me nothing? The type system ensures you always check which case you’re in.</p>
-<h3 id="basic-syntax-10"><a class="header" href="#basic-syntax-10">Basic Syntax</a></h3>
+<h3 id="basic-syntax-11"><a class="header" href="#basic-syntax-11">Basic Syntax</a></h3>
 <pre><code class="language-cpp">#include &lt;optional&gt;
 
 // Creating optionals
