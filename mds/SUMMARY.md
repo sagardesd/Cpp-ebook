@@ -36,6 +36,7 @@
   - [RVO (Return Value Optimization)](./rvo.md)
 - [auto (>= C++11)](./auto_c++11.md)
 - [decltype (>= C++11)](./decltype.md)
+- [Scoped Enums (>= C++11)](./cpp11-scoped-enum.md)
 - [Range Based for loops (>= C++11)](./range-based-for-loops.md)
 - [In-Class Member Initialization ( >= C++11)](./in_class_initialization.md)
 - [Uniform Initialization (>= C++11)](./uniform_initialization.md)
