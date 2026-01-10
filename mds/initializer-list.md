@@ -131,10 +131,10 @@ void process(std::initializer_list<int> values) {
 }
 
 int main() {
-    process({1, 2, 3});  // ✅ Works - brace-enclosed list
+    process({1, 2, 3});  // Works - brace-enclosed list
     
     std::vector<int> vec = {1, 2, 3};
-    // process(vec);     // ❌ Error - cannot bind vector to initializer_list
+    // process(vec);     // Error - cannot bind vector to initializer_list
     
     return 0;
 }
@@ -209,20 +209,20 @@ When using `std::initializer_list` as a local variable, **the type declaration m
 #include <initializer_list>
 
 int main() {
-    // ❌ DANGEROUS: auto deduction
+    // DANGEROUS: auto deduction
     auto il1 = {1, 2, 3};
     // Temporary array destroyed at end of statement!
     // il1 now holds dangling pointers
     
-    // ✅ SAFE: Explicit type
+    // AFE: Explicit type
     std::initializer_list<int> il2 = {1, 2, 3};
     // Lifetime of temporary array is extended to match il2's scope
     
     // Using il1 here is undefined behavior
-    // for (int val : il1) { }  // ❌ Dangling!
+    // for (int val : il1) { }  // Dangling!
     
     // Using il2 is safe
-    for (int val : il2) {  // ✅ Safe
+    for (int val : il2) {  // Safe
         std::cout << val << " ";
     }
     std::cout << std::endl;
@@ -235,10 +235,10 @@ int main() {
 
 | Code | Mechanism | Lifetime Rule | Status |
 |------|-----------|---------------|--------|
-| `auto il = {1, 2, 3};` | `auto` deduction happens after temporary creation | Temporary array destroyed at end of statement | ❌ Dangling |
-| `std::initializer_list<int> il = {1, 2, 3};` | Explicitly typed variable binds to the temporary | Lifetime of temporary is extended to match `il` | ✅ Safe |
+| `auto il = {1, 2, 3};` | `auto` deduction happens after temporary creation | Temporary array destroyed at end of statement | Dangling |
+| `std::initializer_list<int> il = {1, 2, 3};` | Explicitly typed variable binds to the temporary | Lifetime of temporary is extended to match `il` | Safe |
 
-##### Case 1: `auto il = {1, 2, 3};` (❌ Dangling)
+##### Case 1: `auto il = {1, 2, 3};` (Dangling)
 
 This line works because C++ infers the type of `il` to be `std::initializer_list<int>`. However, the underlying temporary array is created within the full expression of that single statement.
 
@@ -257,7 +257,7 @@ In C++ rules, temporaries are destroyed at the end of the full expression that c
 
 While some compilers might extend the lifetime in this specific `auto` case as an extension or optimization, **relying on `il` after the declaration line is undefined behavior** according to the C++ standard. The reason is that `auto` deduction happens *after* the temporary is already created, so the lifetime extension rule doesn't apply.
 
-##### Case 2: `std::initializer_list<int> il = {1, 2, 3};` (✅ Safe)
+##### Case 2: `std::initializer_list<int> il = {1, 2, 3};` (Safe)
 
 This works correctly due to a **specific lifetime extension rule** in the C++ standard.
 
@@ -287,7 +287,7 @@ It is **unsafe** to store `std::initializer_list` beyond the lifetime of the ini
 
 class BuggyContainer {
 private:
-    std::initializer_list<int> stored_list;  // ❌ DANGER!
+    std::initializer_list<int> stored_list;  // DANGER!
 
 public:
     BuggyContainer(std::initializer_list<int> init) : stored_list(init) {
@@ -295,7 +295,7 @@ public:
     }
     
     void print() const {
-        // ❌ UNDEFINED BEHAVIOR: The temporary array is gone!
+        // UNDEFINED BEHAVIOR: The temporary array is gone!
         for (int val : stored_list) {
             std::cout << val << " ";
         }
@@ -305,7 +305,7 @@ public:
 
 int main() {
     BuggyContainer container({1, 2, 3, 4, 5});
-    container.print();  // ❌ Undefined behavior - accessing dangling pointers!
+    container.print();  // Undefined behavior - accessing dangling pointers!
     
     return 0;
 }
@@ -330,7 +330,7 @@ int main() {
 
 class CorrectContainer {
 private:
-    std::vector<int> data;  // ✅ Owns the data
+    std::vector<int> data;  // Owns the data
 
 public:
     CorrectContainer(std::initializer_list<int> init) : data(init) {
@@ -339,7 +339,7 @@ public:
     }
     
     void print() const {
-        // ✅ Safe: accessing owned data
+        // Safe: accessing owned data
         for (int val : data) {
             std::cout << val << " ";
         }
@@ -349,7 +349,7 @@ public:
 
 int main() {
     CorrectContainer container({1, 2, 3, 4, 5});
-    container.print();  // ✅ Safe and correct!
+    container.print();  // Safe and correct!
     
     return 0;
 }
