@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "navy";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-12ac71df.js";
+            window.path_to_searchindex_js = "searchindex-9697ea9e.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-e9988c04.js"></script>
@@ -284,10 +284,10 @@ void process(std::initializer_list&lt;int&gt; values) {
 }
 
 int main() {
-    process({1, 2, 3});  // ✅ Works - brace-enclosed list
+    process({1, 2, 3});  // Works - brace-enclosed list
     
     std::vector&lt;int&gt; vec = {1, 2, 3};
-    // process(vec);     // ❌ Error - cannot bind vector to initializer_list
+    // process(vec);     // Error - cannot bind vector to initializer_list
     
     return 0;
 }
@@ -344,20 +344,20 @@ int main() {
 #include &lt;initializer_list&gt;
 
 int main() {
-    // ❌ DANGEROUS: auto deduction
+    // DANGEROUS: auto deduction
     auto il1 = {1, 2, 3};
     // Temporary array destroyed at end of statement!
     // il1 now holds dangling pointers
     
-    // ✅ SAFE: Explicit type
+    // AFE: Explicit type
     std::initializer_list&lt;int&gt; il2 = {1, 2, 3};
     // Lifetime of temporary array is extended to match il2's scope
     
     // Using il1 here is undefined behavior
-    // for (int val : il1) { }  // ❌ Dangling!
+    // for (int val : il1) { }  // Dangling!
     
     // Using il2 is safe
-    for (int val : il2) {  // ✅ Safe
+    for (int val : il2) {  // Safe
         std::cout &lt;&lt; val &lt;&lt; " ";
     }
     std::cout &lt;&lt; std::endl;
@@ -372,12 +372,12 @@ int main() {
 <tr><th>Code</th><th>Mechanism</th><th>Lifetime Rule</th><th>Status</th></tr>
 </thead>
 <tbody>
-<tr><td><code>auto il = {1, 2, 3};</code></td><td><code>auto</code> deduction happens after temporary creation</td><td>Temporary array destroyed at end of statement</td><td>❌ Dangling</td></tr>
-<tr><td><code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code></td><td>Explicitly typed variable binds to the temporary</td><td>Lifetime of temporary is extended to match <code>il</code></td><td>✅ Safe</td></tr>
+<tr><td><code>auto il = {1, 2, 3};</code></td><td><code>auto</code> deduction happens after temporary creation</td><td>Temporary array destroyed at end of statement</td><td>Dangling</td></tr>
+<tr><td><code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code></td><td>Explicitly typed variable binds to the temporary</td><td>Lifetime of temporary is extended to match <code>il</code></td><td>Safe</td></tr>
 </tbody>
 </table>
 </div>
-<h5 id="case-1-auto-il--1-2-3--dangling"><a class="header" href="#case-1-auto-il--1-2-3--dangling">Case 1: <code>auto il = {1, 2, 3};</code> (❌ Dangling)</a></h5>
+<h5 id="case-1-auto-il--1-2-3-dangling"><a class="header" href="#case-1-auto-il--1-2-3-dangling">Case 1: <code>auto il = {1, 2, 3};</code> (Dangling)</a></h5>
 <p>This line works because C++ infers the type of <code>il</code> to be <code>std::initializer_list&lt;int&gt;</code>. However, the underlying temporary array is created within the full expression of that single statement.</p>
 <p><strong>The critical issue is the order of operations:</strong></p>
 <ol>
@@ -391,7 +391,7 @@ int main() {
 <p><strong>Why it fails:</strong></p>
 <p>In C++ rules, temporaries are destroyed at the end of the full expression that creates them. As soon as the semicolon is reached, the temporary array is destroyed. The variable <code>il</code> now contains pointers to invalid memory.</p>
 <p>While some compilers might extend the lifetime in this specific <code>auto</code> case as an extension or optimization, <strong>relying on <code>il</code> after the declaration line is undefined behavior</strong> according to the C++ standard. The reason is that <code>auto</code> deduction happens <em>after</em> the temporary is already created, so the lifetime extension rule doesn’t apply.</p>
-<h5 id="case-2-stdinitializer_listint-il--1-2-3--safe"><a class="header" href="#case-2-stdinitializer_listint-il--1-2-3--safe">Case 2: <code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code> (✅ Safe)</a></h5>
+<h5 id="case-2-stdinitializer_listint-il--1-2-3-safe"><a class="header" href="#case-2-stdinitializer_listint-il--1-2-3-safe">Case 2: <code>std::initializer_list&lt;int&gt; il = {1, 2, 3};</code> (Safe)</a></h5>
 <p>This works correctly due to a <strong>specific lifetime extension rule</strong> in the C++ standard.</p>
 <p><strong>How it works:</strong></p>
 <p>When a temporary object is used to initialize a variable with an explicitly declared type (especially one that acts like a reference to the underlying data), the lifetime of that temporary object is extended to match the lifetime of the variable.</p>
@@ -412,7 +412,7 @@ int main() {
 
 class BuggyContainer {
 private:
-    std::initializer_list&lt;int&gt; stored_list;  // ❌ DANGER!
+    std::initializer_list&lt;int&gt; stored_list;  // DANGER!
 
 public:
     BuggyContainer(std::initializer_list&lt;int&gt; init) : stored_list(init) {
@@ -420,7 +420,7 @@ public:
     }
     
     void print() const {
-        // ❌ UNDEFINED BEHAVIOR: The temporary array is gone!
+        // UNDEFINED BEHAVIOR: The temporary array is gone!
         for (int val : stored_list) {
             std::cout &lt;&lt; val &lt;&lt; " ";
         }
@@ -430,7 +430,7 @@ public:
 
 int main() {
     BuggyContainer container({1, 2, 3, 4, 5});
-    container.print();  // ❌ Undefined behavior - accessing dangling pointers!
+    container.print();  // Undefined behavior - accessing dangling pointers!
     
     return 0;
 }
@@ -451,7 +451,7 @@ int main() {
 
 class CorrectContainer {
 private:
-    std::vector&lt;int&gt; data;  // ✅ Owns the data
+    std::vector&lt;int&gt; data;  // Owns the data
 
 public:
     CorrectContainer(std::initializer_list&lt;int&gt; init) : data(init) {
@@ -460,7 +460,7 @@ public:
     }
     
     void print() const {
-        // ✅ Safe: accessing owned data
+        // Safe: accessing owned data
         for (int val : data) {
             std::cout &lt;&lt; val &lt;&lt; " ";
         }
@@ -470,7 +470,7 @@ public:
 
 int main() {
     CorrectContainer container({1, 2, 3, 4, 5});
-    container.print();  // ✅ Safe and correct!
+    container.print();  // Safe and correct!
     
     return 0;
 }
